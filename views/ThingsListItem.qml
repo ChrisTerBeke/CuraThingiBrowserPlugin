@@ -36,13 +36,13 @@ Item
 
         Image
         {
-            source: thing.thumbnail_url
+            source: thing.thumbnail
         }
 
         Cura.PrimaryButton
         {
-            text: catalog.i18nc("@button", "Import")
-            onClicked: ThingiService.download(thing.thingId)
+            text: catalog.i18nc("@button", "Details")
+            onClicked: ThingiService.showThingDetails(thing.id)
         }
     }
 }

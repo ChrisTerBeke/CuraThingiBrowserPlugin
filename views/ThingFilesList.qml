@@ -5,26 +5,27 @@ import QtQuick.Controls 2.2
 import QtQuick.Layouts 1.3
 
 import UM 1.1 as UM
+import Cura 1.0 as Cura
 
 ScrollView
 {
-    property alias model: thingsList.model
+    property alias model: thingFilesList.model
     width: parent.width
     clip: true
 
     ListView
     {
-        id: thingsList
+        id: thingFilesList
         width: parent.width
         delegate: Item
         {
             width: parent.width
             height: childrenRect.height
 
-            ThingsListItem
+            Cura.PrimaryButton
             {
-                width: parent.width
-                thing: modelData
+                text: catalog.i18nc("@button", "Download")
+                onClicked: ThingiService.downloadThingFile(modelData.id)
             }
         }
     }

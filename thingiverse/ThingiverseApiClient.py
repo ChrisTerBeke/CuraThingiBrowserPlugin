@@ -2,28 +2,26 @@
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
 import json
 from json import JSONDecodeError
-from typing import List, Callable, Any, Union, TypeVar, Type, Dict, Tuple, Optional, cast
+from typing import List, Callable, Any, Union, Dict, Tuple, Optional, cast
 
-from PyQt5.QtCore import QUrl
+from PyQt5.QtCore import QUrl, QObject
 from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
 
 from UM.Logger import Logger
 
-from .Thing import Thing
 
-
-## The generic type variable used to document the methods below.
-ThingiverseApiClientModel = TypeVar("ThingiverseApiClientModel", bound = Thing)
+class JSONObject(QObject):
+    """ Simple class that converts a JSON object to a Python model. """
+    def __init__(self, _dict: Dict[str, any]):
+        vars(self).update(_dict)
+        super().__init__()
 
 
 class ThingiverseApiClient:
-    """
-    Client for interacting with the Thingiverse API.
-    """
+    """ Client for interacting with the Thingiverse API. """
     
     # API constants.
     _root_url = "https://api.thingiverse.com"
-    _download_root_url = "https://www.thingiverse.com/download"
     _token = "d1057e7ec3da66ac1b81f8632606ca0a"
     
     def __init__(self) -> None:
@@ -33,20 +31,38 @@ class ThingiverseApiClient:
         
         # Prevent auto-removing running callbacks by the Python garbage collector.
         self._anti_gc_callbacks = []  # type: List[Callable[[], None]]
-        
-    def download(self, thing_id: int, on_finished: Callable[[bytes], Any]) -> None:
+
+    def getThing(self, thing_id: int, on_finished: Callable[[JSONObject], Any]) -> None:
         """
-        Download a thing by it's download URL.
-        :param thing_id: The thing ID to download.
+        Get a single thing by ID.
+        :param thing_id: The thing ID.
+        :param on_finished: Callback method to receive the async result on.
+        """
+        url = "{}/things/{}".format(self._root_url, thing_id)
+        reply = self._manager.get(self._createEmptyRequest(url))
+        self._addCallback(reply, on_finished)
+        
+    def getThingFiles(self, thing_id: int, on_finished: Callable[[List[JSONObject]], Any]) -> None:
+        """
+        Get a thing's files by ID.
+        :param thing_id: The thing ID.
+        :param on_finished: Callback method to receive the async result on.
+        """
+        url = "{}/things/{}/files".format(self._root_url, thing_id)
+        reply = self._manager.get(self._createEmptyRequest(url))
+        self._addCallback(reply, on_finished)
+        
+    def downloadThingFile(self, file_id: int, on_finished: Callable[[bytes], Any]) -> None:
+        """
+        Download a thing file by its ID.
+        :param file_id: The file ID to download.
         :param on_finished: Callback method to receive the async result on as bytes.
         """
-        # TODO: we actually need to get the thing's API info first as that points to one or more files.
-        # TODO: this results in a chain of API calls and responses: thing -> thing files -> download(s)
-        url = "{}:{}".format(self._download_root_url, str(thing_id))
-        reply = self._manager.get(self._createEmptyRequest(url, "plain/text"))
+        url = "{}/files/{}/download".format(self._root_url, file_id)
+        reply = self._manager.get(self._createEmptyRequest(url))
         self._addSimpleCallback(reply, on_finished)
     
-    def search(self, search_terms: str, on_finished: Callable[[List[Thing]], Any]) -> None:
+    def search(self, search_terms: str, on_finished: Callable[[List[JSONObject]], Any]) -> None:
         """
         Get things by searching.
         :param search_terms: The terms to search with.
@@ -54,7 +70,7 @@ class ThingiverseApiClient:
         """
         url = "{}/search/{}".format(self._root_url, search_terms)
         reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, Thing)
+        self._addCallback(reply, on_finished)
 
     def _createEmptyRequest(self, url: str, content_type: str = "application/json") -> QNetworkRequest:
         """
@@ -64,6 +80,7 @@ class ThingiverseApiClient:
         """
         request = QNetworkRequest(QUrl(url))
         request.setHeader(QNetworkRequest.ContentTypeHeader, content_type)
+        request.setAttribute(QNetworkRequest.RedirectPolicyAttribute, True)  # file downloads reply with a 302 first
         request.setRawHeader(b"Authorization", "Bearer {}".format(self._token).encode())
         return request
 
@@ -83,24 +100,20 @@ class ThingiverseApiClient:
             return status_code, None
     
     @staticmethod
-    def _parseModels(data: Dict[str, Any],
-                     on_finished: Union[Callable[[ThingiverseApiClientModel], Any],
-                                        Callable[[List[ThingiverseApiClientModel]], Any]],
-                     model_class: Type[ThingiverseApiClientModel]) -> None:
+    def _parseModels(data: Dict[str, Any], on_finished: Union[Callable[[JSONObject], Any],
+                                                              Callable[[List[JSONObject]], Any]]) -> None:
         """
         Parse the API response into a model instance or list of instances.
         :param data: The JSON data from the server.
         :param on_finished: The callback in case the response is successful.
-        :param model_class: The type of the model to convert the response to.
-        :return:
         """
         if isinstance(data, list):
-            results = [model_class(**c) for c in data]  # type: List[ThingiverseApiClientModel]
-            on_finished_list = cast(Callable[[List[ThingiverseApiClientModel]], Any], on_finished)
+            results = [JSONObject(item) for item in data]
+            on_finished_list = cast(Callable[[List[JSONObject]], Any], on_finished)
             on_finished_list(results)
         else:
-            result = model_class(**data)  # type: ThingiverseApiClientModel
-            on_finished_item = cast(Callable[[ThingiverseApiClientModel], Any], on_finished)
+            result = JSONObject(data)
+            on_finished_item = cast(Callable[[JSONObject], Any], on_finished)
             on_finished_item(result)
             
     def _addSimpleCallback(self, reply: QNetworkReply, on_finished: Callable[[bytes], Any]) -> None:
@@ -118,22 +131,18 @@ class ThingiverseApiClient:
         self._anti_gc_callbacks.append(parse)
         reply.finished.connect(parse)
     
-    def _addCallback(self,
-                     reply: QNetworkReply,
-                     on_finished: Union[Callable[[ThingiverseApiClientModel], Any],
-                                        Callable[[List[ThingiverseApiClientModel]], Any]],
-                     model: Type[ThingiverseApiClientModel] = None) -> None:
+    def _addCallback(self, reply: QNetworkReply, on_finished: Union[Callable[[JSONObject], Any],
+                                                                    Callable[[List[JSONObject]], Any]]) -> None:
         """
         Creates a callback function so that it includes the parsing of the response into the correct model.
         The callback is added to the 'finished' signal of the reply.
         :param reply: The reply that should be listened to.
         :param on_finished: The callback in case the response is successful.
-        :param model: The type of the model to convert the response to.
         """
         def parse() -> None:
             status_code, response = self._parseReply(reply)
             self._anti_gc_callbacks.remove(parse)
-            return self._parseModels(response, on_finished, model)
+            return self._parseModels(response, on_finished)
 
         self._anti_gc_callbacks.append(parse)
         reply.finished.connect(parse)

@@ -1,11 +1,12 @@
 # Copyright (c) 2018 Chris ter Beke.
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
-from typing import List
+from typing import List, Optional, Dict
 
-from PyQt5.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot, QUrl
 
-from .Thing import Thing
-from .ThingiverseApiClient import ThingiverseApiClient
+from UM.Job import Job
+from cura.CuraApplication import CuraApplication
+from .ThingiverseApiClient import ThingiverseApiClient, JSONObject
 
 
 class ThingiverseService(QObject):
@@ -16,34 +17,105 @@ class ThingiverseService(QObject):
     # Signal triggered when new things are found.
     thingsChanged = pyqtSignal()
     
+    # Signal triggered when the active thing changed.
+    activeThingChanged = pyqtSignal()
+    
     def __init__(self, parent = None):
         super().__init__(parent)
         
-        # Holds the things found in search results.
-        self._things = []  # type: List[Thing]
+        # Hold the things found in search results.
+        self._things = []  # type: List[JSONObject]
+        
+        # Hold the thing and thing files that we currently see the details of.
+        self._thing_details = None  # type: Optional[JSONObject]
+        self._thing_files = []  # type: List[JSONObject]
 
         # The API client that we do all calls to Thingiverse with.
         self._api_client = ThingiverseApiClient()  # type: ThingiverseApiClient
 
     @pyqtProperty("QVariantList", notify = thingsChanged)
-    def things(self) -> List[Thing]:
+    def things(self) -> List[Dict[str, any]]:
         """
         Get a list of found things. Updated when performing a search.
         :return: The things.
         """
-        return self._things
-    
-    @pyqtSlot(str, name = "download")
-    def download(self, thing_id: int) -> None:
+        # TODO: figure out why simply return self._things doesn't pass the class properties
+        return [thing.__dict__ for thing in self._things]
+
+    @pyqtProperty("QVariant", notify = activeThingChanged)
+    def activeThing(self) -> Dict[str, any]:
         """
-        Download and load a thing by it's ID.
-        The downloaded object will be placed on the build plate.
+        Get the current active thing details.
+        :return: The thing.
+        """
+        # TODO: figure out why simply return self._thing_details doesn't pass the class properties
+        return self._thing_details.__dict__ if self._thing_details else None
+
+    @pyqtProperty("QVariantList", notify = activeThingChanged)
+    def activeThingFiles(self) -> List[Dict[str, any]]:
+        """
+        Get the current active thing files.
+        :return: The thing files.
+        """
+        # TODO: figure out why simply return self._things doesn't pass the class properties
+        return [files.__dict__ for files in self._thing_files]
+
+    @pyqtProperty(bool, notify = activeThingChanged)
+    def hasActiveThing(self) -> bool:
+        """
+        Whether there is currently a thing active to show or not.
+        :return: True when there is an active thing, false otherwise.
+        """
+        return bool(self._thing_details)
+    
+    @pyqtSlot(int, name = "showThingDetails")
+    def showThingDetails(self, thing_id: int) -> None:
+        """
+        Get and show the details of a single thing.
         :param thing_id: The ID of the thing.
         """
-        self._api_client.download(thing_id, self._onDownloadFinished)
+        self._api_client.getThing(thing_id, self._onThingDetailsFinished)
+        self._api_client.getThingFiles(thing_id, self._onThingFilesFinished)
         
-    def _onDownloadFinished(self, thing_bytes: bytes) -> None:
-        print("thing_bytes", thing_bytes)
+    def _onThingDetailsFinished(self, thing: JSONObject) -> None:
+        """
+        Callback for receiving thing details on.
+        :param thing: The thing.
+        """
+        self._thing_details = thing
+        self.activeThingChanged.emit()
+        
+    def _onThingFilesFinished(self, thing_files: List[JSONObject]) -> None:
+        """
+        Callback for receiving a list of thing files on.
+        :param thing_files: The thing files.
+        """
+        self._thing_files = thing_files
+        self.activeThingChanged.emit()
+
+    @pyqtSlot(name = "hideThingDetails")
+    def hideThingDetails(self) -> None:
+        """
+        Remove the thing details. This hides the detail page in the UI.
+        """
+        self._thing_details = None
+        self.activeThingChanged.emit()
+    
+    @pyqtSlot(str, name = "downloadThingFile")
+    def downloadThingFile(self, file_id: int) -> None:
+        """
+        Download and load a thing file by it's ID.
+        The downloaded object will be placed on the build plate.
+        :param file_id: The ID of the file.
+        """
+        self._api_client.downloadThingFile(file_id, self._onDownloadFinished)
+
+    def _onDownloadFinished(self, file_bytes: bytes) -> None:
+        """
+        Callback to receive the file on.
+        :param file_bytes: The file as bytes.
+        """
+        # TODO: load the file bytes onto the build plate
 
     @pyqtSlot(str, name = "search")
     def search(self, search_terms: str) -> None:
@@ -54,7 +126,7 @@ class ThingiverseService(QObject):
         """
         self._api_client.search(search_terms, self._onSearchFinished)
         
-    def _onSearchFinished(self, things: List[Thing]) -> None:
+    def _onSearchFinished(self, things: List[JSONObject]) -> None:
         """
         Callback for receiving search results on.
         :param things: The found things.

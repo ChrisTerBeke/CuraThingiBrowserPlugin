@@ -33,34 +33,18 @@ Window
     {
         anchors.fill: parent
 
-        ColumnLayout
+        // the search page
+        ThingSearchPage
         {
-            anchors.fill: parent
+            visible: !ThingiService.hasActiveThing
+        }
 
-            Label
-            {
-                id: thingiverseTitle
-                text: catalog.i18nc("@title", "Thingiverse")
-                font: UM.Theme.getFont("large")
-                color: UM.Theme.getColor("text")
-                Layout.fillWidth: true
-                renderType: Text.NativeRendering
-            }
-
-            TextField
-            {
-                id: thingSearchField
-                placeholderText: "Search for things..."
-                onEditingFinished: ThingiService.search(thingSearchField.text)
-            }
-
-            ThingsList
-            {
-                id: thingsList
-                model: ThingiService.things
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-            }
+        // the details page
+        ThingDetailsPage
+        {
+            thing: ThingiService.activeThing
+            thingFiles: ThingiService.activeThingFiles
+            visible: ThingiService.hasActiveThing
         }
     }
 }
