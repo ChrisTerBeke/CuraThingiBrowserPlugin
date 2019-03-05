@@ -28,23 +28,37 @@ Window
 
     title: catalog.i18nc("@title", "Thingiverse")
 
-    // main window content
-    Item
+    // area to provide un-focus option for search field
+    MouseArea
     {
         anchors.fill: parent
+        focus: true
 
-        // the search page
-        ThingSearchPage
-        {
-            visible: !ThingiService.hasActiveThing
+        onClicked: {
+            focus = true
         }
 
-        // the details page
-        ThingDetailsPage
-        {
-            thing: ThingiService.activeThing
-            thingFiles: ThingiService.activeThingFiles
-            visible: ThingiService.hasActiveThing
+        // hot-reload the contenst when pressing <-
+        Keys.onPressed: {
+            if (event.key == Qt.Key_Left) {
+                loader.reload()
+            }
+        }
+    }
+
+    // we use a Loader to be able to hot-reload this content during development
+    Loader
+    {
+        id: loader
+        width: parent.width
+        height: parent.height
+        source: "ThingiMain.qml"
+
+        // trigger a reload and clear the cache
+        function reload() {
+            source = ""
+            CuraApplication.clearQmlCache()
+            source = "./ThingiMain.qml"
         }
     }
 }

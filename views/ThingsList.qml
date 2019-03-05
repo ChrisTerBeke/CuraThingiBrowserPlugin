@@ -16,6 +16,8 @@ ScrollView
     {
         id: thingsList
         width: parent.width
+        spacing: 20
+
         delegate: Item
         {
             width: parent.width

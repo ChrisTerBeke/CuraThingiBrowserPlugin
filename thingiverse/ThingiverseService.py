@@ -78,6 +78,8 @@ class ThingiverseService(QObject):
         The search is done async and the result will be populated in self._things.
         :param search_terms: The search terms separated by a space.
         """
+        self._onSearchFinished([])
+        self.hideThingDetails()
         self._api_client.search(search_terms, self._onSearchFinished)
     
     @pyqtSlot(int, name = "showThingDetails")
@@ -111,7 +113,8 @@ class ThingiverseService(QObject):
         Callback for receiving thing details on.
         :param thing: The thing.
         """
-        print("thing", thing)
+        if not isinstance(thing, JSONObject):
+            return
         self._thing_details = thing
         self.activeThingChanged.emit()
         
@@ -120,7 +123,8 @@ class ThingiverseService(QObject):
         Callback for receiving a list of thing files on.
         :param thing_files: The thing files.
         """
-        print("thing files", thing_files)
+        if not isinstance(thing_files, list):
+            return
         self._thing_files = thing_files
         self.activeThingFilesChanged.emit()
 
@@ -139,5 +143,7 @@ class ThingiverseService(QObject):
         Callback for receiving search results on.
         :param things: The found things.
         """
+        if not isinstance(things, list):
+            return
         self._things = things
         self.thingsChanged.emit()

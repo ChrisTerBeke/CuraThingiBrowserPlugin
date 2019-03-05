@@ -3,29 +3,52 @@
 import QtQuick 2.7
 import QtQuick.Controls 2.2
 import QtQuick.Layouts 1.3
-
 import UM 1.1 as UM
 import Cura 1.0 as Cura
 
-ScrollView
+ListView
 {
-    property alias model: thingFilesList.model
+    id: thingFilesList
+    height: childrenRect.height
     width: parent.width
-    clip: true
-
-    ListView
+    interactive: false  // disable scrolling in this list
+    spacing: 10
+    delegate: Item
     {
-        id: thingFilesList
         width: parent.width
-        delegate: Item
+        height: childrenRect.height
+
+        RowLayout
         {
             width: parent.width
-            height: childrenRect.height
 
+            // thumbnail
+            Image
+            {
+                Layout.leftMargin: 20
+                source: modelData.thumbnail
+            }
+
+             // file name
+            Label
+            {
+                text: modelData.name
+                color: UM.Theme.getColor("text")
+                font: UM.Theme.getFont("large")
+                elide: Text.ElideRight
+                renderType: Text.NativeRendering
+                Layout.fillWidth: true
+                Layout.leftMargin: 20
+            }
+
+            // download button
             Cura.PrimaryButton
             {
-                text: catalog.i18nc("@button", "Download")
+                text: catalog.i18nc("@button", "Import")
                 onClicked: ThingiService.downloadThingFile(modelData.id)
+                Layout.rightMargin: 20
+                enabled: modelData.name.includes(".stl") || modelData.name.includes(".STL")
+                tooltip: "Import this file onto the build plate"
             }
         }
     }

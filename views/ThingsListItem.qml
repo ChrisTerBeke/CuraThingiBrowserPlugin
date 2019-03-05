@@ -20,29 +20,49 @@ Item
         id: dataRow
         spacing: UM.Theme.getSize("wide_margin").width
         width: parent.width
-        height: 100 * screenScaleFactor
 
-        Label
-        {
-            text: thing.name
-            color: UM.Theme.getColor("text")
-            elide: Text.ElideRight
-            Layout.minimumWidth: 100 * screenScaleFactor
-            Layout.maximumWidth: 500 * screenScaleFactor
-            Layout.fillWidth: true
-            font: UM.Theme.getFont("default")
-            renderType: Text.NativeRendering
-        }
-
+        // thumbnail
         Image
         {
+            Layout.leftMargin: 20
             source: thing.thumbnail
         }
 
+        ColumnLayout
+        {
+            // thing title
+            Label
+            {
+                text: thing.name
+                color: UM.Theme.getColor("text")
+                font: UM.Theme.getFont("large")
+                elide: Text.ElideRight
+                renderType: Text.NativeRendering
+                Layout.fillWidth: true
+            }
+
+            // think link to web page
+            Label
+            {
+                text: thing["public_url"]
+                color: UM.Theme.getColor("monitor_text_link")
+                font: UM.Theme.getFont("default")
+                renderType: Text.NativeRendering
+
+                MouseArea
+                {
+                    anchors.fill: parent
+                    onClicked: Qt.openUrlExternally(thing["public_url"])
+                }
+            }
+        }
+
+        // import files button
         Cura.PrimaryButton
         {
-            text: catalog.i18nc("@button", "Details")
+            text: catalog.i18nc("@button", "Import files")
             onClicked: ThingiService.showThingDetails(thing.id)
+            Layout.rightMargin: 20
         }
     }
 }

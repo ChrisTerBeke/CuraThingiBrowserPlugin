@@ -7,16 +7,14 @@ import QtQuick.Layouts 1.3
 import QtQuick.Window 2.2
 import UM 1.1 as UM
 
-
 ColumnLayout
 {
-    anchors.fill: parent
-
-    TextField
+    BusyIndicator
     {
-        id: thingSearchField
-        placeholderText: "Search for things..."
-        onEditingFinished: ThingiService.search(thingSearchField.text)
+        visible: ThingiService.things.length === 0
+        running: true
+        Layout.alignment: Qt.AlignHCenter
+        Layout.topMargin: 20
     }
 
     ThingsList
@@ -25,5 +23,7 @@ ColumnLayout
         model: ThingiService.things
         Layout.fillWidth: true
         Layout.fillHeight: true
+        Layout.topMargin: 20
+        Layout.bottomMargin: 20
     }
 }
