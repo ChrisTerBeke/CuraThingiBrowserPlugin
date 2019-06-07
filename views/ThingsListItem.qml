@@ -41,26 +41,18 @@ Item
                 Layout.fillWidth: true
             }
 
-            // think link to web page
-            Label
+            // link to web page
+            Link
             {
                 text: thing["public_url"]
-                color: UM.Theme.getColor("monitor_text_link")
-                font: UM.Theme.getFont("default")
-                renderType: Text.NativeRendering
-
-                MouseArea
-                {
-                    anchors.fill: parent
-                    onClicked: Qt.openUrlExternally(thing["public_url"])
-                }
+                url: thing["public_url"]
             }
         }
 
         // import files button
         Cura.PrimaryButton
         {
-            text: catalog.i18nc("@button", "Import files")
+            text: catalog.i18nc("@button", "Details")
             onClicked: ThingiService.showThingDetails(thing.id)
             Layout.rightMargin: 20
         }

@@ -15,8 +15,9 @@ ListView
     spacing: 10
     delegate: Item
     {
+        visible: modelData.name.includes(".stl") || modelData.name.includes(".STL")
         width: parent.width
-        height: childrenRect.height
+        height: visible ? childrenRect.height : 0
 
         RowLayout
         {
@@ -44,10 +45,9 @@ ListView
             // download button
             Cura.PrimaryButton
             {
-                text: catalog.i18nc("@button", "Import")
+                text: catalog.i18nc("@button", "Add to build plate")
                 onClicked: ThingiService.downloadThingFile(modelData.id)
                 Layout.rightMargin: 20
-                enabled: modelData.name.includes(".stl") || modelData.name.includes(".STL")
                 tooltip: "Import this file onto the build plate"
             }
         }

@@ -28,6 +28,8 @@ class ThingiverseService(QObject):
         
         # Hold the things found in search results.
         self._things = []  # type: List[JSONObject]
+        self._search_page = 1  # type: int
+        self._search_terms = ""  # type: str
         
         # Hold the thing and thing files that we currently see the details of.
         self._thing_details = None  # type: Optional[JSONObject]
@@ -78,9 +80,20 @@ class ThingiverseService(QObject):
         The search is done async and the result will be populated in self._things.
         :param search_terms: The search terms separated by a space.
         """
-        self._onSearchFinished([])
+        self._clearSearchResults()
         self.hideThingDetails()
-        self._api_client.search(search_terms, self._onSearchFinished)
+        self._search_page = 1
+        self._search_terms = search_terms  # store search terms so we can append with pagination
+        self._api_client.search(self._search_terms, self._onSearchFinished, page = self._search_page)
+
+    @pyqtSlot(name = "addSearchPage")
+    def addSearchPage(self) -> None:
+        """
+        Append search Thing list with the next page of results.
+        The search is done async and the result will be populated in self._things.
+        """
+        self._search_page += 1
+        self._api_client.search(self._search_terms, self._onSearchFinished, page = self._search_page)
     
     @pyqtSlot(int, name = "showThingDetails")
     def showThingDetails(self, thing_id: int) -> None:
@@ -113,8 +126,6 @@ class ThingiverseService(QObject):
         Callback for receiving thing details on.
         :param thing: The thing.
         """
-        if not isinstance(thing, JSONObject):
-            return
         self._thing_details = thing
         self.activeThingChanged.emit()
         
@@ -123,8 +134,6 @@ class ThingiverseService(QObject):
         Callback for receiving a list of thing files on.
         :param thing_files: The thing files.
         """
-        if not isinstance(thing_files, list):
-            return
         self._thing_files = thing_files
         self.activeThingFilesChanged.emit()
 
@@ -143,7 +152,12 @@ class ThingiverseService(QObject):
         Callback for receiving search results on.
         :param things: The found things.
         """
-        if not isinstance(things, list):
-            return
-        self._things = things
+        self._things.extend(things)
+        self.thingsChanged.emit()
+        
+    def _clearSearchResults(self) -> None:
+        """
+        Clear all Thing search results.
+        """
+        self._things = []
         self.thingsChanged.emit()

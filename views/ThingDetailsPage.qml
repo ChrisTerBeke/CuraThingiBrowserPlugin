@@ -31,10 +31,19 @@ ColumnLayout
     Label
     {
         id: thingTitle
-        text: thing.name
+        text: thing["name"]
         font: UM.Theme.getFont("large")
         color: UM.Theme.getColor("text")
         renderType: Text.NativeRendering
+        Layout.leftMargin: 20
+        Layout.bottomMargin: 10
+    }
+
+    // link to web page
+    Link
+    {
+        text: thing["public_url"]
+        url: thing["public_url"]
         Layout.leftMargin: 20
         Layout.bottomMargin: 20
     }
@@ -45,28 +54,19 @@ ColumnLayout
         width: detailsPage.width
         clip: true
         Layout.fillHeight: true
+        Layout.bottomMargin: 20
 
         Column
         {
             Label
             {
                 id: thingDescription
-                text: thing.description
-                font: UM.Theme.getFont("small")
+                text: thing["description"]
+                font: UM.Theme.getFont("medium")
                 color: UM.Theme.getColor("text")
                 renderType: Text.NativeRendering
                 wrapMode: Label.WordWrap
                 width: detailsPage.width
-                leftPadding: 20
-                bottomPadding: 20
-            }
-
-            Label
-            {
-                text: "Files"
-                font: UM.Theme.getFont("large")
-                color: UM.Theme.getColor("text")
-                renderType: Text.NativeRendering
                 leftPadding: 20
                 bottomPadding: 20
             }
