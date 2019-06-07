@@ -9,11 +9,14 @@ from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkReques
 
 from UM.Logger import Logger
 
+from ..Settings import Settings
+
 
 class JSONObject(QObject):
     """ Simple class that converts a JSON object to a Python model. """
     def __init__(self, _dict: Dict[str, any]):
-        vars(self).update(_dict)
+        if _dict:
+            vars(self).update(_dict)
         super().__init__()
 
 
@@ -22,7 +25,7 @@ class ThingiverseApiClient:
     
     # API constants.
     _root_url = "https://api.thingiverse.com"
-    _token = "d1057e7ec3da66ac1b81f8632606ca0a"
+    _token = Settings.THINGIVERSE_API_TOKEN
     
     def __init__(self) -> None:
         
@@ -62,13 +65,15 @@ class ThingiverseApiClient:
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addSimpleCallback(reply, on_finished)
     
-    def search(self, search_terms: str, on_finished: Callable[[List[JSONObject]], Any]) -> None:
+    def search(self, search_terms: str, on_finished: Callable[[List[JSONObject]], Any], page: int = 1) -> None:
         """
         Get things by searching.
+        :param page: Page of search results.
         :param search_terms: The terms to search with.
         :param on_finished: Callback method to receive the async result on.
         """
-        url = "{}/search/{}".format(self._root_url, search_terms)
+        url = "{}/search/{}?per_page={}&page={}".format(
+                self._root_url, search_terms, Settings.THINGIVERSE_API_PER_PAGE, page)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished)
 
@@ -96,7 +101,7 @@ class ThingiverseApiClient:
             response = bytes(reply.readAll()).decode()
             return status_code, json.loads(response)
         except (UnicodeDecodeError, JSONDecodeError, ValueError) as err:
-            Logger.logException("e", "Could not parse the stardust response: %s", err)
+            Logger.logException("e", "Could not parse the API response: %s", err)
             return status_code, None
     
     @staticmethod

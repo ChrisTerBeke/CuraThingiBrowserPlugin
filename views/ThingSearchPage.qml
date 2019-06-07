@@ -6,6 +6,7 @@ import QtQuick.Dialogs 1.1
 import QtQuick.Layouts 1.3
 import QtQuick.Window 2.2
 import UM 1.1 as UM
+import Cura 1.0 as Cura
 
 ColumnLayout
 {
@@ -24,6 +25,14 @@ ColumnLayout
         Layout.fillWidth: true
         Layout.fillHeight: true
         Layout.topMargin: 20
+        Layout.bottomMargin: 10
+    }
+
+    Cura.SecondaryButton
+    {
+        text: catalog.i18nc("@button", "Show more results")
+        onClicked: ThingiService.addSearchPage()
+        Layout.leftMargin: 20
         Layout.bottomMargin: 20
     }
 }

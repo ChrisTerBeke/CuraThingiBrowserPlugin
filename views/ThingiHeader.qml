@@ -37,6 +37,8 @@ Rectangle
             placeholderText: "Search for things..."
             Layout.alignment: Qt.AlignCenter
             Layout.preferredWidth: parent.width / 2
+            onAccepted: ThingiService.search(thingSearchField.text)
+            selectByMouse: true
         }
 
         Cura.PrimaryButton
