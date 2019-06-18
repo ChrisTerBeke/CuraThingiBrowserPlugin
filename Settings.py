@@ -9,7 +9,11 @@ class Settings:
 
     # Text shown in Cura's extension menu.
     MENU_TEXT = "Browse Thingiverse"
-
-    THINGIVERSE_API_TOKEN = "d1057e7ec3da66ac1b81f8632606ca0a"
     
+    # Thingiverse API options
+    THINGIVERSE_API_TOKEN = "d1057e7ec3da66ac1b81f8632606ca0a"
     THINGIVERSE_API_PER_PAGE = 20
+    
+    # Google Analytics API options
+    ANALYTICS_ID = "UA-16646729-7"
+    ANALYTICS_CLIENT_ID_PREFERENCES_KEY = "thingibrowser/client_id"

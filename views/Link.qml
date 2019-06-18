@@ -17,6 +17,9 @@ Label
     MouseArea
     {
         anchors.fill: parent
-        onClicked: Qt.openUrlExternally(link.url)
+        onClicked: {
+            Qt.openUrlExternally(link.url)
+            Analytics.trackEvent("external_url", "link_clicked")
+        }
     }
 }

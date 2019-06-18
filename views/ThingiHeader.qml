@@ -37,14 +37,20 @@ Rectangle
             placeholderText: "Search for things..."
             Layout.alignment: Qt.AlignCenter
             Layout.preferredWidth: parent.width / 2
-            onAccepted: ThingiService.search(thingSearchField.text)
+            onAccepted: {
+                ThingiService.search(thingSearchField.text)
+                Analytics.trackEvent("search_field", "enter_pressed")
+            }
             selectByMouse: true
         }
 
         Cura.PrimaryButton
         {
             text: "Search"
-            onClicked: ThingiService.search(thingSearchField.text)
+            onClicked: {
+                ThingiService.search(thingSearchField.text)
+                Analytics.trackEvent("search_field", "button_clicked")
+            }
             Layout.alignment: Qt.AlignCenter
         }
 

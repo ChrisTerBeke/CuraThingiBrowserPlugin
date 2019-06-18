@@ -46,7 +46,10 @@ ListView
             Cura.PrimaryButton
             {
                 text: catalog.i18nc("@button", "Add to build plate")
-                onClicked: ThingiService.downloadThingFile(modelData.id)
+                onClicked: {
+                    ThingiService.downloadThingFile(modelData.id)
+                    Analytics.trackEvent("add_to_build_plate", "button_clicked")
+                }
                 Layout.rightMargin: 20
                 tooltip: "Import this file onto the build plate"
             }
