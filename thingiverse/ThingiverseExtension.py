@@ -8,10 +8,10 @@ from PyQt5.QtCore import QObject
 from UM.Extension import Extension
 from UM.PluginRegistry import PluginRegistry
 from cura.CuraApplication import CuraApplication
-from thingiverse.Analytics import Analytics
 
 from ..Settings import Settings
 from .ThingiverseService import ThingiverseService
+from .Analytics import Analytics
 
 
 class ThingiverseExtension(Extension):

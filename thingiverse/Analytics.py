@@ -1,13 +1,13 @@
 import uuid
 from urllib.parse import urlencode
-
-import requests
 from typing import Dict
+import requests
 
 from PyQt5.QtCore import pyqtSlot, QObject
 
-from Settings import Settings
 from cura.CuraApplication import CuraApplication
+
+from ..Settings import Settings
 
 
 class Analytics(QObject):
