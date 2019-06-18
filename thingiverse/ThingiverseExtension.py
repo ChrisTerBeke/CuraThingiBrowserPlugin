@@ -8,6 +8,7 @@ from PyQt5.QtCore import QObject
 from UM.Extension import Extension
 from UM.PluginRegistry import PluginRegistry
 from cura.CuraApplication import CuraApplication
+from thingiverse.Analytics import Analytics
 
 from ..Settings import Settings
 from .ThingiverseService import ThingiverseService
@@ -23,6 +24,9 @@ class ThingiverseExtension(Extension):
         
         # The API client that we do all calls to Thingiverse with.
         self._service = ThingiverseService()  # type: ThingiverseService
+        
+        # The API client that will talk to Google Analytics.
+        self._analytics = Analytics()  # type: Analytics
         
         # Show some designs when opening the popup for the first time.
         self._service.search("cube")
@@ -54,8 +58,10 @@ class ThingiverseExtension(Extension):
         path = os.path.join(plugin_path, "views", qml_file_path)
     
         # Create the dialog component from a QML file.
-        dialog = CuraApplication.getInstance().createQmlComponent(path, {"ThingiService": self._service})
+        dialog = CuraApplication.getInstance().createQmlComponent(path, {
+            "ThingiService": self._service,
+            "Analytics": self._analytics
+        })
         if not dialog:
             raise Exception("Failed to create Thingiverse dialog")
-    
         return dialog

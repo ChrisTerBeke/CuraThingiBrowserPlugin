@@ -23,6 +23,10 @@ ColumnLayout
         width: parent.width
         visible: !ThingiService.hasActiveThing
         Layout.fillHeight: true
+
+        onVisibleChanged: {
+            Analytics.trackScreen("search")
+        }
     }
 
     // the details page
@@ -33,5 +37,9 @@ ColumnLayout
         thingFiles: ThingiService.activeThingFiles
         visible: ThingiService.hasActiveThing
         Layout.fillHeight: true
+
+        onVisibleChanged: {
+            Analytics.trackScreen("details")
+        }
     }
 }

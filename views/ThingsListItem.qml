@@ -53,7 +53,10 @@ Item
         Cura.PrimaryButton
         {
             text: catalog.i18nc("@button", "Details")
-            onClicked: ThingiService.showThingDetails(thing.id)
+            onClicked: {
+                Analytics.trackEvent("more_details", "button_clicked")
+                ThingiService.showThingDetails(thing.id)
+            }
             Layout.rightMargin: 20
         }
     }

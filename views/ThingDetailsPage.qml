@@ -22,7 +22,10 @@ ColumnLayout
     Cura.SecondaryButton
     {
         text: catalog.i18nc("@button", "Back to results")
-        onClicked: ThingiService.hideThingDetails()
+        onClicked: {
+            ThingiService.hideThingDetails()
+            Analytics.trackEvent("back_to_results", "button_clicked")
+        }
         Layout.leftMargin: 20
         Layout.topMargin: 10
         Layout.bottomMargin: 10
