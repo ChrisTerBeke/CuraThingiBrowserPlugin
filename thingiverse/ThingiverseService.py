@@ -4,6 +4,7 @@ import tempfile
 from typing import List, Optional, Dict
 
 from PyQt5.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot, QUrl
+from PyQt5.QtWidgets import QMessageBox
 
 from cura.CuraApplication import CuraApplication
 from .ThingiverseApiClient import ThingiverseApiClient, JSONObject
@@ -13,7 +14,7 @@ class ThingiverseService(QObject):
     """
     The ThingiverseService uses the API client to serve thingiverse content to the UI.
     """
-    
+
     # Signal triggered when new things are found.
     thingsChanged = pyqtSignal()
     
@@ -25,7 +26,7 @@ class ThingiverseService(QObject):
     
     def __init__(self, parent = None):
         super().__init__(parent)
-        
+
         # Hold the things found in search results.
         self._things = []  # type: List[JSONObject]
         self._search_page = 1  # type: int
@@ -44,7 +45,6 @@ class ThingiverseService(QObject):
         Get a list of found things. Updated when performing a search.
         :return: The things.
         """
-        # TODO: figure out why simply return self._things doesn't pass the class properties
         return [thing.__dict__ for thing in self._things]
 
     @pyqtProperty("QVariant", notify = activeThingChanged)
@@ -53,7 +53,6 @@ class ThingiverseService(QObject):
         Get the current active thing details.
         :return: The thing.
         """
-        # TODO: figure out why simply return self._thing_details doesn't pass the class properties
         return self._thing_details.__dict__ if self._thing_details else None
 
     @pyqtProperty("QVariantList", notify = activeThingFilesChanged)
@@ -62,7 +61,6 @@ class ThingiverseService(QObject):
         Get the current active thing files.
         :return: The thing files.
         """
-        # TODO: figure out why simply return self._things doesn't pass the class properties
         return [files.__dict__ for files in self._thing_files]
 
     @pyqtProperty(bool, notify = activeThingChanged)
@@ -84,7 +82,8 @@ class ThingiverseService(QObject):
         self.hideThingDetails()
         self._search_page = 1
         self._search_terms = search_terms  # store search terms so we can append with pagination
-        self._api_client.search(self._search_terms, self._onSearchFinished, page = self._search_page)
+        self._api_client.search(self._search_terms, self._onSearchFinished, on_failed = self._onRequestFailed,
+                                page = self._search_page)
 
     @pyqtSlot(name = "addSearchPage")
     def addSearchPage(self) -> None:
@@ -93,7 +92,8 @@ class ThingiverseService(QObject):
         The search is done async and the result will be populated in self._things.
         """
         self._search_page += 1
-        self._api_client.search(self._search_terms, self._onSearchFinished, page = self._search_page)
+        self._api_client.search(self._search_terms, self._onSearchFinished, on_failed = self._onRequestFailed,
+                                page = self._search_page)
     
     @pyqtSlot(int, name = "showThingDetails")
     def showThingDetails(self, thing_id: int) -> None:
@@ -101,8 +101,8 @@ class ThingiverseService(QObject):
         Get and show the details of a single thing.
         :param thing_id: The ID of the thing.
         """
-        self._api_client.getThing(thing_id, self._onThingDetailsFinished)
-        self._api_client.getThingFiles(thing_id, self._onThingFilesFinished)
+        self._api_client.getThing(thing_id, self._onThingDetailsFinished, on_failed = self._onRequestFailed)
+        self._api_client.getThingFiles(thing_id, self._onThingFilesFinished, on_failed = self._onRequestFailed)
 
     @pyqtSlot(name = "hideThingDetails")
     def hideThingDetails(self) -> None:
@@ -137,7 +137,8 @@ class ThingiverseService(QObject):
         self._thing_files = thing_files
         self.activeThingFilesChanged.emit()
 
-    def _onDownloadFinished(self, file_bytes: bytes) -> None:
+    @staticmethod
+    def _onDownloadFinished(file_bytes: bytes) -> None:
         """
         Callback to receive the file on.
         :param file_bytes: The file as bytes.
@@ -161,3 +162,16 @@ class ThingiverseService(QObject):
         """
         self._things = []
         self.thingsChanged.emit()
+
+    @staticmethod
+    def _onRequestFailed(error: Optional[JSONObject] = None) -> None:
+        """
+        Callback for when a request failed.
+        :param error: An optional error object that was returned by the Thingiverse API.
+        """
+        mb = QMessageBox()
+        mb.setIcon(QMessageBox.Critical)
+        mb.setWindowTitle("Oh no!")
+        mb.setText("Thingiverse return an error: {}.".format(error.error if error else "Unknown"))
+        mb.setDetailedText(str(error.__dict__) if error else "")
+        mb.exec()

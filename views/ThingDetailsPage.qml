@@ -18,6 +18,9 @@ ColumnLayout
     // the files for the active thing
     property var thingFiles: []
 
+    // hide the whole page if no thing is actually set
+    visible: thing != undefined
+
     // button to navigate back to the search results page
     Cura.SecondaryButton
     {
