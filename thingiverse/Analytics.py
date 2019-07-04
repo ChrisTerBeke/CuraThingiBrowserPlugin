@@ -42,6 +42,7 @@ class Analytics(QObject):
             "v": 1,
             "tid": Settings.ANALYTICS_ID,
             "cid": self._client_id,
+            "av": Settings.VERSION
         }
         requests.post("https://www.google-analytics.com/collect?{}".format(urlencode({**params, **data})),
                       headers = {"User-Agent": self._user_agent})

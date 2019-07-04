@@ -4,6 +4,9 @@
 
 class Settings:
     
+    # The plugin version
+    VERSION = "1.1.2"
+    
     # Plugin name displayed in several location.
     DISPLAY_NAME = "Thingiverse"
 
