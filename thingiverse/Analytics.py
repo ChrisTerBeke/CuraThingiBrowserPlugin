@@ -36,7 +36,7 @@ class Analytics(QObject):
     @pyqtSlot(str, str, name="trackEvent")
     def trackEvent(self, category: str, event_name: str) -> None:
         self._send({"t": "event", "ec": category, "ea": event_name, "ev": 0})
-    
+
     def _send(self, data: Dict[str, any]):
         params = {
             "v": 1,
@@ -44,5 +44,6 @@ class Analytics(QObject):
             "cid": self._client_id,
             "av": Settings.VERSION
         }
+        headers = {"User-Agent": self._user_agent}
         requests.post("https://www.google-analytics.com/collect?{}".format(urlencode({**params, **data})),
-                      headers = {"User-Agent": self._user_agent})
+                      headers=headers)

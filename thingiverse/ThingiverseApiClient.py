@@ -22,16 +22,16 @@ class JSONObject(QObject):
 
 class ThingiverseApiClient:
     """ Client for interacting with the Thingiverse API. """
-    
+
     # API constants.
     _root_url = "https://api.thingiverse.com"
     _token = Settings.THINGIVERSE_API_TOKEN
-    
+
     def __init__(self) -> None:
-        
+
         # Re-usable network manager.
         self._manager = QNetworkAccessManager()
-        
+
         # Prevent auto-removing running callbacks by the Python garbage collector.
         self._anti_gc_callbacks = []  # type: List[Callable[[], None]]
 
@@ -46,7 +46,7 @@ class ThingiverseApiClient:
         url = "{}/things/{}".format(self._root_url, thing_id)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed)
-        
+
     def getThingFiles(self, thing_id: int, on_finished: Callable[[List[JSONObject]], Any],
                       on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
         """
@@ -58,7 +58,7 @@ class ThingiverseApiClient:
         url = "{}/things/{}/files".format(self._root_url, thing_id)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed)
-        
+
     def downloadThingFile(self, file_id: int, on_finished: Callable[[bytes], Any]) -> None:
         """
         Download a thing file by its ID.
@@ -67,7 +67,7 @@ class ThingiverseApiClient:
         """
         url = "{}/files/{}/download".format(self._root_url, file_id)
         reply = self._manager.get(self._createEmptyRequest(url))
-        
+
         # We use a custom parse function for this API call because the response is not a JSON model.
         def parse() -> None:
             result = bytes(reply.readAll())
@@ -77,7 +77,7 @@ class ThingiverseApiClient:
 
         self._anti_gc_callbacks.append(parse)
         reply.finished.connect(parse)
-    
+
     def search(self, search_terms: str, on_finished: Callable[[List[JSONObject]], Any],
                on_failed: Optional[Callable[[JSONObject], Any]] = None, page: int = 1) -> None:
         """
@@ -98,7 +98,7 @@ class ThingiverseApiClient:
         :param url: The full URL to do the request on.
         :return: The QNetworkRequest.
         """
-        request = QNetworkRequest(QUrl(url))
+        request = QNetworkRequest(QUrl().fromUserInput(url))
         request.setHeader(QNetworkRequest.ContentTypeHeader, content_type)
         request.setAttribute(QNetworkRequest.RedirectPolicyAttribute, True)  # file downloads reply with a 302 first
         request.setRawHeader(b"Authorization", "Bearer {}".format(self._token).encode())
@@ -118,7 +118,7 @@ class ThingiverseApiClient:
         except (UnicodeDecodeError, JSONDecodeError, ValueError) as err:
             Logger.logException("e", "Could not parse the API response: %s", err)
             return status_code, None
-    
+
     def _addCallback(self, reply: QNetworkReply, on_finished: Union[Callable[[JSONObject], Any],
                                                                     Callable[[List[JSONObject]], Any]],
                      on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
@@ -136,6 +136,6 @@ class ThingiverseApiClient:
                 return on_failed(JSONObject(response))
             result = [JSONObject(item) for item in response] if isinstance(response, list) else JSONObject(response)
             on_finished(result)
-            
+
         self._anti_gc_callbacks.append(parse)
         reply.finished.connect(parse)
