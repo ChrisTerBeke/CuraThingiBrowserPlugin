@@ -27,13 +27,11 @@ class ThingiverseApiClient:
     _root_url = "https://api.thingiverse.com"
     _token = Settings.THINGIVERSE_API_TOKEN
 
-    def __init__(self) -> None:
+    # Re-usable network manager.
+    _manager = QNetworkAccessManager()
 
-        # Re-usable network manager.
-        self._manager = QNetworkAccessManager()
-
-        # Prevent auto-removing running callbacks by the Python garbage collector.
-        self._anti_gc_callbacks = []  # type: List[Callable[[], None]]
+    # Prevent auto-removing running callbacks by the Python garbage collector.
+    _anti_gc_callbacks = []  # type: List[Callable[[], None]]
 
     def getThing(self, thing_id: int, on_finished: Callable[[JSONObject], Any],
                  on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
@@ -129,11 +127,11 @@ class ThingiverseApiClient:
         :param on_finished: The callback in case the response is successful.
         """
         def parse() -> None:
-            status_code, response = self._parseReply(reply)
             self._anti_gc_callbacks.remove(parse)
-            if status_code >= 400:
+            status_code, response = self._parseReply(reply)
+            if not status_code or status_code >= 400:
                 Logger.log("w", "API returned status code {}: {}".format(status_code, response))
-                return on_failed(JSONObject(response))
+                return on_failed(JSONObject(response) if response else None)
             result = [JSONObject(item) for item in response] if isinstance(response, list) else JSONObject(response)
             on_finished(result)
 
