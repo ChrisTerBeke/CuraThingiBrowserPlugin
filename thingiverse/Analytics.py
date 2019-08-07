@@ -43,11 +43,12 @@ class Analytics(QObject):
             "v": 1,
             "tid": Settings.ANALYTICS_ID,
             "cid": self._client_id,
-            "av": Settings.VERSION
+            "av": Settings.VERSION,
+            "an": "ThingiVerse plugin"
         }
         headers = {"User-Agent": self._user_agent}
+        url = "https://www.google-analytics.com/collect?{}".format(urlencode({**params, **data}))
         try:
-            requests.post("https://www.google-analytics.com/collect?{}".format(urlencode({**params, **data})),
-                          headers=headers)
+            response = requests.post(url, headers=headers)
         except Exception as err:
             Logger.log("w", "Could not call Analytics API: %s", err)
