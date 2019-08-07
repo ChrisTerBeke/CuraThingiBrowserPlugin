@@ -1,11 +1,17 @@
 # Copyright (c) 2018 Chris ter Beke.
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
+import json
+import os
+
+
+PLUGIN_JSON_PATH = os.path.join(os.path.dirname(__file__), "plugin.json")
 
 
 class Settings:
     
     # The plugin version
-    VERSION = "1.1.2"
+    with open(PLUGIN_JSON_PATH, "r") as file:
+        VERSION = json.load(file).get("version", "1.0.0")
     
     # Plugin name displayed in several location.
     DISPLAY_NAME = "Thingiverse"

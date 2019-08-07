@@ -28,9 +28,6 @@ class ThingiverseExtension(Extension):
         # The API client that will talk to Google Analytics.
         self._analytics = Analytics()  # type: Analytics
         
-        # Show some designs when opening the popup for the first time.
-        self._service.search("cube")
-        
         # The UI objects.
         self._main_dialog = None
         
@@ -45,6 +42,7 @@ class ThingiverseExtension(Extension):
         if not self._main_dialog:
             self._main_dialog = self._createDialog("Thingiverse.qml")
         self._main_dialog.show()
+        self._service.search("cube")
 
     def _createDialog(self, qml_file_path: str) -> Optional[QObject]:
         """

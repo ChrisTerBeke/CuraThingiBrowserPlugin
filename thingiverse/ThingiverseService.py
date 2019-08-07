@@ -172,7 +172,9 @@ class ThingiverseService(QObject):
         mb = QMessageBox()
         mb.setIcon(QMessageBox.Critical)
         mb.setWindowTitle("Oh no!")
-        error_message = error.error if error.error else error if error else "Unknown"
+        error_message = "Unknown"
+        if error:
+            error_message = error.error if hasattr(error, "error") else error
         mb.setText("Thingiverse returned an error: {}.".format(error_message))
         mb.setDetailedText(str(error.__dict__) if error else "")
         mb.exec()
