@@ -5,6 +5,7 @@ import requests
 
 from PyQt5.QtCore import pyqtSlot, QObject
 
+from UM.Logger import Logger
 from cura.CuraApplication import CuraApplication
 
 from ..Settings import Settings
@@ -45,5 +46,8 @@ class Analytics(QObject):
             "av": Settings.VERSION
         }
         headers = {"User-Agent": self._user_agent}
-        requests.post("https://www.google-analytics.com/collect?{}".format(urlencode({**params, **data})),
-                      headers=headers)
+        try:
+            requests.post("https://www.google-analytics.com/collect?{}".format(urlencode({**params, **data})),
+                          headers=headers)
+        except Exception as err:
+            Logger.log("w", "Could not call Analytics API: %s", err)
