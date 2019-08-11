@@ -82,6 +82,19 @@ ColumnLayout
                 id: thingFilesList
                 model: thingFiles
             }
+
+            Label
+            {
+                id: thingFilesListEmpty
+                text: "There are no files in this Thing that can be imported in Cura."
+                visible: thingFiles.length === 0
+                font: UM.Theme.getFont("medium")
+                color: UM.Theme.getColor("text_inactive")
+                renderType: Text.NativeRendering
+                wrapMode: Label.WordWrap
+                width: detailsPage.width
+                leftPadding: 20
+            }
         }
     }
 }
