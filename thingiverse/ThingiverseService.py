@@ -1,5 +1,6 @@
 # Copyright (c) 2018 Chris ter Beke.
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
+import pathlib
 import tempfile
 from typing import List, Optional, Dict
 
@@ -38,6 +39,10 @@ class ThingiverseService(QObject):
 
         # The API client that we do all calls to Thingiverse with.
         self._api_client = ThingiverseApiClient()  # type: ThingiverseApiClient
+        
+        # Get the supported file types to filter the results on.
+        supported_file_types = CuraApplication.getInstance().getMeshFileHandler().getSupportedFileTypesRead()
+        self._supported_file_types = list(supported_file_types.keys())
 
     @pyqtProperty("QVariantList", notify=thingsChanged)
     def things(self) -> List[Dict[str, any]]:
@@ -112,14 +117,15 @@ class ThingiverseService(QObject):
         self._thing_details = None
         self.activeThingChanged.emit()
 
-    @pyqtSlot(str, name="downloadThingFile")
-    def downloadThingFile(self, file_id: int) -> None:
+    @pyqtSlot(int, str, name="downloadThingFile")
+    def downloadThingFile(self, file_id: int, file_name: str) -> None:
         """
         Download and load a thing file by it's ID.
         The downloaded object will be placed on the build plate.
         :param file_id: The ID of the file.
+        :param file_name: The name of the file.
         """
-        self._api_client.downloadThingFile(file_id, self._onDownloadFinished)
+        self._api_client.downloadThingFile(file_id, lambda data: self._onDownloadFinished(data, file_name))
 
     def _onThingDetailsFinished(self, thing: JSONObject) -> None:
         """
@@ -131,19 +137,21 @@ class ThingiverseService(QObject):
 
     def _onThingFilesFinished(self, thing_files: List[JSONObject]) -> None:
         """
-        Callback for receiving a list of thing files on.
+        Callback for receiving a list of thing files on. Filtered on supported file types of Cura.
         :param thing_files: The thing files.
         """
-        self._thing_files = thing_files
+        self._thing_files = [f for f in thing_files if pathlib.Path(f.name).suffix.lower().strip(".")
+                             in self._supported_file_types]
         self.activeThingFilesChanged.emit()
 
     @staticmethod
-    def _onDownloadFinished(file_bytes: bytes) -> None:
+    def _onDownloadFinished(file_bytes: bytes, file_name: str) -> None:
         """
         Callback to receive the file on.
         :param file_bytes: The file as bytes.
+        :param file_name: The file name.
         """
-        file = tempfile.NamedTemporaryFile(suffix=".stl", delete=False)
+        file = tempfile.NamedTemporaryFile(suffix=file_name, delete=False)
         file.write(file_bytes)
         file.close()
         CuraApplication.getInstance().readLocalFile(QUrl().fromLocalFile(file.name))

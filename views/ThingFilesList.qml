@@ -15,7 +15,6 @@ ListView
     spacing: 10
     delegate: Item
     {
-        visible: modelData.name.includes(".stl") || modelData.name.includes(".STL")
         width: parent.width
         height: visible ? childrenRect.height : 0
 
@@ -47,7 +46,7 @@ ListView
             {
                 text: catalog.i18nc("@button", "Add to build plate")
                 onClicked: {
-                    ThingiService.downloadThingFile(modelData.id)
+                    ThingiService.downloadThingFile(modelData.id, modelData.name)
                     Analytics.trackEvent("add_to_build_plate", "button_clicked")
                 }
                 Layout.rightMargin: 20
