@@ -25,6 +25,9 @@ class ThingiverseService(QObject):
     # Signal triggered when the active thing files changed.
     activeThingFilesChanged = pyqtSignal()
 
+    # Signal triggered when a file has started or stopped downloading.
+    downloadingStateChanged = pyqtSignal()
+
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -36,10 +39,11 @@ class ThingiverseService(QObject):
         # Hold the thing and thing files that we currently see the details of.
         self._thing_details = None  # type: Optional[JSONObject]
         self._thing_files = []  # type: List[JSONObject]
+        self._is_downloading = False  # type: bool
 
         # The API client that we do all calls to Thingiverse with.
         self._api_client = ThingiverseApiClient()  # type: ThingiverseApiClient
-        
+
         # Get the supported file types to filter the results on.
         supported_file_types = CuraApplication.getInstance().getMeshFileHandler().getSupportedFileTypesRead()
         self._supported_file_types = list(supported_file_types.keys())
@@ -75,6 +79,14 @@ class ThingiverseService(QObject):
         :return: True when there is an active thing, false otherwise.
         """
         return bool(self._thing_details)
+
+    @pyqtProperty(bool, notify=downloadingStateChanged)
+    def isDownloading(self) -> bool:
+        """
+        Whether there is currently a download in progress or not.
+        :return: True if currently downloading, false otherwise.
+        """
+        return self._is_downloading
 
     @pyqtSlot(str, name="search")
     def search(self, search_terms: str) -> None:
@@ -125,6 +137,8 @@ class ThingiverseService(QObject):
         :param file_id: The ID of the file.
         :param file_name: The name of the file.
         """
+        self._is_downloading = True
+        self.downloadingStateChanged.emit()
         self._api_client.downloadThingFile(file_id, lambda data: self._onDownloadFinished(data, file_name))
 
     def _onThingDetailsFinished(self, thing: JSONObject) -> None:
@@ -144,8 +158,7 @@ class ThingiverseService(QObject):
                              in self._supported_file_types]
         self.activeThingFilesChanged.emit()
 
-    @staticmethod
-    def _onDownloadFinished(file_bytes: bytes, file_name: str) -> None:
+    def _onDownloadFinished(self, file_bytes: bytes, file_name: str) -> None:
         """
         Callback to receive the file on.
         :param file_bytes: The file as bytes.
@@ -155,6 +168,8 @@ class ThingiverseService(QObject):
         file.write(file_bytes)
         file.close()
         CuraApplication.getInstance().readLocalFile(QUrl().fromLocalFile(file.name))
+        self._is_downloading = False
+        self.downloadingStateChanged.emit()
 
     def _onSearchFinished(self, things: List[JSONObject]) -> None:
         """

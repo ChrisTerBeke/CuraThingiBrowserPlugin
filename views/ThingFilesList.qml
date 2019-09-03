@@ -49,8 +49,10 @@ ListView
                     ThingiService.downloadThingFile(modelData.id, modelData.name)
                     Analytics.trackEvent("add_to_build_plate", "button_clicked")
                 }
+                busy: ThingiService.isDownloading // indicate that we're busy downloading
+                enabled: !ThingiService.isDownloading // only allow a single download at a time
                 Layout.rightMargin: 20
-                tooltip: "Import this file onto the build plate"
+                tooltip: "Place this 3D model onto the build plate"
             }
         }
     }
