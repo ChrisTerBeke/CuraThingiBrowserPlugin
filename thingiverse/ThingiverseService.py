@@ -44,7 +44,13 @@ class ThingiverseService(QObject):
         # The API client that we do all calls to Thingiverse with.
         self._api_client = ThingiverseApiClient()  # type: ThingiverseApiClient
 
-        # Get the supported file types to filter the results on.
+        # List of supported file types.
+        self._supported_file_types = []  # type: List[str]
+
+    def updateSupportedFileTypes(self) -> None:
+        """
+        Refresh the available file types (triggered when plugin window is loaded).
+        """
         supported_file_types = CuraApplication.getInstance().getMeshFileHandler().getSupportedFileTypesRead()
         self._supported_file_types = list(supported_file_types.keys())
 
