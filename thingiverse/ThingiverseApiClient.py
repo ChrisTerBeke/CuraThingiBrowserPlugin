@@ -75,18 +75,17 @@ class ThingiverseApiClient:
 
         self._anti_gc_callbacks.append(parse)
         reply.finished.connect(parse)
-
-    def search(self, search_terms: str, on_finished: Callable[[List[JSONObject]], Any],
-               on_failed: Optional[Callable[[JSONObject], Any]] = None, page: int = 1) -> None:
+        
+    def get(self, query: str, page: int, on_finished: Callable[[List[JSONObject]], Any],
+            on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
         """
-        Get things by searching.
-        :param page: Page of search results.
-        :param search_terms: The terms to search with.
+        Get things by query.
+        :param query: The things to get.
+        :param page: Page number of query results (for pagination).
         :param on_finished: Callback method to receive the async result on.
         :param on_failed: Callback method to receive failed request on.
         """
-        url = "{}/search/{}?per_page={}&page={}".format(
-                self._root_url, search_terms, Settings.THINGIVERSE_API_PER_PAGE, page)
+        url = "{}/{}?per_page={}&page={}".format(self._root_url, query, Settings.THINGIVERSE_API_PER_PAGE, page)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed)
 

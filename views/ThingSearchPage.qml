@@ -33,7 +33,7 @@ ColumnLayout
         text: catalog.i18nc("@button", "Show more results")
         visible: ThingiService.things.length > 0
         onClicked: {
-            ThingiService.addSearchPage()
+            ThingiService.addPage()
             Analytics.trackEvent("show_more_results", "button_clicked")
         }
         Layout.leftMargin: 20

@@ -31,10 +31,10 @@ class ThingiverseService(QObject):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        # Hold the things found in search results.
+        # Hold the things found in query results.
         self._things = []  # type: List[JSONObject]
-        self._search_page = 1  # type: int
-        self._search_terms = ""  # type: str
+        self._query = ""  # type: str
+        self._query_page = 1  # type: int
 
         # Hold the thing and thing files that we currently see the details of.
         self._thing_details = None  # type: Optional[JSONObject]
@@ -95,28 +95,45 @@ class ThingiverseService(QObject):
         return self._is_downloading
 
     @pyqtSlot(str, name="search")
-    def search(self, search_terms: str) -> None:
+    def search(self, search_term: str) -> None:
         """
-        Search for things by search terms.
-        The search is done async and the result will be populated in self._things.
-        :param search_terms: The search terms separated by a space.
+        Search for things by search term.
+        :param search_term: What to search for.
         """
-        self._clearSearchResults()
-        self.hideThingDetails()
-        self._search_page = 1
-        self._search_terms = search_terms  # store search terms so we can append with pagination
-        self._api_client.search(self._search_terms, self._onSearchFinished, on_failed=self._onRequestFailed,
-                                page=self._search_page)
+        self._executeQuery("search/{}".format(search_term))
 
-    @pyqtSlot(name="addSearchPage")
-    def addSearchPage(self) -> None:
+    @pyqtSlot(name="getPopular")
+    def getPopular(self) -> None:
+        """
+        Get the most popular things.
+        The result is async and will be populated in self._things.
+        """
+        self._executeQuery("popular")
+
+    @pyqtSlot(name="getFeatured")
+    def getFeatured(self) -> None:
+        """
+        Get the featured things.
+        The result is async and will be populated in self._things.
+        """
+        self._executeQuery("featured")
+
+    @pyqtSlot(name="getNewest")
+    def getNewest(self) -> None:
+        """
+        Get the newest things.
+        The result is async and will be populated in self._things.
+        """
+        self._executeQuery("newest")
+
+    @pyqtSlot(name="addPage")
+    def addPage(self) -> None:
         """
         Append search Thing list with the next page of results.
         The search is done async and the result will be populated in self._things.
         """
-        self._search_page += 1
-        self._api_client.search(self._search_terms, self._onSearchFinished, on_failed=self._onRequestFailed,
-                                page=self._search_page)
+        self._query_page += 1
+        self._executeQuery()
 
     @pyqtSlot(int, name="showThingDetails")
     def showThingDetails(self, thing_id: int) -> None:
@@ -146,6 +163,18 @@ class ThingiverseService(QObject):
         self._is_downloading = True
         self.downloadingStateChanged.emit()
         self._api_client.downloadThingFile(file_id, lambda data: self._onDownloadFinished(data, file_name))
+
+    def _executeQuery(self, new_query: Optional[str] = None) -> None:
+        """
+        Internal function to query the API for things.
+        :param new_query: Perform a new query instead of adding a new page to the existing one.
+        """
+        if new_query:
+            self._query = new_query
+            self._clearSearchResults()
+            self._query_page = 1
+        self._api_client.get(self._query, page=self._query_page, on_finished=self._onQueryFinished,
+                             on_failed=self._onRequestFailed)
 
     def _onThingDetailsFinished(self, thing: JSONObject) -> None:
         """
@@ -177,7 +206,7 @@ class ThingiverseService(QObject):
         self._is_downloading = False
         self.downloadingStateChanged.emit()
 
-    def _onSearchFinished(self, things: List[JSONObject]) -> None:
+    def _onQueryFinished(self, things: List[JSONObject]) -> None:
         """
         Callback for receiving search results on.
         :param things: The found things.
@@ -190,6 +219,8 @@ class ThingiverseService(QObject):
         Clear all Thing search results.
         """
         self._things = []
+        self._query_page = 1
+        self.hideThingDetails()
         self.thingsChanged.emit()
 
     @staticmethod

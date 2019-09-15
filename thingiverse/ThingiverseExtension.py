@@ -43,7 +43,7 @@ class ThingiverseExtension(Extension):
             self._main_dialog = self._createDialog("Thingiverse.qml")
         self._main_dialog.show()
         self._service.updateSupportedFileTypes()
-        self._service.search("cube")
+        self._service.search("ultimaker")
 
     def _createDialog(self, qml_file_path: str) -> Optional[QObject]:
         """

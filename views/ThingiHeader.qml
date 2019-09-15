@@ -36,7 +36,7 @@ Rectangle
             id: thingSearchField
             placeholderText: "Search for things..."
             Layout.alignment: Qt.AlignCenter
-            Layout.preferredWidth: parent.width / 2
+            Layout.preferredWidth: parent.width / 4
             onAccepted: {
                 ThingiService.search(thingSearchField.text)
                 Analytics.trackEvent("search_field", "enter_pressed")
@@ -56,7 +56,38 @@ Rectangle
 
         Item
         {
-            Layout.fillWidth: true
+            Layout.fillWidth: true // create some space between the search section and the other buttons
+        }
+
+        Cura.SecondaryButton
+        {
+            text: "Popular"
+            onClicked: {
+                ThingiService.getPopular()
+                Analytics.trackEvent("get_popular", "button_clicked")
+            }
+            Layout.alignment: Qt.AlignCenter
+        }
+
+        Cura.SecondaryButton
+        {
+            text: "Featured"
+            onClicked: {
+                ThingiService.getFeatured()
+                Analytics.trackEvent("get_featured", "button_clicked")
+            }
+            Layout.alignment: Qt.AlignCenter
+        }
+
+        Cura.SecondaryButton
+        {
+            text: "Newest"
+            onClicked: {
+                ThingiService.getNewest()
+                Analytics.trackEvent("get_newest", "button_clicked")
+            }
+            Layout.alignment: Qt.AlignCenter
+            Layout.rightMargin: 20 // we need some padding from the right edge of the window
         }
     }
 }
