@@ -21,5 +21,7 @@ Label
             Qt.openUrlExternally(link.url)
             Analytics.trackEvent("external_url", "link_clicked")
         }
+        hoverEnabled: true
+		cursorShape: Qt.PointingHandCursor
     }
 }
