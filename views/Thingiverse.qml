@@ -33,32 +33,14 @@ Window
     {
         anchors.fill: parent
         focus: true
-
         onClicked: {
             focus = true
         }
-
-        // hot-reload the contenst when pressing <-
-        Keys.onPressed: {
-            if (event.key == Qt.Key_Left) {
-                loader.reload()
-            }
-        }
     }
 
-    // we use a Loader to be able to hot-reload this content during development
-    Loader
+    ThingiMain
     {
-        id: loader
-        width: parent.width
+    	width: parent.width
         height: parent.height
-        source: "ThingiMain.qml"
-
-        // trigger a reload and clear the cache
-        function reload() {
-            source = ""
-            CuraApplication.clearQmlCache()
-            source = "./ThingiMain.qml"
-        }
     }
 }
