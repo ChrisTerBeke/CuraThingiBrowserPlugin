@@ -15,7 +15,7 @@ ColumnLayout
         visible: ThingiService.things.length === 0
         running: true
         Layout.alignment: Qt.AlignHCenter
-        Layout.topMargin: 20
+        Layout.topMargin: (parent.height / 2) - (height / 2)
     }
 
     ThingsList
