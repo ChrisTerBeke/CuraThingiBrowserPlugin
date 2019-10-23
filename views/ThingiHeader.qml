@@ -29,6 +29,18 @@ Rectangle
             source: "thingiverse-logo-2015.png"
             Layout.leftMargin: 20
             Layout.rightMargin: 20
+
+            // make the header image clickable
+            MouseArea
+            {
+            	anchors.fill: parent
+				onClicked: {
+					ThingiService.search("ultimaker")
+            		Analytics.trackEvent("header_image", "clicked")
+				}
+				hoverEnabled: true
+				cursorShape: Qt.PointingHandCursor
+			}
         }
 
         TextField
