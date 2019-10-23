@@ -27,6 +27,8 @@ ListView
             {
                 Layout.leftMargin: 20
                 source: modelData.thumbnail
+                sourceSize.width: 75 // 75 is the thumbnail size
+                sourceSize.height: 75
             }
 
              // file name

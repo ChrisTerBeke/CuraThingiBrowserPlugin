@@ -26,6 +26,8 @@ Item
         {
             Layout.leftMargin: 20
             source: thing.thumbnail
+            sourceSize.width: 75 // 75 is the thumbnail size
+            sourceSize.height: 75
         }
 
         ColumnLayout
