@@ -82,6 +82,15 @@ Rectangle
 
         Cura.SecondaryButton
         {
+            text: "My Collections"
+            onClicked: {
+                ThingiService.getCollections()
+            }
+            Layout.alignment: Qt.AlignCenter
+        }
+
+        Cura.SecondaryButton
+        {
             text: "Popular"
             onClicked: {
                 ThingiService.getPopular()

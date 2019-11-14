@@ -18,6 +18,17 @@ ColumnLayout
         Layout.topMargin: (parent.height / 2) - (height / 2)
     }
 
+    Cura.SecondaryButton
+    {
+        text: "Back to collections"
+        onClicked: {
+            ThingiService.getCollections();
+        }
+        visible: ThingiService.fromCollection === true && ThingiService.isQuerying === false
+        Layout.leftMargin: 20
+        Layout.bottomMargin: 20
+    }
+
     ThingsList
     {
         id: thingsList

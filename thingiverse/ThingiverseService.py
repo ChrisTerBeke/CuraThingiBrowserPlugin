@@ -10,7 +10,6 @@ from PyQt5.QtWidgets import QMessageBox
 from cura.CuraApplication import CuraApplication
 from .ThingiverseApiClient import ThingiverseApiClient, JSONObject
 
-
 class ThingiverseService(QObject):
     """
     The ThingiverseService uses the API client to serve Thingiverse content to the UI.
@@ -18,6 +17,12 @@ class ThingiverseService(QObject):
 
     # Signal triggered when new things are found.
     thingsChanged = pyqtSignal()
+
+    # Signal triggered when the from collection state changed.
+    fromCollectionChanged = pyqtSignal()
+
+    # Signal triggered whne the querying state changed.
+    queryingStateChanged = pyqtSignal()
 
     # Signal triggered when the active thing changed.
     activeThingChanged = pyqtSignal()
@@ -35,6 +40,7 @@ class ThingiverseService(QObject):
         self._things = []  # type: List[JSONObject]
         self._query = ""  # type: str
         self._query_page = 1  # type: int
+        self._from_collection = False # type: bool
 
         # Hold the thing and thing files that we currently see the details of.
         self._thing_details = None  # type: Optional[JSONObject]
@@ -72,6 +78,20 @@ class ThingiverseService(QObject):
         :return: The things.
         """
         return [thing.__dict__ for thing in self._things]
+
+    @pyqtProperty(bool, notify=fromCollectionChanged)
+    def fromCollection(self) -> bool:
+        """
+        Was the last click from a collection list?
+        """
+        return self._from_collection
+
+    @pyqtProperty(bool, notify=queryingStateChanged)
+    def isQuerying(self) -> bool:
+        """
+        Get the querying state.
+        """
+        return self._is_querying
 
     @pyqtProperty("QVariant", notify=activeThingChanged)
     def activeThing(self) -> Dict[str, any]:
@@ -118,7 +138,18 @@ class ThingiverseService(QObject):
         """
         Get the current user's liked things
         """
+        if self._user_name is None or self._user_name == "":
+            return
         self._executeQuery("users/{}/likes".format(self._user_name))
+
+    @pyqtSlot(name="getCollections")
+    def getCollections(self) -> None:
+        """
+        Get the current user's collections
+        """
+        if self._user_name is None or self._user_name == "":
+            return
+        self._executeQuery("users/{}/collections".format(self._user_name))
 
     @pyqtSlot(name="getPopular")
     def getPopular(self) -> None:
@@ -153,6 +184,14 @@ class ThingiverseService(QObject):
         self._query_page += 1
         self._executeQuery()
 
+    @pyqtSlot(int, name="showCollectionDetails")
+    def showCollectionDetails(self, coll_id: int) -> None:
+        """
+        Get and show the details of a single collection.
+        :param coll_id: The ID of the colleciton.
+        """
+        self._executeQuery("/collections/{}/things".format(coll_id), from_collection=True)
+
     @pyqtSlot(int, name="showThingDetails")
     def showThingDetails(self, thing_id: int) -> None:
         """
@@ -182,7 +221,7 @@ class ThingiverseService(QObject):
         self.downloadingStateChanged.emit()
         self._api_client.downloadThingFile(file_id, lambda data: self._onDownloadFinished(data, file_name))
 
-    def _executeQuery(self, new_query: Optional[str] = None) -> None:
+    def _executeQuery(self, new_query: Optional[str] = None, from_collection: Optional[bool] = False) -> None:
         """
         Internal function to query the API for things.
         :param new_query: Perform a new query instead of adding a new page to the existing one.
@@ -191,6 +230,11 @@ class ThingiverseService(QObject):
             self._query = new_query
             self._clearSearchResults()
             self._query_page = 1
+        if self._from_collection != from_collection:
+            self._from_collection = from_collection
+            self.fromCollectionChanged.emit()
+        self._is_querying = True
+        self.queryingStateChanged.emit()
         self._api_client.get(self._query, page=self._query_page, on_finished=self._onQueryFinished,
                              on_failed=self._onRequestFailed)
 
@@ -229,6 +273,8 @@ class ThingiverseService(QObject):
         Callback for receiving search results on.
         :param things: The found things.
         """
+        self._is_querying = False
+        self.queryingStateChanged.emit()
         self._things.extend(things)
         self.thingsChanged.emit()
 
