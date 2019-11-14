@@ -44,6 +44,9 @@ class ThingiverseService(QObject):
         # The API client that we do all calls to Thingiverse with.
         self._api_client = ThingiverseApiClient()  # type: ThingiverseApiClient
 
+        self._user_name = CuraApplication.getInstance().getPreferences().getValue('ThingiBrowser/user_name')
+        CuraApplication.getInstance().getPreferences().preferenceChanged.connect(self._onPreferencesChanged)
+
         # List of supported file types.
         self._supported_file_types = []  # type: List[str]
 
@@ -53,6 +56,14 @@ class ThingiverseService(QObject):
         """
         supported_file_types = CuraApplication.getInstance().getMeshFileHandler().getSupportedFileTypesRead()
         self._supported_file_types = list(supported_file_types.keys())
+
+    def _onPreferencesChanged(self, name: str) -> None:
+        """
+        On Prefrences Changed Listener
+        """
+        if name != "ThingiBrowser/user_name":
+            return
+        self._user_name = CuraApplication.getInstance().getPreferences().getValue(name)
 
     @pyqtProperty("QVariantList", notify=thingsChanged)
     def things(self) -> List[Dict[str, any]]:
@@ -101,6 +112,13 @@ class ThingiverseService(QObject):
         :param search_term: What to search for.
         """
         self._executeQuery("search/{}".format(search_term))
+
+    @pyqtSlot(name="getLiked")
+    def getLiked(self) -> None:
+        """
+        Get the current user's liked things
+        """
+        self._executeQuery("users/{}/likes".format(self._user_name))
 
     @pyqtSlot(name="getPopular")
     def getPopular(self) -> None:

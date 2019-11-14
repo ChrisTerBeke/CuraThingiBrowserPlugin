@@ -73,6 +73,15 @@ Rectangle
 
         Cura.SecondaryButton
         {
+            text: "My Likes"
+            onClicked: {
+                ThingiService.getLiked()
+            }
+            Layout.alignment: Qt.AlignCenter
+        }
+
+        Cura.SecondaryButton
+        {
             text: "Popular"
             onClicked: {
                 ThingiService.getPopular()

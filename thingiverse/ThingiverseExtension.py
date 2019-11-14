@@ -30,9 +30,13 @@ class ThingiverseExtension(Extension):
         
         # The UI objects.
         self._main_dialog = None
-        
+        self._settings_dialog = None
+               
+        CuraApplication.getInstance().getPreferences().addPreference("ThingiBrowser/user_name", False)
+
         # Configure the 'extension' menu.
         self.setMenuName(Settings.DISPLAY_NAME)
+        self.addMenuItem(Settings.SETTINGS_MENU_TEXT, self._showSettingsWindow)
         self.addMenuItem(Settings.MENU_TEXT, self._showMainWindow)
 
     def _showMainWindow(self) -> None:
@@ -44,6 +48,14 @@ class ThingiverseExtension(Extension):
         self._main_dialog.show()
         self._service.updateSupportedFileTypes()
         self._service.search("ultimaker")
+
+    def _showSettingsWindow(self) -> None:
+        """
+        Show the settings popup window.
+        """
+        if not self._settings_dialog:
+            self._settings_dialog = self._createDialog("ThingiSettings.qml")
+        self._settings_dialog.show()
 
     def _createDialog(self, qml_file_path: str) -> Optional[QObject]:
         """
