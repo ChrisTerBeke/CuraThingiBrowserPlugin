@@ -34,19 +34,21 @@ Window
 
     ColumnLayout
     {
-        width: parent.width
+        anchors.fill: parent
+        anchors.margins: 20
 
-        RowLayout
+        GridLayout
         {
-            Layout.topMargin: 20
-            Layout.leftMargin: 20
-            Layout.rightMargin: 20
+            columns: 2
+            Layout.minimumWidth: parent.width
+            Layout.minimumHeight: parent.height - UM.Theme.getSize("toolbox_header").height
+            Layout.fillHeight: true
 
             Label
             {
                 id: lblThingiUserField
                 text: "Account Name"
-                Layout.alignment: Qt.AlignLeft
+                Layout.alignment: Qt.AlignRight | Qt.AlignTop
                 font: UM.Theme.getFont("large")
                 color: UM.Theme.getColor("text")
                 renderType: Text.NativeRendering
@@ -57,25 +59,34 @@ Window
             {
                 id: thingiUserField
                 placeholderText: "Your Account Name..."
-                text: UM.Preferences.getValue("ThingiBrowser/user_name")
-                Layout.alignment: Qt.AlignLeft
+                text: ThingiService.userName
+                Layout.alignment: Qt.AlignLeft | Qt.AlignTop
                 Layout.fillWidth: true
                 onAccepted: {
-                    UM.Preferences.saveValue("ThingiBrowser/user_name", thingiUserField.text)
+                    ThingiService.saveSetting("user_name", thingiUserField.text)
+                    thingisettings.close()
                 }
                 selectByMouse: true
             }
         }
 
-        Cura.PrimaryButton
+        RowLayout
         {
-            text: "Save"
-            onClicked: {
-                UM.Preferences.saveValue("ThingiBrowser/user_name", thingiUserField.text)
-                thingisettings.close()
+            Item
+            {
+                Layout.fillWidth: true
             }
-            Layout.rightMargin: 20
-            Layout.alignment: Qt.AlignRight
+
+            Cura.PrimaryButton
+            {
+                id: btnSave
+                text: "Save"
+                onClicked: {
+                    ThingiService.saveSetting("user_name", thingiUserField.text)
+                    thingisettings.close()
+                }
+                Layout.alignment: Qt.AlignRight
+            }
         }
     }
 }

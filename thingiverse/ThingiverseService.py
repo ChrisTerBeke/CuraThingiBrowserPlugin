@@ -21,6 +21,9 @@ class ThingiverseService(QObject):
     # Signal triggered when the from collection state changed.
     fromCollectionChanged = pyqtSignal()
 
+    # Signal triggered when user name changed.
+    userNameChanged = pyqtSignal()
+
     # Signal triggered whne the querying state changed.
     queryingStateChanged = pyqtSignal()
 
@@ -33,8 +36,10 @@ class ThingiverseService(QObject):
     # Signal triggered when a file has started or stopped downloading.
     downloadingStateChanged = pyqtSignal()
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, extension=None):
         super().__init__(parent)
+
+        self._extension = extension
 
         # Hold the things found in query results.
         self._things = []  # type: List[JSONObject]
@@ -70,6 +75,42 @@ class ThingiverseService(QObject):
         if name != "ThingiBrowser/user_name":
             return
         self._user_name = CuraApplication.getInstance().getPreferences().getValue(name)
+        self.userNameChanged.emit()
+
+    @pyqtSlot(name="openSettings")
+    def openSettings(self) -> None:
+        """
+        Open the settings window
+        """
+        if self._extension is not None:
+            self._extension.showSettingsWindow()
+
+    @pyqtProperty(str, notify=userNameChanged)
+    def userName(self) -> str:
+        """
+        User name selected
+        """
+        return self._user_name if self._user_name is not None else ""
+
+    @pyqtSlot(str, name="getSetting")
+    def getSetting(self, name: str) -> any:
+        """
+        Get a setting from preferences
+        """
+        return CuraApplication.getInstance().getPreferences().getValue('ThingiBrowser/'.name)
+
+    @pyqtSlot(str, str, name="saveSetting")
+    def setSetting(self, name: str, value: str) -> None:
+        """
+        Set a setting in preferences
+        """
+        CuraApplication.getInstance().getPreferences().setValue('ThingiBrowser/'+name, value)
+        if name == "user_name":
+            if value == "":
+                CuraApplication.getInstance().getPreferences().resetPreference('ThingiBrowser/'+name)
+            else:
+                self._user_name = value
+            self.userNameChanged.emit()
 
     @pyqtProperty("QVariantList", notify=thingsChanged)
     def things(self) -> List[Dict[str, any]]:
@@ -138,7 +179,8 @@ class ThingiverseService(QObject):
         """
         Get the current user's liked things
         """
-        if self._user_name is None or self._user_name == "":
+        if self._user_name is None:
+            self.openSettings()
             return
         self._executeQuery("users/{}/likes".format(self._user_name))
 
@@ -147,7 +189,8 @@ class ThingiverseService(QObject):
         """
         Get the current user's collections
         """
-        if self._user_name is None or self._user_name == "":
+        if self._user_name is None:
+            self.openSettings()
             return
         self._executeQuery("users/{}/collections".format(self._user_name))
 

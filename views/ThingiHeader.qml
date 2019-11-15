@@ -15,109 +15,152 @@ Rectangle
 
     width: parent.width
     Layout.fillWidth: true
-    height: UM.Theme.getSize("toolbox_header").height
+    height: UM.Theme.getSize("toolbox_header").height * 2
     color: "#f5f5f5"
 
-    RowLayout
+    GridLayout
     {
-        height: parent.height
-        width: parent.width
+        columns: 2
+        Layout.minimumWidth: parent.width
+        Layout.fillWidth: true
+        anchors.margins: 20
+        anchors.fill: parent
 
-        Image
+        RowLayout
         {
-            sourceSize.width: 100
-            source: "thingiverse-logo-2015.png"
-            Layout.leftMargin: 20
-            Layout.rightMargin: 20
+            id: topLeftCell
+            width: parent.width * 2/3
 
-            // make the header image clickable
-            MouseArea
+            Image
             {
-            	anchors.fill: parent
-				onClicked: {
-					ThingiService.search("ultimaker")
-            		Analytics.trackEvent("header_image", "clicked")
-				}
-				hoverEnabled: true
-				cursorShape: Qt.PointingHandCursor
-			}
-        }
+                sourceSize.width: 100
+                source: "thingiverse-logo-2015.png"
+                Layout.rightMargin: 20
 
-        TextField
-        {
-            id: thingSearchField
-            placeholderText: "Search for things..."
-            Layout.alignment: Qt.AlignCenter
-            Layout.preferredWidth: parent.width / 4
-            onAccepted: {
-                ThingiService.search(thingSearchField.text)
-                Analytics.trackEvent("search_field", "enter_pressed")
+                // make the header image clickable
+                MouseArea
+                {
+                    anchors.fill: parent
+                    onClicked: {
+                        ThingiService.search("ultimaker")
+                        Analytics.trackEvent("header_image", "clicked")
+                    }
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                }
             }
-            selectByMouse: true
-        }
 
-        Cura.PrimaryButton
-        {
-            text: "Search"
-            onClicked: {
-                ThingiService.search(thingSearchField.text)
-                Analytics.trackEvent("search_field", "button_clicked")
+            TextField
+            {
+                id: thingSearchField
+                placeholderText: "Search for things..."
+                Layout.alignment: Qt.AlignCenter
+                Layout.fillWidth: true
+                onAccepted: {
+                    ThingiService.search(thingSearchField.text)
+                    Analytics.trackEvent("search_field", "enter_pressed")
+                }
+                selectByMouse: true
             }
-            Layout.alignment: Qt.AlignCenter
-        }
 
-        Item
-        {
-            Layout.fillWidth: true // create some space between the search section and the other buttons
-        }
-
-        Cura.SecondaryButton
-        {
-            text: "My Likes"
-            onClicked: {
-                ThingiService.getLiked()
+            Cura.PrimaryButton
+            {
+                text: "Search"
+                onClicked: {
+                    ThingiService.search(thingSearchField.text)
+                    Analytics.trackEvent("search_field", "button_clicked")
+                }
+                Layout.alignment: Qt.AlignCenter
             }
-            Layout.alignment: Qt.AlignCenter
         }
 
-        Cura.SecondaryButton
+        RowLayout
         {
-            text: "My Collections"
-            onClicked: {
-                ThingiService.getCollections()
+            id: topRightCell
+
+            Item
+            {
+                Layout.fillWidth: true
             }
-            Layout.alignment: Qt.AlignCenter
+
+            Cura.SecondaryButton
+            {
+                text: "My Likes"
+                onClicked: {
+                    ThingiService.getLiked()
+                }
+                Layout.alignment: Qt.AlignCenter
+            }
+
+            Cura.SecondaryButton
+            {
+                text: "My Collections"
+                onClicked: {
+                    ThingiService.getCollections()
+                }
+                Layout.alignment: Qt.AlignCenter
+            }
+
+            Cura.SecondaryButton
+            {
+                iconSource: UM.Theme.getIcon("settings")
+                Layout.minimumHeight: parent.height
+                onClicked: {
+                    ThingiService.openSettings()
+                }
+                Layout.alignment: Qt.AlignCenter
+            }
+            
         }
 
-        Cura.SecondaryButton
+        RowLayout
         {
-            text: "Popular"
-            onClicked: {
-                ThingiService.getPopular()
-                Analytics.trackEvent("get_popular", "button_clicked")
+            id: bottomLeftCell
+
+            Item
+            {
+                Layout.fillWidth: true
             }
-            Layout.alignment: Qt.AlignCenter
         }
 
-        Cura.SecondaryButton
+        RowLayout
         {
-            text: "Featured"
-            onClicked: {
-                ThingiService.getFeatured()
-                Analytics.trackEvent("get_featured", "button_clicked")
-            }
-            Layout.alignment: Qt.AlignCenter
-        }
+            id: bottomRightCell
 
-        Cura.SecondaryButton
-        {
-            text: "Newest"
-            onClicked: {
-                ThingiService.getNewest()
-                Analytics.trackEvent("get_newest", "button_clicked")
+            Item 
+            {
+                Layout.fillWidth: true
             }
-            Layout.alignment: Qt.AlignCenter
-            Layout.rightMargin: 20 // we need some padding from the right edge of the window
+
+            Cura.SecondaryButton
+            {
+                text: "Popular"
+                onClicked: {
+                    ThingiService.getPopular()
+                    Analytics.trackEvent("get_popular", "button_clicked")
+                }
+                Layout.alignment: Qt.AlignCenter
+            }
+
+            Cura.SecondaryButton
+            {
+                text: "Featured"
+                onClicked: {
+                    ThingiService.getFeatured()
+                    Analytics.trackEvent("get_featured", "button_clicked")
+                }
+                Layout.alignment: Qt.AlignCenter
+            }
+
+            Cura.SecondaryButton
+            {
+                text: "Newest"
+                onClicked: {
+                    ThingiService.getNewest()
+                    Analytics.trackEvent("get_newest", "button_clicked")
+                }
+                Layout.alignment: Qt.AlignCenter
+            }
         }
     }
 }
