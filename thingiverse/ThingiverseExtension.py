@@ -23,7 +23,7 @@ class ThingiverseExtension(Extension):
         super().__init__()
         
         # The API client that we do all calls to Thingiverse with.
-        self._service = ThingiverseService(None, self)  # type: ThingiverseService
+        self._service = ThingiverseService(self)  # type: ThingiverseService
         
         # The API client that will talk to Google Analytics.
         self._analytics = Analytics()  # type: Analytics
@@ -32,8 +32,6 @@ class ThingiverseExtension(Extension):
         self._main_dialog = None
         self._settings_dialog = None
                
-        CuraApplication.getInstance().getPreferences().addPreference("ThingiBrowser/user_name", None)
-
         # Configure the 'extension' menu.
         self.setMenuName(Settings.DISPLAY_NAME)
         self.addMenuItem(Settings.MENU_TEXT, self._showMainWindow)

@@ -24,8 +24,9 @@ ColumnLayout
         onClicked: {
             ThingiService.getCollections();
         }
-        visible: ThingiService.fromCollection === true && ThingiService.isQuerying === false
+        visible: ThingiService.isFromCollection === true && ThingiService.isQuerying === false
         Layout.leftMargin: 20
+        Layout.topMargin: 10
         Layout.bottomMargin: 20
     }
 

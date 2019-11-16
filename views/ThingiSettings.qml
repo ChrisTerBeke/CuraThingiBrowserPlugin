@@ -15,10 +15,8 @@ Window
 
     // window configuration
     color: UM.Theme.getColor("main_background")
-    minimumWidth: Math.round(UM.Theme.getSize("modal_window_minimum").width)
-    minimumHeight: Math.round(UM.Theme.getSize("modal_window_minimum").height)
+    minimumWidth: Math.round(UM.Theme.getSize("license_window_minimum").width)
     width: minimumWidth
-    height: minimumHeight
 
     title: "Thingiverse Settings"
 

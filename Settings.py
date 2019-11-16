@@ -19,6 +19,10 @@ class Settings:
     # Text shown in Cura's extension menu.
     MENU_TEXT = "Browse Thingiverse"
     SETTINGS_MENU_TEXT = "Configure Settings"
+
+    # Preference Keys
+    PREFERENCE_BASE = "ThingiBrowser"
+    PREFERENCE_USER_NAME = "user_name"
     
     # Thingiverse API options
     THINGIVERSE_API_TOKEN = "d1057e7ec3da66ac1b81f8632606ca0a"
