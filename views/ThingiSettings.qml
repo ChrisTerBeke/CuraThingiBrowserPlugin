@@ -14,7 +14,7 @@ Window
     id: thingisettings
 
     // window configuration
-    color: UM.Theme.getColor("main_background")
+    color: UM.Theme.getColor("viewport_background")
     minimumWidth: Math.round(UM.Theme.getSize("license_window_minimum").width)
     width: minimumWidth
 

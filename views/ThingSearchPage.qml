@@ -27,7 +27,7 @@ ColumnLayout
         visible: ThingiService.isFromCollection === true && ThingiService.isQuerying === false
         Layout.leftMargin: 20
         Layout.topMargin: 10
-        Layout.bottomMargin: 20
+        Layout.bottomMargin: 10
     }
 
     ThingsList
