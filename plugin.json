@@ -2,6 +2,6 @@
   "name": "Thingiverse",
   "description": "Discover and import 3D files directly from Thingiverse",
   "author": "Chris ter Beke",
-  "version": "1.3.1",
+  "version": "1.4.0",
   "supported_sdk_versions": ["6.0.0", "6.1.0", "6.2.0", "6.3.0", "7.0.0"]
 }
