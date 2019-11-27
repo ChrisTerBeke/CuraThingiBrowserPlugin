@@ -16,3 +16,4 @@ Thumbs.db
 
 # IDE project files
 .idea
+.vscode/*

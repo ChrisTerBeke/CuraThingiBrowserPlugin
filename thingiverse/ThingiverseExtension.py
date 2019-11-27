@@ -23,14 +23,15 @@ class ThingiverseExtension(Extension):
         super().__init__()
         
         # The API client that we do all calls to Thingiverse with.
-        self._service = ThingiverseService()  # type: ThingiverseService
+        self._service = ThingiverseService(self)  # type: ThingiverseService
         
         # The API client that will talk to Google Analytics.
         self._analytics = Analytics()  # type: Analytics
         
         # The UI objects.
         self._main_dialog = None
-        
+        self._settings_dialog = None
+               
         # Configure the 'extension' menu.
         self.setMenuName(Settings.DISPLAY_NAME)
         self.addMenuItem(Settings.MENU_TEXT, self._showMainWindow)
@@ -44,6 +45,14 @@ class ThingiverseExtension(Extension):
         self._main_dialog.show()
         self._service.updateSupportedFileTypes()
         self._service.search("ultimaker")
+
+    def showSettingsWindow(self) -> None:
+        """
+        Show the settings popup window.
+        """
+        if not self._settings_dialog:
+            self._settings_dialog = self._createDialog("ThingiSettings.qml")
+        self._settings_dialog.show()
 
     def _createDialog(self, qml_file_path: str) -> Optional[QObject]:
         """

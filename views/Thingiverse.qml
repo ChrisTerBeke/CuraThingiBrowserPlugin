@@ -13,7 +13,7 @@ Window
     id: thingiverse
 
     // window configuration
-    color: UM.Theme.getColor("main_background")
+    color: UM.Theme.getColor("viewport_background")
     minimumWidth: Math.round(UM.Theme.getSize("modal_window_minimum").width)
     minimumHeight: Math.round(UM.Theme.getSize("modal_window_minimum").height)
     width: minimumWidth
