@@ -14,6 +14,12 @@ Label
     property color hoverColor: UM.Theme.getColor("toolbar_button_hover")
     signal clicked()
     color: UM.Theme.getColor("text")
+    font: UM.Theme.getFont("medium")
+    width: parent.width
+    Layout.fillWidth: true
+    Layout.alignment: Qt.AlignLeft | Qt.AlignCenter
+    padding: UM.Theme.getSize("default_margin").height
+
     background: Rectangle
     {
         id: background
@@ -23,11 +29,6 @@ Label
         radius: 0
         anchors.fill: parent
     }
-    font: UM.Theme.getFont("medium")
-    width: parent.width
-    Layout.fillWidth: true
-    Layout.alignment: Qt.AlignLeft | Qt.AlignCenter
-    padding: UM.Theme.getSize("default_margin").height
 
     MouseArea
     {

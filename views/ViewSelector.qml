@@ -19,7 +19,7 @@ Cura.ExpandablePopup
     contentBackgroundColor: UM.Theme.getColor("main_background")
     contentAlignment: Cura.ExpandablePopup.ContentAlignment.AlignLeft
 
-    property string labelText: "Custom Search"
+    property string labelText: "Search"
 
     function setAndToggle(selectedName) {
         viewSelector.toggleContent()

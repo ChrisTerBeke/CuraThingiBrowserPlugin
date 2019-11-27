@@ -3,20 +3,21 @@ import QtQuick.Controls 2.0
 import QtQuick.Layouts 1.3
 import UM 1.1 as UM
 import Cura 1.0 as Cura
-import QtGraphicalEffects 1.0 // For the dropshadow
 
 Button
 {
     id: configButton
     height: parent.height
     width: parent.height // make it square
+    hoverEnabled: true
 
     property color backgroundColor: UM.Theme.getColor("action_button")
     property color hoverColor: UM.Theme.getColor("toolbar_button_hover")
+
     onClicked: {
         ThingiService.openSettings()
+        Analytics.trackEvent("config_button", "clicked")
     }
-    hoverEnabled: true
 
     contentItem: Item
     {
@@ -29,7 +30,6 @@ Button
             width: UM.Theme.getSize("button_icon").width - UM.Theme.getSize("default_margin").width
             height: UM.Theme.getSize("button_icon").height - UM.Theme.getSize("default_margin").height
             color: UM.Theme.getColor("icon")
-
             sourceSize.height: height
         }
     }
@@ -39,23 +39,8 @@ Button
         id: configBackground
         height: UM.Theme.getSize("toolbox_header").height
         width: UM.Theme.getSize("toolbox_header").height
-
         radius: UM.Theme.getSize("default_radius").width
         border.color: UM.Theme.getColor("lining")
         color: configButton.hovered ? hoverColor : backgroundColor
-    }
-
-    DropShadow
-    {
-        id: shadow
-        // Don't blur the shadow
-        radius: 0
-        anchors.fill: configBackground
-        source: configBackground
-        verticalOffset: 2
-        visible: true
-        color: UM.Theme.getColor("action_button_shadow")
-        // Should always be drawn behind the background.
-        z: configBackground.z - 1
     }
 }

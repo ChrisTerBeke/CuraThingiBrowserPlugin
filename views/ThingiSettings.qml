@@ -11,16 +11,14 @@ import Cura 1.0 as Cura
 // the popup window
 Window
 {
-    id: thingisettings
+    id: thingiSettingsWindow
 
     // window configuration
-    color: UM.Theme.getColor("viewport_background")
-    minimumWidth: Math.round(UM.Theme.getSize("license_window_minimum").width)
-    width: minimumWidth
-
     title: "Thingiverse Settings"
+    color: UM.Theme.getColor("viewport_background")
+    width: 300
 
-    // area to provide un-focus option for search field
+    // area to provide un-focus option for input fields
     MouseArea
     {
         anchors.fill: parent
@@ -35,37 +33,11 @@ Window
         anchors.fill: parent
         anchors.margins: 20
 
-        GridLayout
+        ThingiSettingsItem
         {
-            columns: 2
-            Layout.minimumWidth: parent.width
-            Layout.minimumHeight: parent.height - UM.Theme.getSize("toolbox_header").height
-            Layout.fillHeight: true
-
-            Label
-            {
-                id: lblThingiUserField
-                text: "Account Name"
-                Layout.alignment: Qt.AlignRight | Qt.AlignTop
-                font: UM.Theme.getFont("large")
-                color: UM.Theme.getColor("text")
-                renderType: Text.NativeRendering
-                Layout.rightMargin: 10
-            }
-
-            TextField
-            {
-                id: thingiUserField
-                placeholderText: "Your Account Name..."
-                text: ThingiService.userName
-                Layout.alignment: Qt.AlignLeft | Qt.AlignTop
-                Layout.fillWidth: true
-                onAccepted: {
-                    ThingiService.saveSetting("user_name", thingiUserField.text)
-                    thingisettings.close()
-                }
-                selectByMouse: true
-            }
+            id: userNameSettingsItem
+            label: "Account Name"
+            value: ThingiService.userName
         }
 
         RowLayout
@@ -80,10 +52,9 @@ Window
                 id: btnSave
                 text: "Save"
                 onClicked: {
-                    ThingiService.saveSetting("user_name", thingiUserField.text)
-                    thingisettings.close()
+                    ThingiService.saveSetting("user_name", userNameSettingsItem.value)
+                    thingiSettingsWindow.close()
                 }
-                Layout.alignment: Qt.AlignRight
             }
         }
     }

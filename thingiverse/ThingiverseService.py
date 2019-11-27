@@ -2,7 +2,7 @@
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
 import pathlib
 import tempfile
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, TYPE_CHECKING
 
 from PyQt5.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot, QUrl
 from PyQt5.QtWidgets import QMessageBox
@@ -10,6 +10,10 @@ from PyQt5.QtWidgets import QMessageBox
 from cura.CuraApplication import CuraApplication
 from .ThingiverseApiClient import ThingiverseApiClient, JSONObject
 from ..Settings import Settings
+
+if TYPE_CHECKING:
+    from .ThingiverseExtension import ThingiverseExtension
+
 
 class ThingiverseService(QObject):
     """
@@ -39,14 +43,13 @@ class ThingiverseService(QObject):
 
     def __init__(self, extension: "ThingiverseExtension", parent=None):
         super().__init__(parent)
-
-        self._extension = extension # type: ThingiverseExtension
+        self._extension = extension  # type: ThingiverseExtension
 
         # Hold the things found in query results.
         self._things = []  # type: List[JSONObject]
         self._query = ""  # type: str
         self._query_page = 1  # type: int
-        self._is_from_collection = False # type: bool
+        self._is_from_collection = False  # type: bool
 
         # Hold the thing and thing files that we currently see the details of.
         self._thing_details = None  # type: Optional[JSONObject]
@@ -56,44 +59,21 @@ class ThingiverseService(QObject):
         # The API client that we do all calls to Thingiverse with.
         self._api_client = ThingiverseApiClient()  # type: ThingiverseApiClient
 
-        preferences = CuraApplication.getInstance().getPreferences()
-        user_name_pref = self._formatPreferenceSetting(Settings.PREFERENCE_USER_NAME)
-        preferences.addPreference(user_name_pref, None)
-        self._user_name = preferences.getValue(user_name_pref)
-        preferences.preferenceChanged.connect(self._onPreferencesChanged)
+        # Register plugins settings.
+        CuraApplication.getInstance().getPreferences().preferenceChanged.connect(self._onPreferencesChanged)
+        self._user_name = self._initSettings(Settings.SETTINGS_USER_NAME_PREFERENCES_KEY)
 
         # List of supported file types.
         self._supported_file_types = []  # type: List[str]
 
-    def _formatPreferenceSetting(self, name: str) -> str:
-        """
-        Format a preference key for plugin namespace.
-        :param name: Preference key
-        """
-        return "{}/{}".format(Settings.PREFERENCE_BASE, name)
-
     def updateSupportedFileTypes(self) -> None:
-        """
-        Refresh the available file types (triggered when plugin window is loaded).
-        """
+        """ Refresh the available file types (triggered when plugin window is loaded). """
         supported_file_types = CuraApplication.getInstance().getMeshFileHandler().getSupportedFileTypesRead()
         self._supported_file_types = list(supported_file_types.keys())
 
-    def _onPreferencesChanged(self, name: str) -> None:
-        """
-        On Prefrences Changed Listener.
-        :param name: Name of ThingiBrowser preference
-        """
-        if name != self._formatPreferenceSetting(Settings.PREFERENCE_USER_NAME):
-            return
-        self._user_name = CuraApplication.getInstance().getPreferences().getValue(name)
-        self.userNameChanged.emit()
-
     @pyqtSlot(name="openSettings")
     def openSettings(self) -> None:
-        """
-        Open the settings window.
-        """
+        """ Open the settings window. """
         if not self._extension:
             return
         self._extension.showSettingsWindow()
@@ -101,25 +81,22 @@ class ThingiverseService(QObject):
     @pyqtProperty(str, notify=userNameChanged)
     def userName(self) -> str:
         """
-        User name selected.
+        Get the configured username for viewing collections and likes.
+        :return: The username.
         """
         return self._user_name or ""
-
-    @pyqtSlot(str, name="getSetting")
-    def getSetting(self, name: str) -> str:
-        """
-        Get a setting from preferences.
-        """
-        return CuraApplication.getInstance().getPreferences().getValue(self._formatPreferenceSetting(name))
 
     @pyqtSlot(str, str, name="saveSetting")
     def setSetting(self, name: str, value: str) -> None:
         """
-        Set a setting in preferences.
+        Change the value of a setting.
+        :param name: The name of the setting.
+        :param value: The new value.
         """
-        pref_name = self._formatPreferenceSetting(name)
-        CuraApplication.getInstance().getPreferences().setValue(pref_name, value)
-        self.userNameChanged.emit()
+        preference_key = "{}/{}".format(Settings.PREFERENCE_KEY_BASE, name)
+        CuraApplication.getInstance().getPreferences().setValue(preference_key, value)
+        if preference_key == Settings.SETTINGS_USER_NAME_PREFERENCES_KEY:
+            self.userNameChanged.emit()
 
     @pyqtProperty("QVariantList", notify=thingsChanged)
     def things(self) -> List[Dict[str, any]]:
@@ -132,14 +109,16 @@ class ThingiverseService(QObject):
     @pyqtProperty(bool, notify=isFromCollectionChanged)
     def isFromCollection(self) -> bool:
         """
-        Was the last click from a collection list?
+        Whether the current list of results is a user collection or not.
+        :return: True if from collection, False otherwise.
         """
         return self._is_from_collection
 
     @pyqtProperty(bool, notify=queryingStateChanged)
     def isQuerying(self) -> bool:
         """
-        Get the querying state.
+        Whether we're currently waiting for an API response or not.
+        :return: True if waiting, False otherwise.
         """
         return self._is_querying
 
@@ -183,18 +162,12 @@ class ThingiverseService(QObject):
         """
         self._executeQuery("search/{}".format(search_term))
 
-    def _hasUserNameSet(self) -> None:
-        if not self._user_name:
-            self.openSettings()
-            return False
-        return True
-
     @pyqtSlot(name="getLiked")
     def getLiked(self) -> None:
         """
         Get the current user's liked things.
         """
-        if not self._hasUserNameSet():
+        if not self._checkUserNameConfigured():
             return
         self._executeQuery("users/{}/likes".format(self._user_name))
 
@@ -203,7 +176,7 @@ class ThingiverseService(QObject):
         """
         Get the current user's collections.
         """
-        if not self._hasUserNameSet():
+        if not self._checkUserNameConfigured():
             return
         self._executeQuery("users/{}/collections".format(self._user_name))
 
@@ -241,12 +214,12 @@ class ThingiverseService(QObject):
         self._executeQuery()
 
     @pyqtSlot(int, name="showCollectionDetails")
-    def showCollectionDetails(self, coll_id: int) -> None:
+    def showCollectionDetails(self, collection_id: int) -> None:
         """
         Get and show the details of a single collection.
-        :param coll_id: The ID of the colleciton.
+        :param collection_id: The ID of the collection.
         """
-        self._executeQuery("/collections/{}/things".format(coll_id), is_from_collection=True)
+        self._executeQuery("/collections/{}/things".format(collection_id), is_from_collection=True)
 
     @pyqtSlot(int, name="showThingDetails")
     def showThingDetails(self, thing_id: int) -> None:
@@ -359,3 +332,35 @@ class ThingiverseService(QObject):
         mb.setText("Thingiverse returned an error: {}.".format(error_message))
         mb.setDetailedText(str(error.__dict__) if error else "")
         mb.exec()
+
+    @staticmethod
+    def _initSettings(key: str, default_value: Optional[str] = None) -> str:
+        """
+        Initialize plugin settings in Cura's preferences.
+        :param key: Setting key.
+        :param default_value: Setting default value.
+        :return: Setting value (or default value).
+        """
+        preferences = CuraApplication.getInstance().getPreferences()
+        preferences.addPreference(key, default_value)
+        return preferences.getValue(key)
+
+    def _checkUserNameConfigured(self) -> bool:
+        """
+        Checks if the username setting was configured and open the settings window if it was not.
+        :return:
+        """
+        if not self._user_name or self._user_name == "":
+            self.openSettings()
+            return False
+        return True
+
+    def _onPreferencesChanged(self, name: str) -> None:
+        """
+        Called when a preference was changed.
+        :param name: Name of the changed preference
+        """
+        if name == Settings.SETTINGS_USER_NAME_PREFERENCES_KEY:
+            self._user_name = CuraApplication.getInstance().getPreferences().getValue(
+                    Settings.SETTINGS_USER_NAME_PREFERENCES_KEY)
+            self.userNameChanged.emit()

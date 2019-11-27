@@ -3,9 +3,9 @@ import QtQuick.Controls 2.0
 import QtQuick.Layouts 1.3
 import UM 1.1 as UM
 import Cura 1.0 as Cura
-import QtGraphicalEffects 1.0 // For the dropshadow
 
-Item {
+Item
+{
     id: searchbar
 
     RowLayout
@@ -26,7 +26,7 @@ Item {
             {
                 anchors.fill: parent
                 onClicked: {
-                    viewSelector.labelText = "Custom Search"
+                    viewSelector.labelText = "Search"
                     ThingiService.search("ultimaker")
                     Analytics.trackEvent("header_image", "clicked")
                 }
@@ -43,7 +43,7 @@ Item {
             Layout.fillWidth: true
             Layout.rightMargin: UM.Theme.getSize("default_margin").width
             onAccepted: {
-                viewSelector.labelText = "Custom Search"
+                viewSelector.labelText = "Search"
                 ThingiService.search(thingSearchField.text)
                 Analytics.trackEvent("search_field", "enter_pressed")
             }
@@ -54,7 +54,7 @@ Item {
         {
             text: "Search"
             onClicked: {
-                viewSelector.labelText = "Custom Search"
+                viewSelector.labelText = "Search"
                 ThingiService.search(thingSearchField.text)
                 Analytics.trackEvent("search_field", "button_clicked")
             }
@@ -66,7 +66,7 @@ Item {
         Rectangle
         {
             id: separatorLine
-            height: parent.height
+            height: parent.height - 2 // for some reason the parent height results in a too tall separator
             width: UM.Theme.getSize("default_lining").width
             color: UM.Theme.getColor("lining")
         }
@@ -93,19 +93,5 @@ Item {
         border.color: UM.Theme.getColor("lining")
         radius: UM.Theme.getSize("default_radius").width
         z: parent.z - 1
-    }
-
-    DropShadow
-    {
-        id: searchbarShadow
-        // Don't blur the shadow
-        radius: 0
-        anchors.fill: searchbarBackground
-        source: searchbarBackground
-        verticalOffset: 2
-        visible: true
-        color: UM.Theme.getColor("action_button_shadow")
-        // Should always be drawn behind the background.
-        z: searchbarBackground.z - 1
     }
 }

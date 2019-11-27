@@ -5,7 +5,6 @@ import QtQuick.Controls 2.0
 import QtQuick.Layouts 1.3
 import UM 1.1 as UM
 import Cura 1.0 as Cura
-import QtGraphicalEffects 1.0 // For the dropshadow
 
 // the main window header
 Item
@@ -16,8 +15,7 @@ Item
     anchors.top: parent.top
     anchors.left: parent.left
     anchors.right: parent.right
-    anchors.margins: 20
-    Layout.bottomMargin: 20
+    anchors.margins: 5
 
     ThingiSearchbar
     {
