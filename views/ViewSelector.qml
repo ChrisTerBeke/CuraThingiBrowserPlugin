@@ -66,6 +66,30 @@ Cura.ExpandablePopup
 
         ViewButton
         {
+            text: "My Things"
+            backgroundColor: UM.Theme.getColor("main_background")
+            onClicked: {
+                viewSelector.setAndToggle(text)
+                ThingiService.getMyThings()
+            }
+        }
+
+        ViewButtonSeparator { /* No Attributes Needed */ }
+
+        ViewButton
+        {
+            text: "My Makes"
+            backgroundColor: UM.Theme.getColor("main_background")
+            onClicked: {
+                viewSelector.setAndToggle(text)
+                ThingiService.getMakes()
+            }
+        }
+
+        ViewButtonSeparator { /* No Attributes Needed */ }
+
+        ViewButton
+        {
             text: "Popular"
             backgroundColor: UM.Theme.getColor("main_background")
             onClicked: {
