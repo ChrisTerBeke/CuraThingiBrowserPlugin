@@ -180,6 +180,24 @@ class ThingiverseService(QObject):
             return
         self._executeQuery("users/{}/collections".format(self._user_name))
 
+    @pyqtSlot(name="getMyThings")
+    def getMyThings(self) -> None:
+        """
+        Get the current user's published Things.
+        """
+        if not self._hasUserNameSet():
+            return
+        self._executeQuery("users/{}/things".format(self._user_name)) 
+
+    @pyqtSlot(name="getMakes")
+    def getMakes(self) -> None:
+        """
+        Get the current user's made Things.
+        """
+        if not self._hasUserNameSet():
+            return
+        self._executeQuery("users/{}/copies".format(self._user_name))  
+
     @pyqtSlot(name="getPopular")
     def getPopular(self) -> None:
         """
@@ -219,7 +237,7 @@ class ThingiverseService(QObject):
         Get and show the details of a single collection.
         :param collection_id: The ID of the collection.
         """
-        self._executeQuery("/collections/{}/things".format(collection_id), is_from_collection=True)
+        self._executeQuery("collections/{}/things".format(collection_id), is_from_collection=True)
 
     @pyqtSlot(int, name="showThingDetails")
     def showThingDetails(self, thing_id: int) -> None:
