@@ -237,7 +237,7 @@ class ThingiverseService(QObject):
         Get and show the details of a single collection.
         :param collection_id: The ID of the collection.
         """
-        self._executeQuery("/collections/{}/things".format(collection_id), is_from_collection=True)
+        self._executeQuery("collections/{}/things".format(collection_id), is_from_collection=True)
 
     @pyqtSlot(int, name="showThingDetails")
     def showThingDetails(self, thing_id: int) -> None:
