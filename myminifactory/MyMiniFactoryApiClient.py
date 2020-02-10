@@ -11,20 +11,17 @@ from ..Settings import Settings
 from ..api.APIClient import ApiClient
 from ..api.JSONObject import JSONObject
 
-class ThingiverseApiClient(ApiClient):
-    """ Client for interacting with the Thingiverse API. """
-
-    def __init__(self, user_id: str):
-        self.user_id = user_id
+class MyMiniFactoryApiClient(ApiClient):
+    """ Client for interacting with the MyMiniFactory API. """
 
     # API constants.
     @property
     def _root_url(self):
-        return "https://api.thingiverse.com"
+        return "https://www.myminifactory.com/api/v2"
 
     @property
     def _auth(self):
-        return "Bearer {}".format(Settings.THINGIVERSE_API_TOKEN).encode()
+        return None
 
     def getUserCollections(self, user_id: int, on_finished: Callable[[JSONObject], Any],
                            on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
@@ -34,27 +31,25 @@ class ThingiverseApiClient(ApiClient):
 
     def getCollection(self, collection_id: int, on_finished: Callable[[JSONObject], Any],
                       on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
-        url = "{}/collections/{}/things".format(self._root_url, collection_id)
+        url = "{}/collections/{}".format(self._root_url, collection_id)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed)
 
     def getLikes(self, user_id: int, on_finished: Callable[[JSONObject], Any],
                  on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
-        url = "{}/users/{}/likes".format(self._root_url, self._user_id)
+        url = "{}/users/{}/objects_liked".format(self._root_url, self._user_id)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed)
 
     def getUserThings(self, user_id: int, on_finished: Callable[[JSONObject], Any],
                       on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
-        url = "{}/users/{}/things".format(self._root_url, self.user_id)
+        url = "{}/users/{}/objects".format(self._root_url, self.user_id)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed)
 
     def getUserMakes(self, user_id: int, on_finished: Callable[[JSONObject], Any],
                      on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
-        url = "{}/users/{}/copies".format(self._root_url, self.user_id)
-        reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, on_failed)
+        self._addCallback(None, on_finished, on_failed)
 
     def getThing(self, thing_id: int, on_finished: Callable[[JSONObject], Any],
                  on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
@@ -64,7 +59,7 @@ class ThingiverseApiClient(ApiClient):
         :param on_finished: Callback method to receive the async result on.
         :param on_failed: Callback method to receive failed request on.
         """
-        url = "{}/things/{}".format(self._root_url, thing_id)
+        url = "{}/objects/{}".format(self._root_url, thing_id)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed)
 
@@ -76,7 +71,7 @@ class ThingiverseApiClient(ApiClient):
         :param on_finished: Callback method to receive the async result on.
         :param on_failed: Callback method to receive failed request on.
         """
-        url = "{}/things/{}/files".format(self._root_url, thing_id)
+        url = "{}/object/{}/files".format(self._root_url, thing_id)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed)
 
@@ -86,7 +81,7 @@ class ThingiverseApiClient(ApiClient):
         :param file_id: The file ID to download.
         :param on_finished: Callback method to receive the async result on as bytes.
         """
-        url = "{}/files/{}/download".format(self._root_url, file_id)
+        url = "{}/download/{}/?downloadfile={}.stl".format(self._root_url, file_id, file_id)
         reply = self._manager.get(self._createEmptyRequest(url))
 
         # We use a custom parse function for this API call because the response is not a JSON model.

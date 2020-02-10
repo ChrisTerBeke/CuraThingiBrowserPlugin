@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import QMessageBox
 from cura.CuraApplication import CuraApplication
 from .ThingiverseApiClient import ThingiverseApiClient, JSONObject
 from ..Settings import Settings
+from ..api.APIClient import ApiClient
 
 if TYPE_CHECKING:
     from .ThingiverseExtension import ThingiverseExtension
@@ -27,7 +28,7 @@ class ThingiverseService(QObject):
     isFromCollectionChanged = pyqtSignal()
 
     # Signal triggered when user name changed.
-    userNameChanged = pyqtSignal()
+    userNameChanged = pyqtSignal(str)
 
     # Signal triggered when the querying state changed.
     queryingStateChanged = pyqtSignal()
@@ -56,12 +57,13 @@ class ThingiverseService(QObject):
         self._thing_files = []  # type: List[JSONObject]
         self._is_downloading = False  # type: bool
 
-        # The API client that we do all calls to Thingiverse with.
-        self._api_client = ThingiverseApiClient()  # type: ThingiverseApiClient
-
         # Register plugins settings.
         CuraApplication.getInstance().getPreferences().preferenceChanged.connect(self._onPreferencesChanged)
         self._user_name = self._initSettings(Settings.SETTINGS_USER_NAME_PREFERENCES_KEY)
+        self.userNameChanged.connect(self._onUserNameChanged)
+
+        # The API client that we do all calls to Thingiverse with.
+        self._api_client = ThingiverseApiClient(self._user_name)  # type: ThingiverseApiClient
 
         # List of supported file types.
         self._supported_file_types = []  # type: List[str]
@@ -169,7 +171,10 @@ class ThingiverseService(QObject):
         """
         if not self._checkUserNameConfigured():
             return
-        self._executeQuery("users/{}/likes".format(self._user_name))
+        self._clearSearchResults()
+        self._api_client.getLikes(user_id = self._user_name, 
+                                  on_finished = self._onQueryFinished, 
+                                  on_failed = self._onRequestFailed)
 
     @pyqtSlot(name="getCollections")
     def getCollections(self) -> None:
@@ -178,25 +183,34 @@ class ThingiverseService(QObject):
         """
         if not self._checkUserNameConfigured():
             return
-        self._executeQuery("users/{}/collections".format(self._user_name))
+        self._clearSearchResults()
+        self._api_client.getUserCollections(self._user_name, 
+                                  on_finished = self._onQueryFinished, 
+                                  on_failed = self._onRequestFailed)
 
     @pyqtSlot(name="getMyThings")
     def getMyThings(self) -> None:
         """
         Get the current user's published Things.
         """
-        if not self._hasUserNameSet():
+        if not self.__checkUserNameConfigured():
             return
-        self._executeQuery("users/{}/things".format(self._user_name)) 
+        self._clearSearchResults()
+        self._api_client.getUserThings(self._user_name, 
+                                  on_finished = self._onQueryFinished, 
+                                  on_failed = self._onRequestFailed) 
 
     @pyqtSlot(name="getMakes")
     def getMakes(self) -> None:
         """
         Get the current user's made Things.
         """
-        if not self._hasUserNameSet():
+        if not self._checkUserNameConfigured():
             return
-        self._executeQuery("users/{}/copies".format(self._user_name))  
+        self._clearSearchResults()
+        self._api_client.getUserMakes(self._user_name, 
+                                  on_finished = self._onQueryFinished, 
+                                  on_failed = self._onRequestFailed)  
 
     @pyqtSlot(name="getPopular")
     def getPopular(self) -> None:
@@ -237,7 +251,10 @@ class ThingiverseService(QObject):
         Get and show the details of a single collection.
         :param collection_id: The ID of the collection.
         """
-        self._executeQuery("collections/{}/things".format(collection_id), is_from_collection=True)
+        self._clearSearchResults()
+        self._api_client.getCollection(collection_id, 
+                                  on_finished = self._onQueryFinished, 
+                                  on_failed = self._onRequestFailed)
 
     @pyqtSlot(int, name="showThingDetails")
     def showThingDetails(self, thing_id: int) -> None:
@@ -283,7 +300,7 @@ class ThingiverseService(QObject):
             self.isFromCollectionChanged.emit()
         self._is_querying = True
         self.queryingStateChanged.emit()
-        self._api_client.get(self._query, page=self._query_page, on_finished=self._onQueryFinished,
+        self._api_client.get(query=self._query, page=self._query_page, on_finished=self._onQueryFinished,
                              on_failed=self._onRequestFailed)
 
     def _onThingDetailsFinished(self, thing: JSONObject) -> None:
@@ -381,4 +398,7 @@ class ThingiverseService(QObject):
         if name == Settings.SETTINGS_USER_NAME_PREFERENCES_KEY:
             self._user_name = CuraApplication.getInstance().getPreferences().getValue(
                     Settings.SETTINGS_USER_NAME_PREFERENCES_KEY)
-            self.userNameChanged.emit()
+            self.userNameChanged.emit(self._user_name)
+
+    def _onUserNameChanged(self, user_name: str) -> None:
+        self._api_client.user_id = user_name
