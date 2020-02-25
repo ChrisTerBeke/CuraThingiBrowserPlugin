@@ -185,18 +185,18 @@ class ThingiverseService(QObject):
         """
         Get the current user's published Things.
         """
-        if not self._hasUserNameSet():
+        if not self._checkUserNameConfigured():
             return
-        self._executeQuery("users/{}/things".format(self._user_name)) 
+        self._executeQuery("users/{}/things".format(self._user_name))
 
     @pyqtSlot(name="getMakes")
     def getMakes(self) -> None:
         """
         Get the current user's made Things.
         """
-        if not self._hasUserNameSet():
+        if not self._checkUserNameConfigured():
             return
-        self._executeQuery("users/{}/copies".format(self._user_name))  
+        self._executeQuery("users/{}/copies".format(self._user_name))
 
     @pyqtSlot(name="getPopular")
     def getPopular(self) -> None:
