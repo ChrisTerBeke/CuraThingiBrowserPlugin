@@ -47,6 +47,7 @@ Cura.ExpandablePopup
             onClicked: {
                 viewSelector.setAndToggle(text)
                 ThingiService.getLiked()
+                Analytics.trackEvent("get_my_likes", "button_clicked")
             }
         }
 
@@ -59,6 +60,7 @@ Cura.ExpandablePopup
             onClicked: {
                 viewSelector.setAndToggle(text)
                 ThingiService.getCollections()
+                Analytics.trackEvent("get_my_collections", "button_clicked")
             }
         }
 
@@ -71,6 +73,7 @@ Cura.ExpandablePopup
             onClicked: {
                 viewSelector.setAndToggle(text)
                 ThingiService.getMyThings()
+                Analytics.trackEvent("get_my_things", "button_clicked")
             }
         }
 
@@ -83,6 +86,7 @@ Cura.ExpandablePopup
             onClicked: {
                 viewSelector.setAndToggle(text)
                 ThingiService.getMakes()
+                Analytics.trackEvent("get_my_makes", "button_clicked")
             }
         }
 
