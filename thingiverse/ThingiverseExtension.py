@@ -21,6 +21,8 @@ class ThingiverseExtension(Extension):
     
     def __init__(self) -> None:
         super().__init__()
+
+        self._cura_app = CuraApplication.getInstance()
         
         # The API client that we do all calls to Thingiverse with.
         self._service = ThingiverseService(self)  # type: ThingiverseService
@@ -34,14 +36,14 @@ class ThingiverseExtension(Extension):
                
         # Configure the 'extension' menu.
         self.setMenuName(Settings.DISPLAY_NAME)
-        self.addMenuItem(Settings.MENU_TEXT, self._showMainWindow)
+        self.addMenuItem(Settings.MENU_TEXT, self.showMainWindow)
 
-    def _showMainWindow(self) -> None:
+    def showMainWindow(self) -> None:
         """
         Show the main popup window.
         """
         if not self._main_dialog:
-            self._main_dialog = self._createDialog("Thingiverse.qml")
+            self._main_dialog = self._createComponent("Thingiverse.qml")
         self._main_dialog.show()
         self._service.updateSupportedFileTypes()
         self._service.search("ultimaker")
@@ -51,10 +53,10 @@ class ThingiverseExtension(Extension):
         Show the settings popup window.
         """
         if not self._settings_dialog:
-            self._settings_dialog = self._createDialog("ThingiSettings.qml")
+            self._settings_dialog = self._createComponent("ThingiSettings.qml")
         self._settings_dialog.show()
 
-    def _createDialog(self, qml_file_path: str) -> Optional[QObject]:
+    def _createComponent(self, qml_file_path: str) -> Optional[QObject]:
         """
         Create a dialog window
         :return: The QML dialog object.
@@ -66,7 +68,8 @@ class ThingiverseExtension(Extension):
         path = os.path.join(plugin_path, "views", qml_file_path)
     
         # Create the dialog component from a QML file.
-        dialog = CuraApplication.getInstance().createQmlComponent(path, {
+        dialog = self._cura_app.createQmlComponent(path, {
+            "ThingiExtension": self,
             "ThingiService": self._service,
             "Analytics": self._analytics
         })

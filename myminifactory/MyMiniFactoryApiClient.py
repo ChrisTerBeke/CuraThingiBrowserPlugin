@@ -23,33 +23,20 @@ class MyMiniFactoryApiClient(ApiClient):
     def _auth(self):
         return None
 
-    def getUserCollections(self, user_id: int, on_finished: Callable[[JSONObject], Any],
-                           on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
-        url = "{}/users/{}/collections".format(self._root_url, user_id)
-        reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, on_failed)
+    def getUserCollectionsUrl(self, user_id: int) -> str:
+        return "users/{}/collections".format(user_id)
 
-    def getCollection(self, collection_id: int, on_finished: Callable[[JSONObject], Any],
-                      on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
-        url = "{}/collections/{}".format(self._root_url, collection_id)
-        reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, on_failed)
+    def getCollectionUrl(self, collection_id: int) -> str:
+        return "collections/{}".format(collection_id)
 
-    def getLikes(self, user_id: int, on_finished: Callable[[JSONObject], Any],
-                 on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
-        url = "{}/users/{}/objects_liked".format(self._root_url, self._user_id)
-        reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, on_failed)
+    def getLikesUrl(self, user_id: int) -> str:
+        return "users/{}/objects_liked".format(user_id)
 
-    def getUserThings(self, user_id: int, on_finished: Callable[[JSONObject], Any],
-                      on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
-        url = "{}/users/{}/objects".format(self._root_url, self.user_id)
-        reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, on_failed)
+    def getUserThingsUrl(self, user_id: int) -> str:
+        return "users/{}/objects".format(user_id)
 
-    def getUserMakes(self, user_id: int, on_finished: Callable[[JSONObject], Any],
-                     on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
-        self._addCallback(None, on_finished, on_failed)
+    def getUserMakesUrl(self, user_id: int) -> str:
+        return None
 
     def getThing(self, thing_id: int, on_finished: Callable[[JSONObject], Any],
                  on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
@@ -93,7 +80,7 @@ class MyMiniFactoryApiClient(ApiClient):
 
         self._anti_gc_callbacks.append(parse)
         reply.finished.connect(parse)
-        
+
     def get(self, query: str, page: int, on_finished: Callable[[List[JSONObject]], Any],
             on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
         """

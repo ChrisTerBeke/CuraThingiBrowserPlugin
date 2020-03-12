@@ -23,6 +23,10 @@ class Settings:
     THINGIVERSE_API_TOKEN = "d1057e7ec3da66ac1b81f8632606ca0a"
     THINGIVERSE_API_PER_PAGE = 20
 
+    # MyMiniFactory API options
+    MYMINIFACTORY_API_TOKEN = ""
+    MYMINIFACTORY_API_PER_PAGE = 20
+
     # Plugin settings preference keys
     PREFERENCE_KEY_BASE = "thingibrowser"
     SETTINGS_USER_NAME_PREFERENCES_KEY = "{}/user_name".format(PREFERENCE_KEY_BASE)

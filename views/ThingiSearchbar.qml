@@ -4,39 +4,122 @@ import QtQuick.Layouts 1.3
 import UM 1.1 as UM
 import Cura 1.0 as Cura
 
-Item
-{
+Item {
     id: searchbar
 
-    RowLayout
-    {
-        height: parent.height
-        width: parent.width
+    RowLayout {
+        anchors.fill: parent
         spacing: 0
 
-        Image
-        {
-            sourceSize.width: 100
-            source: "thingiverse-logo-2015.png"
-            Layout.leftMargin: UM.Theme.getSize("default_margin").width
-            Layout.rightMargin: UM.Theme.getSize("default_margin").width
+        ViewSelector {
+            id: serviceSelector
+            headerRadius: 5
+            headerCornerSide: 4
+            enableHeaderShadow: false
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.margins: searchbarBackground.border.width
+            Layout.margins: searchbarBackground.border.width
 
-            // make the header image clickable
-            MouseArea
-            {
-                anchors.fill: parent
-                onClicked: {
-                    viewSelector.labelText = "Search"
-                    ThingiService.search("ultimaker")
-                    Analytics.trackEvent("header_image", "clicked")
+            property string headerImageSource: "thingiverse-logo-2015.png"
+
+            function setHeaderImageSource(value) {
+                serviceSelector.toggleContent()
+                headerImageSource = value
+            }
+
+            headerItem:  Item {
+                id: serviceSelectorHeader
+
+                Image {
+                    id: serviceSelectorImage
+                    source: serviceSelector.headerImageSource
+                    cache: false
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    fillMode: Image.PreserveAspectFit
+                    Layout.margins: UM.Theme.getSize("default_margin").width
+                            
                 }
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
+            }
+
+            contentItem: ColumnLayout {
+                id: contentContainer
+
+                ViewButton {
+                    id: thingiverseButton
+                    width: serviceSelectorHeader.width
+                    height: serviceSelectorHeader.height
+                    background: Item {
+                        Rectangle {
+                            height: parent.height
+                            width: parent.width
+                            color: UM.Theme.getColor("main_background")
+                            radius: 0
+                            anchors.fill: parent
+                        }
+
+                        Image {
+                            id: thingiverseLogo
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            fillMode: Image.PreserveAspectFit
+                            anchors.fill: parent
+                            anchors.margins: UM.Theme.getSize("default_margin").width
+                            source: "thingiverse-logo-2015.png"
+                        }
+                    }
+                    onClicked: {
+                        serviceSelector.setHeaderImageSource(thingiverseLogo.source)
+                        ThingiService.setService("Thingiverse")
+                    }
+                }
+
+                ViewButtonSeparator { /* No Attributes Needed */ }
+
+                ViewButton {
+                    id: myMiniFactoryButton
+                    width: serviceSelectorHeader.width
+                    height: serviceSelectorHeader.height
+                    background: Item {
+                        Rectangle {
+                            height: parent.height
+                            width: parent.width
+                            color: UM.Theme.getColor("main_background")
+                            radius: 0
+                            anchors.fill: parent
+                        }
+
+                        Image {
+                            id: myMiniFactoryLogo
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            fillMode: Image.PreserveAspectFit
+                            anchors.fill: parent
+                            anchors.margins: UM.Theme.getSize("default_margin").width
+                            source: "my-mini-factory-logo-dropshadow.png"
+                        }
+                    }
+                    onClicked: {
+                        serviceSelector.setHeaderImageSource(myMiniFactoryLogo.source)
+                        ThingiService.setService("MyMiniFactory")
+                    }
+                }
+            }
+
+            Component.onCompleted: {
+                contentContainer.width = serviceSelector.width + serviceSelector.anchors.margins
             }
         }
 
-        TextField
-        {
+        // Separator line
+        Rectangle {
+            height: parent.height - 2 // for some reason the parent height results in a too tall separator
+            width: UM.Theme.getSize("default_lining").width
+            color: UM.Theme.getColor("lining")
+        }
+
+        TextField {
             id: thingSearchField
             placeholderText: "Search for things..."
             Layout.alignment: Qt.AlignCenter
@@ -50,8 +133,7 @@ Item
             selectByMouse: true
         }
 
-        Cura.PrimaryButton
-        {
+        Cura.PrimaryButton {
             text: "Search"
             onClicked: {
                 viewSelector.labelText = "Search"
@@ -63,16 +145,13 @@ Item
         }
 
         // Separator line
-        Rectangle
-        {
-            id: separatorLine
+        Rectangle {
             height: parent.height - 2 // for some reason the parent height results in a too tall separator
             width: UM.Theme.getSize("default_lining").width
             color: UM.Theme.getColor("lining")
         }
 
-        ViewSelector
-        {
+        ViewSelector {
             id: viewSelector
             headerRadius: 5
             headerCornerSide: 4
@@ -84,8 +163,7 @@ Item
         }
     }
 
-    Rectangle
-    {
+    Rectangle {
         id: searchbarBackground
         height: parent.height
         width: parent.width
@@ -95,3 +173,9 @@ Item
         z: parent.z - 1
     }
 }
+
+/*##^##
+Designer {
+    D{i:0;autoSize:true;height:480;width:640}
+}
+##^##*/

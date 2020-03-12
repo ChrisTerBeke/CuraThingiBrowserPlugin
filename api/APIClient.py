@@ -51,52 +51,35 @@ class ApiClient(ABC):
     _anti_gc_callbacks = []  # type: List[Callable[[], None]]
 
     @abstractmethod
-    def getUserCollections(self, user_id: int, on_finished: Callable[[JSONObject], Any],
-                           on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
-        url = "{}/users/{}/collections".format(self._root_url, user_id)
-        reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, on_failed)
+    def getUserCollectionsUrl(self, user_id: int) -> str:
+        pass
 
     @abstractmethod
-    def getCollection(self, collection_id: int, on_finished: Callable[[JSONObject], Any],
-                      on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
-        url = "{}/collections/{}/things".format(self._root_url, collection_id)
-        reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, on_failed)
+    def getCollectionUrl(self, collection_id: int) -> str:
+        pass
 
     @abstractmethod
-    def getLikes(self, user_id: int, on_finished: Callable[[JSONObject], Any],
-                 on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
-        url = "{}/users/{}/likes".format(self._root_url, self._user_id)
-        reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, on_failed)
+    def getLikesUrl(self, user_id: int) -> str:
+        pass
 
     @abstractmethod
-    def getUserThings(self, user_id: int, on_finished: Callable[[JSONObject], Any],
-                      on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
-        url = "{}/users/{}/things".format(self._root_url, self.user_id)
-        reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, on_failed)
+    def getUserThingsUrl(self, user_id: int) -> str:
+        pass
 
     @abstractmethod
-    def getUserMakes(self, user_id: int, on_finished: Callable[[JSONObject], Any],
-                     on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
-        url = "{}/users/{}/copies".format(self._root_url, self.user_id)
-        reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, on_failed)
+    def getUserMakesUrl(self, user_id: int) -> str:
+        pass
 
     @abstractmethod
     def getThing(self, thing_id: int, on_finished: Callable[[JSONObject], Any],
-                 on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
+                 on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:        
         """
         Get a single thing by ID.
         :param thing_id: The thing ID.
         :param on_finished: Callback method to receive the async result on.
         :param on_failed: Callback method to receive failed request on.
         """
-        url = "{}/things/{}".format(self._root_url, thing_id)
-        reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, on_failed)
+        pass
 
     @abstractmethod
     def getThingFiles(self, thing_id: int, on_finished: Callable[[List[JSONObject]], Any],
@@ -107,9 +90,7 @@ class ApiClient(ABC):
         :param on_finished: Callback method to receive the async result on.
         :param on_failed: Callback method to receive failed request on.
         """
-        url = "{}/things/{}/files".format(self._root_url, thing_id)
-        reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, on_failed)
+        pass
 
     @abstractmethod
     def downloadThingFile(self, file_id: int, on_finished: Callable[[bytes], Any]) -> None:
@@ -118,19 +99,8 @@ class ApiClient(ABC):
         :param file_id: The file ID to download.
         :param on_finished: Callback method to receive the async result on as bytes.
         """
-        url = "{}/files/{}/download".format(self._root_url, file_id)
-        reply = self._manager.get(self._createEmptyRequest(url))
+        pass
 
-        # We use a custom parse function for this API call because the response is not a JSON model.
-        def parse() -> None:
-            result = bytes(reply.readAll())
-            self._anti_gc_callbacks.remove(parse)
-            on_finished_cast = cast(Callable[[bytes], Any], on_finished)
-            on_finished_cast(result)
-
-        self._anti_gc_callbacks.append(parse)
-        reply.finished.connect(parse)
-        
     @abstractmethod
     def get(self, query: str, page: int, on_finished: Callable[[List[JSONObject]], Any],
             on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
@@ -141,9 +111,7 @@ class ApiClient(ABC):
         :param on_finished: Callback method to receive the async result on.
         :param on_failed: Callback method to receive failed request on.
         """
-        url = "{}/{}?per_page={}&page={}".format(self._root_url, query, Settings.THINGIVERSE_API_PER_PAGE, page)
-        reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, on_failed)
+        pass
 
     def _createEmptyRequest(self, url: str, content_type: str = "application/json") -> QNetworkRequest:
         """
@@ -175,7 +143,8 @@ class ApiClient(ABC):
 
     def _addCallback(self, reply: QNetworkReply, on_finished: Union[Callable[[JSONObject], Any],
                                                                     Callable[[List[JSONObject]], Any]],
-                     on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
+                     on_failed: Optional[Callable[[JSONObject], Any]] = None,
+                     request_url: Optional[str] = None) -> None:
         """
         Creates a callback function so that it includes the parsing of the response into the correct model.
         The callback is added to the 'finished' signal of the reply.
@@ -186,7 +155,10 @@ class ApiClient(ABC):
             self._anti_gc_callbacks.remove(parse)
             status_code, response = self._parseReply(reply)
             if not status_code or status_code >= 400:
-                Logger.log("w", "API returned status code {}: {}".format(status_code, response))
+                url_desc = ""
+                if request_url:
+                    url_desc = " for {}".format(request_url)
+                Logger.log("w", "API returned status code {}{}: {}".format(status_code, url_desc, response))
                 return on_failed(JSONObject(response) if response else None)
             result = [JSONObject(item) for item in response] if isinstance(response, list) else JSONObject(response)
             on_finished(result)

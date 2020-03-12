@@ -14,9 +14,6 @@ from ..api.JSONObject import JSONObject
 class ThingiverseApiClient(ApiClient):
     """ Client for interacting with the Thingiverse API. """
 
-    def __init__(self, user_id: str):
-        self.user_id = user_id
-
     # API constants.
     @property
     def _root_url(self):
@@ -26,35 +23,20 @@ class ThingiverseApiClient(ApiClient):
     def _auth(self):
         return "Bearer {}".format(Settings.THINGIVERSE_API_TOKEN).encode()
 
-    def getUserCollections(self, user_id: int, on_finished: Callable[[JSONObject], Any],
-                           on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
-        url = "{}/users/{}/collections".format(self._root_url, user_id)
-        reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, on_failed)
+    def getUserCollectionsUrl(self, user_id: int) -> str:
+        return "users/{}/collections".format(user_id)
 
-    def getCollection(self, collection_id: int, on_finished: Callable[[JSONObject], Any],
-                      on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
-        url = "{}/collections/{}/things".format(self._root_url, collection_id)
-        reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, on_failed)
+    def getCollectionUrl(self, collection_id: int) -> str:
+        return "collections/{}/things".format(collection_id)
 
-    def getLikes(self, user_id: int, on_finished: Callable[[JSONObject], Any],
-                 on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
-        url = "{}/users/{}/likes".format(self._root_url, self._user_id)
-        reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, on_failed)
+    def getLikesUrl(self, user_id: int) -> str:
+        return "users/{}/likes".format(user_id)
 
-    def getUserThings(self, user_id: int, on_finished: Callable[[JSONObject], Any],
-                      on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
-        url = "{}/users/{}/things".format(self._root_url, self.user_id)
-        reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, on_failed)
+    def getUserThingsUrl(self, user_id: int) -> str:
+        return "users/{}/things".format(user_id)
 
-    def getUserMakes(self, user_id: int, on_finished: Callable[[JSONObject], Any],
-                     on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
-        url = "{}/users/{}/copies".format(self._root_url, self.user_id)
-        reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, on_failed)
+    def getUserMakesUrl(self, user_id: int) -> str:
+        return "users/{}/copies".format(user_id)
 
     def getThing(self, thing_id: int, on_finished: Callable[[JSONObject], Any],
                  on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
