@@ -2,6 +2,8 @@
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
 from typing import List, Callable, Any, Union, Dict, Tuple, Optional, cast
 
+from cura.CuraApplication import CuraApplication
+
 from PyQt5.QtCore import QUrl, QObject
 from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
 
@@ -22,6 +24,10 @@ class ThingiverseApiClient(ApiClient):
     @property
     def _auth(self):
         return "Bearer {}".format(Settings.THINGIVERSE_API_TOKEN).encode()
+
+    @property
+    def user_id(self):
+        return CuraApplication.getInstance().getPreferences().getValue(Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY)
 
     def getUserCollectionsUrl(self, user_id: int) -> str:
         return "users/{}/collections".format(user_id)

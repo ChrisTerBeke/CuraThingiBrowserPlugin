@@ -25,7 +25,6 @@ class JSONObject(QObject):
 
 class ApiClient(ABC):
     """ Client for interacting with the Thingiverse API. """
-    _user_id = None
 
     # API constants.
     @abc.abstractproperty
@@ -36,13 +35,9 @@ class ApiClient(ABC):
     def _auth(self):
         return "Abstract Authentication"
 
-    @property
+    @abc.abstractproperty
     def user_id(self):
-        return self._user_id
-    
-    @user_id.setter
-    def user_id(self, user_id):
-        self._user_id = user_id
+        return None
         
     # Re-usable network manager.
     _manager = QNetworkAccessManager()

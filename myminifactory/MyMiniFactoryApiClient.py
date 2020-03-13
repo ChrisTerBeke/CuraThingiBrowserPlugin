@@ -6,6 +6,7 @@ from PyQt5.QtCore import QUrl, QObject
 from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
 
 from UM.Logger import Logger
+from cura.CuraApplication import CuraApplication
 
 from ..Settings import Settings
 from ..api.APIClient import ApiClient
@@ -22,6 +23,10 @@ class MyMiniFactoryApiClient(ApiClient):
     @property
     def _auth(self):
         return None
+
+    @property
+    def user_id(self):
+        CuraApplication.getInstance().getPreferences().getValue(Settings.MYMINIFACTORY_USER_NAME_PREFERENCES_KEY)
 
     def getUserCollectionsUrl(self, user_id: int) -> str:
         return "users/{}/collections".format(user_id)
@@ -90,6 +95,6 @@ class MyMiniFactoryApiClient(ApiClient):
         :param on_finished: Callback method to receive the async result on.
         :param on_failed: Callback method to receive failed request on.
         """
-        url = "{}/{}?per_page={}&page={}".format(self._root_url, query, Settings.THINGIVERSE_API_PER_PAGE, page)
+        url = "{}/{}?per_page={}&page={}&key={}".format(self._root_url, query, Settings.MYMINIFACTORY_API_PER_PAGE, page, Settings.MYMINIFACTORY_API_TOKEN)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed)

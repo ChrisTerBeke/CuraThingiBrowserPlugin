@@ -9,8 +9,7 @@ import UM 1.1 as UM
 import Cura 1.0 as Cura
 
 // the popup window
-Window
-{
+Window {
     id: thingiSettingsWindow
 
     // window configuration
@@ -19,8 +18,7 @@ Window
     width: 300
 
     // area to provide un-focus option for input fields
-    MouseArea
-    {
+    MouseArea {
         anchors.fill: parent
         focus: true
         onClicked: {
@@ -28,31 +26,33 @@ Window
         }
     }
 
-    ColumnLayout
-    {
+    ColumnLayout {
         anchors.fill: parent
         anchors.margins: 20
 
-        ThingiSettingsItem
-        {
-            id: userNameSettingsItem
-            label: "Account Name"
-            value: ThingiService.userName
+        ThingiSettingsItem {
+            id: thingiverseUserNameSettingsItem
+            label: "Thingiverse Account Name"
+            value: ThingiService.thingiverseUserName
         }
 
-        RowLayout
-        {
-            Item
-            {
+        ThingiSettingsItem {
+            id: myMiniFactoryUserNameSettingsItem
+            label: "MyMiniFactory Account Name"
+            value: ThingiService.myMiniFactoryUserName
+        }
+
+        RowLayout {
+            Item {
                 Layout.fillWidth: true
             }
 
-            Cura.PrimaryButton
-            {
+            Cura.PrimaryButton {
                 id: btnSave
                 text: "Save"
                 onClicked: {
-                    ThingiService.saveSetting("user_name", userNameSettingsItem.value)
+                    ThingiService.saveSetting("user_name", thingiverseUserNameSettingsItem.value)
+                    ThingiService.saveSetting("myminifactory_user_name", myMiniFactoryUserNameSettingsItem.value)
                     thingiSettingsWindow.close()
                 }
             }

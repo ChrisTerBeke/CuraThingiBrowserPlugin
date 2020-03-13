@@ -8,8 +8,11 @@ from PyQt5.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot, QUrl
 from PyQt5.QtWidgets import QMessageBox
 
 from cura.CuraApplication import CuraApplication
+
+from ..api.APIClient import ApiClient
 from .ThingiverseApiClient import ThingiverseApiClient
 from ..myminifactory.MyMiniFactoryApiClient import MyMiniFactoryApiClient
+
 from ..Settings import Settings
 from ..api.APIClient import ApiClient
 from ..api.JSONObject import JSONObject
@@ -58,14 +61,9 @@ class ThingiverseService(QObject):
         self._thing_details = None  # type: Optional[JSONObject]
         self._thing_files = []  # type: List[JSONObject]
         self._is_downloading = False  # type: bool
-
-        # Register plugins settings.
-        CuraApplication.getInstance().getPreferences().preferenceChanged.connect(self._onPreferencesChanged)
-        self._user_name = self._initSettings(Settings.SETTINGS_USER_NAME_PREFERENCES_KEY)
         
         # The API client that we do all calls to Thingiverse with.
-        self._api_client = ThingiverseApiClient()  # type: ThingiverseApiClient
-        #self._api_client = MyMiniFactoryApiClient()      
+        self._api_client = ThingiverseApiClient()  # type: ApiClient
 
         # List of supported file types.
         self._supported_file_types = []  # type: List[str]
@@ -90,12 +88,20 @@ class ThingiverseService(QObject):
         self._extension.showSettingsWindow()
 
     @pyqtProperty(str, notify=userNameChanged)
-    def userName(self) -> str:
+    def thingiverseUserName(self) -> str:
         """
-        Get the configured username for viewing collections and likes.
+        Get the configured Thingiverse username for viewing collections and likes.
         :return: The username.
         """
-        return self._user_name or ""
+        return CuraApplication.getInstance().getPreferences().getValue(Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY) or ""
+
+    @pyqtProperty(str, notify=userNameChanged)
+    def myMiniFactoryUserName(self) -> str:
+        """
+        Get the configured MyMiniFactory username for viewing collections and likes.
+        :return: The username.
+        """
+        return CuraApplication.getInstance().getPreferences().getValue(Settings.MYMINIFACTORY_USER_NAME_PREFERENCES_KEY) or ""
 
     @pyqtSlot(str, str, name="saveSetting")
     def setSetting(self, name: str, value: str) -> None:
@@ -106,7 +112,8 @@ class ThingiverseService(QObject):
         """
         preference_key = "{}/{}".format(Settings.PREFERENCE_KEY_BASE, name)
         CuraApplication.getInstance().getPreferences().setValue(preference_key, value)
-        if preference_key == Settings.SETTINGS_USER_NAME_PREFERENCES_KEY:
+        if preference_key == Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY or \
+           preference_key == Settings.MYMINIFACTORY_USER_NAME_PREFERENCES_KEY:
             self.userNameChanged.emit(value)
 
     @pyqtProperty("QVariantList", notify=thingsChanged)
@@ -181,7 +188,7 @@ class ThingiverseService(QObject):
         if not self._checkUserNameConfigured():
             return
         self._clearSearchResults()
-        query = self._api_client.getLikesUrl(user_id = self._user_name)
+        query = self._api_client.getLikesUrl(user_id = self.userName)
         self._executeQuery(query)
 
     @pyqtSlot(name="getCollections")
@@ -192,7 +199,7 @@ class ThingiverseService(QObject):
         if not self._checkUserNameConfigured():
             return
         self._clearSearchResults()
-        query = self._api_client.getUserCollectionsUrl(self._user_name)
+        query = self._api_client.getUserCollectionsUrl(self.userName)
         self._executeQuery(query)
 
     @pyqtSlot(name="getMyThings")
@@ -203,7 +210,7 @@ class ThingiverseService(QObject):
         if not self._checkUserNameConfigured():
             return
         self._clearSearchResults()
-        query = self._api_client.getUserThingsUrl(self._user_name)
+        query = self._api_client.getUserThingsUrl(self.userName)
         self._executeQuery(query) 
 
     @pyqtSlot(name="getMakes")
@@ -214,7 +221,7 @@ class ThingiverseService(QObject):
         if not self._checkUserNameConfigured():
             return
         self._clearSearchResults()
-        query = self._api_client.getUserMakesUrl(self._user_name)
+        query = self._api_client.getUserMakesUrl(self.userName)
         self._executeQuery(query)  
 
     @pyqtSlot(name="getPopular")
@@ -389,17 +396,7 @@ class ThingiverseService(QObject):
         Checks if the username setting was configured and open the settings window if it was not.
         :return:
         """
-        if not self._user_name or self._user_name == "":
+        if not self._api_client.user_id or self._api_client.user_id == "":
             self.openSettings()
             return False
         return True
-
-    def _onPreferencesChanged(self, name: str) -> None:
-        """
-        Called when a preference was changed.
-        :param name: Name of the changed preference
-        """
-        if name == Settings.SETTINGS_USER_NAME_PREFERENCES_KEY:
-            self._user_name = CuraApplication.getInstance().getPreferences().getValue(
-                    Settings.SETTINGS_USER_NAME_PREFERENCES_KEY)
-            self.userNameChanged.emit(self._user_name)
