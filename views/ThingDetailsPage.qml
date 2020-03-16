@@ -37,7 +37,7 @@ ColumnLayout
     Label
     {
         id: thingTitle
-        text: thing["name"]
+        text: thing.NAME
         font: UM.Theme.getFont("large")
         color: UM.Theme.getColor("text")
         renderType: Text.NativeRendering
@@ -48,8 +48,8 @@ ColumnLayout
     // link to web page
     Link
     {
-        text: thing["public_url"]
-        url: thing["public_url"]
+        text: thing.URL
+        url: thing.URL
         Layout.leftMargin: 20
         Layout.bottomMargin: 20
     }
@@ -67,7 +67,7 @@ ColumnLayout
             Label
             {
                 id: thingDescription
-                text: thing["description"]
+                text: thing.DESCRIPTION
                 font: UM.Theme.getFont("medium")
                 color: UM.Theme.getColor("text")
                 renderType: Text.NativeRendering

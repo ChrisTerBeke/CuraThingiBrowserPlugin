@@ -1,17 +1,13 @@
 # Copyright (c) 2018 Chris ter Beke.
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
-from typing import List, Callable, Any, Union, Dict, Tuple, Optional, cast
+from typing import List, Callable, Any, Union, Optional, cast
 
 from cura.CuraApplication import CuraApplication
 
-from PyQt5.QtCore import QUrl, QObject
-from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
-
-from UM.Logger import Logger
-
-from ..Settings import Settings
-from ..api.APIClient import ApiClient
-from ..api.JSONObject import JSONObject
+from ..Settings import Settings # type: ignore
+from ..api.APIClient import ApiClient # type: ignore
+from ..api.JSONObject import JSONObject # type: ignore
+from ..api.Models import Thing, ThingFile # type: ignore
 
 class ThingiverseApiClient(ApiClient):
     """ Client for interacting with the Thingiverse API. """
@@ -29,20 +25,20 @@ class ThingiverseApiClient(ApiClient):
     def user_id(self):
         return CuraApplication.getInstance().getPreferences().getValue(Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY)
 
-    def getUserCollectionsUrl(self, user_id: int) -> str:
-        return "users/{}/collections".format(user_id)
+    def getUserCollectionsUrl(self) -> str:
+        return "users/{}/collections".format(self.user_id)
 
     def getCollectionUrl(self, collection_id: int) -> str:
         return "collections/{}/things".format(collection_id)
 
-    def getLikesUrl(self, user_id: int) -> str:
-        return "users/{}/likes".format(user_id)
+    def getLikesUrl(self) -> str:
+        return "users/{}/likes".format(self.user_id)
 
-    def getUserThingsUrl(self, user_id: int) -> str:
-        return "users/{}/things".format(user_id)
+    def getUserThingsUrl(self) -> str:
+        return "users/{}/things".format(self.user_id)
 
-    def getUserMakesUrl(self, user_id: int) -> str:
-        return "users/{}/copies".format(user_id)
+    def getUserMakesUrl(self) -> str:
+        return "users/{}/copies".format(self.user_id)
 
     def getThing(self, thing_id: int, on_finished: Callable[[JSONObject], Any],
                  on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
@@ -99,3 +95,22 @@ class ThingiverseApiClient(ApiClient):
         url = "{}/{}?per_page={}&page={}".format(self._root_url, query, Settings.THINGIVERSE_API_PER_PAGE, page)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed)
+
+    @staticmethod
+    def convertJsonToThing(data: Union[JSONObject, List[JSONObject]]) -> Thing:
+        return Thing({
+            'URL': data.public_url if hasattr(data, 'public_url') else None,
+            'ID': data.id if hasattr(data, 'id') else None,
+            'NAME': data.name if hasattr(data, 'name') else None,
+            'DESCRIPTION': data.description if hasattr(data, 'description') else None,
+            'THUMBNAIL': data.thumbnail if hasattr(data, 'thumbnail') else None
+        })
+
+    @staticmethod
+    def convertJsonToThingFile(data: Union[JSONObject, List[JSONObject]]) -> ThingFile:
+        return ThingFile({
+            'URL': data.public_url if hasattr(data, 'public_url') else None,
+            'ID': data.id if hasattr(data, 'id') else None,
+            'NAME': data.name if hasattr(data, 'name') else None,
+            'THUMBNAIL': data.thumbnail if hasattr(data, 'thumbnail') else None
+        })

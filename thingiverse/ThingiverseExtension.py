@@ -70,6 +70,8 @@ class ThingiverseExtension(Extension):
         # Create the dialog component from a QML file.
         dialog = self._cura_app.createQmlComponent(path, {
             "ThingiExtension": self,
+            "THINGIVERSE_UESR_NAME_PREFERENCES_KEY": Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY,
+            "MYMINIFACTORY_USER_NAME_PREFERENCES_KEY": Settings.MYMINIFACTORY_USER_NAME_PREFERENCES_KEY,
             "ThingiService": self._service,
             "Analytics": self._analytics
         })

@@ -12,8 +12,8 @@ from UM.Logger import Logger
 import abc
 from abc import ABC, abstractmethod
 
-from ..Settings import Settings
-
+from ..Settings import Settings # type: ignore
+from ..api.Models import Thing, ThingFile # type: ignore
 
 class JSONObject(QObject):
     """ Simple class that converts a JSON object to a Python model. """
@@ -46,7 +46,7 @@ class ApiClient(ABC):
     _anti_gc_callbacks = []  # type: List[Callable[[], None]]
 
     @abstractmethod
-    def getUserCollectionsUrl(self, user_id: int) -> str:
+    def getUserCollectionsUrl(self) -> str:
         pass
 
     @abstractmethod
@@ -54,15 +54,15 @@ class ApiClient(ABC):
         pass
 
     @abstractmethod
-    def getLikesUrl(self, user_id: int) -> str:
+    def getLikesUrl(self) -> str:
         pass
 
     @abstractmethod
-    def getUserThingsUrl(self, user_id: int) -> str:
+    def getUserThingsUrl(self) -> str:
         pass
 
     @abstractmethod
-    def getUserMakesUrl(self, user_id: int) -> str:
+    def getUserMakesUrl(self) -> str:
         pass
 
     @abstractmethod
@@ -160,3 +160,13 @@ class ApiClient(ABC):
 
         self._anti_gc_callbacks.append(parse)
         reply.finished.connect(parse)
+
+    @staticmethod
+    @abstractmethod
+    def convertJsonToThing(data: Union[JSONObject, List[JSONObject]]) -> Thing:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def convertJsonToThingFile(data: Union[JSONObject, List[JSONObject]]) -> ThingFile:
+        pass

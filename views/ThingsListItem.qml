@@ -25,7 +25,7 @@ Item
         Image
         {
             Layout.leftMargin: 20
-            source: thing.thumbnail
+            source: thing.THUMBNAIL
             sourceSize.width: 75 // 75 is the thumbnail size
             sourceSize.height: 75
         }
@@ -35,7 +35,7 @@ Item
             // thing title
             Label
             {
-                text: thing.name
+                text: thing.NAME
                 color: UM.Theme.getColor("text")
                 font: UM.Theme.getFont("large")
                 elide: Text.ElideRight
@@ -46,8 +46,8 @@ Item
             // link to web page
             Link
             {
-                text: thing["public_url"]
-                url: thing["public_url"]
+                text: thing.URL
+                url: thing.URL
             }
         }
 
@@ -57,10 +57,10 @@ Item
             text: catalog.i18nc("@button", "Details")
             onClicked: {
                 Analytics.trackEvent("more_details", "button_clicked")
-                if (thing.url.indexOf("/collections/") > 0) {
-                    ThingiService.showCollectionDetails(thing.id)
+                if (thing.URL.indexOf("/collections/") > 0) {
+                    ThingiService.showCollectionDetails(thing.ID)
                 } else {
-                    ThingiService.showThingDetails(thing.id)
+                    ThingiService.showThingDetails(thing.ID)
                 }
             }
             Layout.rightMargin: 20

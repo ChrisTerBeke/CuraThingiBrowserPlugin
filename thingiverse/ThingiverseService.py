@@ -10,12 +10,15 @@ from PyQt5.QtWidgets import QMessageBox
 from cura.CuraApplication import CuraApplication
 
 from ..api.APIClient import ApiClient
+from ..api.Models import Thing, ThingFile
 from .ThingiverseApiClient import ThingiverseApiClient
 from ..myminifactory.MyMiniFactoryApiClient import MyMiniFactoryApiClient
 
 from ..Settings import Settings
 from ..api.APIClient import ApiClient
 from ..api.JSONObject import JSONObject
+
+from UM.Logger import Logger
 
 if TYPE_CHECKING:
     from .ThingiverseExtension import ThingiverseExtension
@@ -52,18 +55,21 @@ class ThingiverseService(QObject):
         self._extension = extension  # type: ThingiverseExtension
 
         # Hold the things found in query results.
-        self._things = []  # type: List[JSONObject]
+        self._things = []  # type: List[Thing]
         self._query = ""  # type: str
         self._query_page = 1  # type: int
         self._is_from_collection = False  # type: bool
 
         # Hold the thing and thing files that we currently see the details of.
-        self._thing_details = None  # type: Optional[JSONObject]
-        self._thing_files = []  # type: List[JSONObject]
+        self._thing_details = None  # type: Optional[Thing]
+        self._thing_files = []  # type: List[ThingFile]
         self._is_downloading = False  # type: bool
         
         # The API client that we do all calls to Thingiverse with.
         self._api_client = ThingiverseApiClient()  # type: ApiClient
+
+        self._initSettings(Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY, "")
+        self._initSettings(Settings.MYMINIFACTORY_USER_NAME_PREFERENCES_KEY, "")
 
         # List of supported file types.
         self._supported_file_types = []  # type: List[str]
@@ -117,7 +123,7 @@ class ThingiverseService(QObject):
             self.userNameChanged.emit(value)
 
     @pyqtProperty("QVariantList", notify=thingsChanged)
-    def things(self) -> List[Dict[str, any]]:
+    def things(self) -> List[Thing]:
         """
         Get a list of found things. Updated when performing a search.
         :return: The things.
@@ -141,15 +147,15 @@ class ThingiverseService(QObject):
         return self._is_querying
 
     @pyqtProperty("QVariant", notify=activeThingChanged)
-    def activeThing(self) -> Dict[str, any]:
+    def activeThing(self) -> Thing:
         """
         Get the current active thing details.
         :return: The thing.
         """
-        return self._thing_details.__dict__ if self._thing_details else None
+        return self._thing_details if self._thing_details else None
 
     @pyqtProperty("QVariantList", notify=activeThingFilesChanged)
-    def activeThingFiles(self) -> List[Dict[str, any]]:
+    def activeThingFiles(self) -> List[ThingFile]:
         """
         Get the current active thing files.
         :return: The thing files.
@@ -188,7 +194,7 @@ class ThingiverseService(QObject):
         if not self._checkUserNameConfigured():
             return
         self._clearSearchResults()
-        query = self._api_client.getLikesUrl(user_id = self.userName)
+        query = self._api_client.getLikesUrl()
         self._executeQuery(query)
 
     @pyqtSlot(name="getCollections")
@@ -199,7 +205,7 @@ class ThingiverseService(QObject):
         if not self._checkUserNameConfigured():
             return
         self._clearSearchResults()
-        query = self._api_client.getUserCollectionsUrl(self.userName)
+        query = self._api_client.getUserCollectionsUrl()
         self._executeQuery(query)
 
     @pyqtSlot(name="getMyThings")
@@ -210,7 +216,7 @@ class ThingiverseService(QObject):
         if not self._checkUserNameConfigured():
             return
         self._clearSearchResults()
-        query = self._api_client.getUserThingsUrl(self.userName)
+        query = self._api_client.getUserThingsUrl()
         self._executeQuery(query) 
 
     @pyqtSlot(name="getMakes")
@@ -221,7 +227,7 @@ class ThingiverseService(QObject):
         if not self._checkUserNameConfigured():
             return
         self._clearSearchResults()
-        query = self._api_client.getUserMakesUrl(self.userName)
+        query = self._api_client.getUserMakesUrl()
         self._executeQuery(query)  
 
     @pyqtSlot(name="getPopular")
@@ -319,7 +325,7 @@ class ThingiverseService(QObject):
         Callback for receiving thing details on.
         :param thing: The thing.
         """
-        self._thing_details = thing
+        self._thing_details = self._api_client.convertJsonToThing(thing)
         self.activeThingChanged.emit()
 
     def _onThingFilesFinished(self, thing_files: List[JSONObject]) -> None:
@@ -327,8 +333,11 @@ class ThingiverseService(QObject):
         Callback for receiving a list of thing files on. Filtered on supported file types of Cura.
         :param thing_files: The thing files.
         """
-        self._thing_files = [f for f in thing_files if pathlib.Path(f.name).suffix.lower().strip(".")
-                             in self._supported_file_types]
+        self._thing_files = []
+        for f in thing_files:
+            thing_file = self._api_client.convertJsonToThingFile(f)
+            if pathlib.Path(thing_file.NAME).suffix.lower().strip(".") in self._supported_file_types:
+                self._thing_files.append(thing_file)
         self.activeThingFilesChanged.emit()
 
     def _onDownloadFinished(self, file_bytes: bytes, file_name: str) -> None:
@@ -344,14 +353,15 @@ class ThingiverseService(QObject):
         self._is_downloading = False
         self.downloadingStateChanged.emit()
 
-    def _onQueryFinished(self, things: List[JSONObject]) -> None:
+    def _onQueryFinished(self, objects: List[JSONObject]) -> None:
         """
         Callback for receiving search results on.
         :param things: The found things.
         """
         self._is_querying = False
         self.queryingStateChanged.emit()
-        self._things.extend(things)
+        for jObject in objects:
+            self._things.append(self._api_client.convertJsonToThing(jObject))
         self.thingsChanged.emit()
 
     def _clearSearchResults(self) -> None:

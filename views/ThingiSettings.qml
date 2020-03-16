@@ -15,7 +15,8 @@ Window {
     // window configuration
     title: "Thingiverse Settings"
     color: UM.Theme.getColor("viewport_background")
-    width: 300
+    width: 500
+    height: 300
 
     // area to provide un-focus option for input fields
     MouseArea {
