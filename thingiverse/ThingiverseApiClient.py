@@ -128,7 +128,7 @@ class ThingiverseApiClient:
         def parse() -> None:
             self._anti_gc_callbacks.remove(parse)
             status_code, response = self._parseReply(reply)
-            if not status_code or status_code >= 400:
+            if not status_code or status_code >= 400 or not response:
                 Logger.log("w", "API returned status code {}: {}".format(status_code, response))
                 return on_failed(JSONObject(response) if response else None)
             result = [JSONObject(item) for item in response] if isinstance(response, list) else JSONObject(response)
