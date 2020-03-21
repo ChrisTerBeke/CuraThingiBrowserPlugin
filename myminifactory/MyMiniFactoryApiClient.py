@@ -54,7 +54,12 @@ class MyMiniFactoryApiClient(ApiClient):
         """
         url = "{}/objects/{}".format(self._root_url, thing_id)
         reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, on_failed)
+
+        def convertResponse(response) -> None:
+            on_finished(MyMiniFactoryApiClient._jsonThingDecoder(response))
+
+        self._anti_gc_callbacks.append(convertResponse)
+        self._addCallback(reply, convertResponse, on_failed)
 
     def getThingFiles(self, thing_id: int, on_finished: Callable[[List[JSONObject]], Any],
                       on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
@@ -64,9 +69,17 @@ class MyMiniFactoryApiClient(ApiClient):
         :param on_finished: Callback method to receive the async result on.
         :param on_failed: Callback method to receive failed request on.
         """
-        url = "{}/object/{}/files".format(self._root_url, thing_id)
+        url = "{}/objects/{}/files".format(self._root_url, thing_id)
         reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, on_failed)
+
+        def convertResponse(response) -> None:
+            _files = [MyMiniFactoryApiClient._jsonThingFileDecoder(thing) for thing in response.items]
+            if not _files and on_failed:
+                on_failed(response)
+            on_finished(_files)
+
+        self._anti_gc_callbacks.append(convertResponse)
+        self._addCallback(reply, convertResponse, on_failed)
 
     def downloadThingFile(self, file_id: int, on_finished: Callable[[bytes], Any]) -> None:
         """
@@ -96,34 +109,33 @@ class MyMiniFactoryApiClient(ApiClient):
         :param on_finished: Callback method to receive the async result on.
         :param on_failed: Callback method to receive failed request on.
         """
-        url = "{}/{}?per_page={}&page={}".format(self._root_url, query, Settings.MYMINIFACTORY_API_PER_PAGE, page)
+        url = "{}/search?q={}&per_page={}&page={}".format(self._root_url, query, Settings.MYMINIFACTORY_API_PER_PAGE, page)
         reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, on_failed)
+
+        def convertResponse(response) -> None:
+            _things = [MyMiniFactoryApiClient._jsonThingDecoder(thing) for thing in response.items]
+            if not _things and on_failed:
+                on_failed(response)
+            on_finished(_things)
+
+        self._anti_gc_callbacks.append(convertResponse)
+        self._addCallback(reply, convertResponse, on_failed, request_url=url)
 
     @staticmethod
-    def _jsonDecoder(data: dict) -> Thing:
-        if 'url' in data:
-            return MyMiniFactoryApiClient._jsonThingDecoder(data)
-        elif 'filename' in data:
-            return MyMiniFactoryApiClient._jsonThingFileDecoder(data)
-        else:
-            return ApiClient._jsonDecoder(data)
-
-    @staticmethod
-    def _jsonThingDecoder(data: dict) -> Thing:
+    def _jsonThingDecoder(data: JSONObject) -> Thing:
         return Thing({
-            'URL': data['url'],
-            'ID': data['id'],
-            'NAME': data['name'],
-            'DESCRIPTION': data['description'] if 'description' in data else None,
-            'THUMBNAIL': data['images'][0]['thumbnail']['url'] if 'images' in data else None
+            'URL': data.url,
+            'ID': data.id,
+            'NAME': data.name,
+            'DESCRIPTION': data.description if hasattr(data, 'description') else None,
+            'THUMBNAIL': data.images[0].thumbnail.url if hasattr(data, 'images') else None
         })
 
     @staticmethod
-    def _jsonThingFileDecoder(data: dict) -> ThingFile:
+    def _jsonThingFileDecoder(data: JSONObject) -> ThingFile:
         return ThingFile({
-            'URL': data['url'],
-            'ID': data['id'],
-            'NAME': data['name'],
-            'THUMBNAIL': data['thumbnail']
+            'URL': None,
+            'ID': data.id,
+            'NAME': data.filename,
+            'THUMBNAIL': data.thumbnail_url
         })

@@ -27,23 +27,18 @@ class ThingiverseApiClient(ApiClient):
         return CuraApplication.getInstance().getPreferences().getValue(Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY)
 
     def getUserCollectionsUrl(self) -> str:
-        self._json_decoder = self._jsonThingDecoder
         return "users/{}/collections".format(self.user_id)
 
     def getCollectionUrl(self, collection_id: int) -> str:
-        self._json_decoder = self._jsonThingDecoder
         return "collections/{}/things".format(collection_id)
 
     def getLikesUrl(self) -> str:
-        self._json_decoder = self._jsonThingDecoder
         return "users/{}/likes".format(self.user_id)
 
     def getUserThingsUrl(self) -> str:
-        self._json_decoder = self._jsonThingDecoder
         return "users/{}/things".format(self.user_id)
 
     def getUserMakesUrl(self) -> str:
-        self._json_decoder = self._jsonThingDecoder
         return "users/{}/copies".format(self.user_id)
 
     def getThing(self, thing_id: int, on_finished: Callable[[JSONObject], Any],
@@ -54,10 +49,14 @@ class ThingiverseApiClient(ApiClient):
         :param on_finished: Callback method to receive the async result on.
         :param on_failed: Callback method to receive failed request on.
         """
-        self._json_decoder = self._jsonThingDecoder
         url = "{}/things/{}".format(self._root_url, thing_id)
         reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, on_failed)
+
+        def convertResponse(response) -> None:
+            on_finished(ThingiverseApiClient._jsonThingDecoder(response))
+
+        self._anti_gc_callbacks.append(convertResponse)
+        self._addCallback(reply, convertResponse, on_failed)
 
     def getThingFiles(self, thing_id: int, on_finished: Callable[[List[JSONObject]], Any],
                       on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
@@ -67,10 +66,17 @@ class ThingiverseApiClient(ApiClient):
         :param on_finished: Callback method to receive the async result on.
         :param on_failed: Callback method to receive failed request on.
         """
-        self._json_decoder = self._jsonThingFileDecoder
         url = "{}/things/{}/files".format(self._root_url, thing_id)
         reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, on_failed)
+
+        def convertResponse(response) -> None:
+            _files = [ThingiverseApiClient._jsonThingFileDecoder(thing) for thing in response]
+            if not _files and on_failed:
+                on_failed(response)
+            on_finished(_files)
+
+        self._anti_gc_callbacks.append(convertResponse)
+        self._addCallback(reply, convertResponse, on_failed)
 
     def downloadThingFile(self, file_id: int, on_finished: Callable[[bytes], Any]) -> None:
         """
@@ -78,7 +84,6 @@ class ThingiverseApiClient(ApiClient):
         :param file_id: The file ID to download.
         :param on_finished: Callback method to receive the async result on as bytes.
         """
-        self._json_decoder = self._jsonThingFileDecoder
         url = "{}/files/{}/download".format(self._root_url, file_id)
         reply = self._manager.get(self._createEmptyRequest(url))
 
@@ -101,32 +106,30 @@ class ThingiverseApiClient(ApiClient):
         :param on_finished: Callback method to receive the async result on.
         :param on_failed: Callback method to receive failed request on.
         """
-        self._json_decoder = self._jsonThingDecoder
-        url = "{}/{}/?per_page={}&page={}".format(self._root_url, query, Settings.THINGIVERSE_API_PER_PAGE, page)
+        url = "{}/{}/?sort=relevent&per_page={}&page={}".format(self._root_url, query, Settings.THINGIVERSE_API_PER_PAGE, page)
         reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, on_failed)
+
+        def convertResponse(response) -> None:
+            _things = [ThingiverseApiClient._jsonThingDecoder(thing) for thing in response]
+            if not _things and on_failed:
+                on_failed(response)
+            on_finished(_things)
+
+        self._anti_gc_callbacks.append(convertResponse)
+        self._addCallback(reply, convertResponse, on_failed)
 
     @staticmethod
-    def _jsonDecoder(data: dict) -> Thing:
-        if 'url' in data:
-            return ThingiverseApiClient._jsonThingDecoder(data)
-        elif 'size' in data:
-            return ThingiverseApiClient._jsonThingFileDecoder(data)
-        else:
-            return ApiClient._jsonDecoder(data)
-
-    @staticmethod
-    def _jsonThingDecoder(data: dict) -> Thing:
+    def _jsonThingDecoder(data: JSONObject) -> Thing:
         return Thing({
-            'URL': data['public_url'] if 'public_url' in data else data['url'],
-            'ID': data['id'],
-            'NAME': data['name'],
-            'DESCRIPTION': data['description'] if 'description' in data else None,
-            'THUMBNAIL': data['thumbnail'] if 'thumbnail' in data else None
+            'URL': data.public_url,
+            'ID': data.id,
+            'NAME': data.name,
+            'DESCRIPTION': data.description if hasattr(data, 'description') else None,
+            'THUMBNAIL': data.thumbnail if hasattr(data, 'thumbnail') else None
         })
 
     @staticmethod
-    def _jsonThingFileDecoder(data: dict) -> ThingFile:
+    def _jsonThingFileDecoder(data: JSONObject) -> ThingFile:
         return ThingFile({
             'URL': data['public_url'] if 'public_url' in data else data['url'],
             'ID': data['id'],

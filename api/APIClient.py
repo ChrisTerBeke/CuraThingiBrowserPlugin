@@ -115,8 +115,7 @@ class ApiClient(ABC):
                 request.setRawHeader(b"Authorization", auth)
             else:
                 operator = "&" if url.find("?") > 0 else "?"
-                request.setUrl("{}{}{}".format(url, operator, auth))
-        Logger.log('i', 'URL: {}'.format(url))
+                request.setUrl(QUrl.fromUserInput("{}{}{}".format(url, operator, auth)))
         return request
 
     @staticmethod
@@ -147,7 +146,7 @@ class ApiClient(ABC):
         def parse() -> None:
             self._anti_gc_callbacks.remove(parse)
             status_code, response = self._parseReply(reply, self._jsonDecoder)
-            if not status_code or status_code >= 400:
+            if not status_code or status_code >= 400 or not response:
                 url_desc = ""
                 if request_url:
                     url_desc = " for {}".format(request_url)
@@ -161,6 +160,5 @@ class ApiClient(ABC):
         reply.finished.connect(parse)
 
     @staticmethod
-    @abstractmethod
     def _jsonDecoder(data: dict) -> JSONObject:
         return JSONObject(data)
