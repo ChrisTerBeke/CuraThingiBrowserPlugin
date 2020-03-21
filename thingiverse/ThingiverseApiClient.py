@@ -4,10 +4,11 @@ from typing import List, Callable, Any, Union, Optional, cast
 
 from cura.CuraApplication import CuraApplication
 
-from ..Settings import Settings # type: ignore
-from ..api.APIClient import ApiClient # type: ignore
-from ..api.JSONObject import JSONObject # type: ignore
-from ..api.Models import Thing, ThingFile # type: ignore
+from ..Settings import Settings  # type: ignore
+from ..api.APIClient import ApiClient  # type: ignore
+from ..api.JSONObject import JSONObject, Thing, ThingFile  # type: ignore
+
+from UM.Logger import Logger
 
 class ThingiverseApiClient(ApiClient):
     """ Client for interacting with the Thingiverse API. """
@@ -19,25 +20,30 @@ class ThingiverseApiClient(ApiClient):
 
     @property
     def _auth(self):
-        return "Bearer {}".format(Settings.THINGIVERSE_API_TOKEN).encode()
+        return "Authorization", "Bearer {}".format(Settings.THINGIVERSE_API_TOKEN).encode()
 
     @property
     def user_id(self):
         return CuraApplication.getInstance().getPreferences().getValue(Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY)
 
     def getUserCollectionsUrl(self) -> str:
+        self._json_decoder = self._jsonThingDecoder
         return "users/{}/collections".format(self.user_id)
 
     def getCollectionUrl(self, collection_id: int) -> str:
+        self._json_decoder = self._jsonThingDecoder
         return "collections/{}/things".format(collection_id)
 
     def getLikesUrl(self) -> str:
+        self._json_decoder = self._jsonThingDecoder
         return "users/{}/likes".format(self.user_id)
 
     def getUserThingsUrl(self) -> str:
+        self._json_decoder = self._jsonThingDecoder
         return "users/{}/things".format(self.user_id)
 
     def getUserMakesUrl(self) -> str:
+        self._json_decoder = self._jsonThingDecoder
         return "users/{}/copies".format(self.user_id)
 
     def getThing(self, thing_id: int, on_finished: Callable[[JSONObject], Any],
@@ -48,6 +54,7 @@ class ThingiverseApiClient(ApiClient):
         :param on_finished: Callback method to receive the async result on.
         :param on_failed: Callback method to receive failed request on.
         """
+        self._json_decoder = self._jsonThingDecoder
         url = "{}/things/{}".format(self._root_url, thing_id)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed)
@@ -60,6 +67,7 @@ class ThingiverseApiClient(ApiClient):
         :param on_finished: Callback method to receive the async result on.
         :param on_failed: Callback method to receive failed request on.
         """
+        self._json_decoder = self._jsonThingFileDecoder
         url = "{}/things/{}/files".format(self._root_url, thing_id)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed)
@@ -70,6 +78,7 @@ class ThingiverseApiClient(ApiClient):
         :param file_id: The file ID to download.
         :param on_finished: Callback method to receive the async result on as bytes.
         """
+        self._json_decoder = self._jsonThingFileDecoder
         url = "{}/files/{}/download".format(self._root_url, file_id)
         reply = self._manager.get(self._createEmptyRequest(url))
 
@@ -92,25 +101,35 @@ class ThingiverseApiClient(ApiClient):
         :param on_finished: Callback method to receive the async result on.
         :param on_failed: Callback method to receive failed request on.
         """
-        url = "{}/{}?per_page={}&page={}".format(self._root_url, query, Settings.THINGIVERSE_API_PER_PAGE, page)
+        self._json_decoder = self._jsonThingDecoder
+        url = "{}/{}/?per_page={}&page={}".format(self._root_url, query, Settings.THINGIVERSE_API_PER_PAGE, page)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed)
 
     @staticmethod
-    def convertJsonToThing(data: Union[JSONObject, List[JSONObject]]) -> Thing:
+    def _jsonDecoder(data: dict) -> Thing:
+        if 'url' in data:
+            return ThingiverseApiClient._jsonThingDecoder(data)
+        elif 'size' in data:
+            return ThingiverseApiClient._jsonThingFileDecoder(data)
+        else:
+            return ApiClient._jsonDecoder(data)
+
+    @staticmethod
+    def _jsonThingDecoder(data: dict) -> Thing:
         return Thing({
-            'URL': data.public_url if hasattr(data, 'public_url') else None,
-            'ID': data.id if hasattr(data, 'id') else None,
-            'NAME': data.name if hasattr(data, 'name') else None,
-            'DESCRIPTION': data.description if hasattr(data, 'description') else None,
-            'THUMBNAIL': data.thumbnail if hasattr(data, 'thumbnail') else None
+            'URL': data['public_url'] if 'public_url' in data else data['url'],
+            'ID': data['id'],
+            'NAME': data['name'],
+            'DESCRIPTION': data['description'] if 'description' in data else None,
+            'THUMBNAIL': data['thumbnail'] if 'thumbnail' in data else None
         })
 
     @staticmethod
-    def convertJsonToThingFile(data: Union[JSONObject, List[JSONObject]]) -> ThingFile:
+    def _jsonThingFileDecoder(data: dict) -> ThingFile:
         return ThingFile({
-            'URL': data.public_url if hasattr(data, 'public_url') else None,
-            'ID': data.id if hasattr(data, 'id') else None,
-            'NAME': data.name if hasattr(data, 'name') else None,
-            'THUMBNAIL': data.thumbnail if hasattr(data, 'thumbnail') else None
+            'URL': data['public_url'] if 'public_url' in data else data['url'],
+            'ID': data['id'],
+            'NAME': data['name'],
+            'THUMBNAIL': data['thumbnail']
         })

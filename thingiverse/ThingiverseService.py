@@ -9,14 +9,12 @@ from PyQt5.QtWidgets import QMessageBox
 
 from cura.CuraApplication import CuraApplication
 
-from ..api.APIClient import ApiClient
-from ..api.Models import Thing, ThingFile
+from ..api.APIClient import ApiClient  # type: ignore
 from .ThingiverseApiClient import ThingiverseApiClient
-from ..myminifactory.MyMiniFactoryApiClient import MyMiniFactoryApiClient
+from ..myminifactory.MyMiniFactoryApiClient import MyMiniFactoryApiClient  # type: ignore
 
-from ..Settings import Settings
-from ..api.APIClient import ApiClient
-from ..api.JSONObject import JSONObject
+from ..Settings import Settings  # type: ignore
+from ..api.JSONObject import JSONObject, Thing, ThingFile  # type: ignore
 
 from UM.Logger import Logger
 
@@ -152,7 +150,7 @@ class ThingiverseService(QObject):
         Get the current active thing details.
         :return: The thing.
         """
-        return self._thing_details if self._thing_details else None
+        return self._thing_details.__dict__ if self._thing_details else None
 
     @pyqtProperty("QVariantList", notify=activeThingFilesChanged)
     def activeThingFiles(self) -> List[ThingFile]:
@@ -313,7 +311,7 @@ class ThingiverseService(QObject):
             self._clearSearchResults()
             self._query_page = 1
         if self._is_from_collection != is_from_collection:
-            self._is_from_collection = is_from_collection
+            self._is_from_collection = bool(is_from_collection)
             self.isFromCollectionChanged.emit()
         self._is_querying = True
         self.queryingStateChanged.emit()
@@ -325,7 +323,7 @@ class ThingiverseService(QObject):
         Callback for receiving thing details on.
         :param thing: The thing.
         """
-        self._thing_details = self._api_client.convertJsonToThing(thing)
+        self._thing_details = thing
         self.activeThingChanged.emit()
 
     def _onThingFilesFinished(self, thing_files: List[JSONObject]) -> None:
@@ -335,9 +333,8 @@ class ThingiverseService(QObject):
         """
         self._thing_files = []
         for f in thing_files:
-            thing_file = self._api_client.convertJsonToThingFile(f)
-            if pathlib.Path(thing_file.NAME).suffix.lower().strip(".") in self._supported_file_types:
-                self._thing_files.append(thing_file)
+            if pathlib.Path(f.NAME).suffix.lower().strip(".") in self._supported_file_types:
+                self._thing_files.append(f)
         self.activeThingFilesChanged.emit()
 
     def _onDownloadFinished(self, file_bytes: bytes, file_name: str) -> None:
@@ -360,8 +357,7 @@ class ThingiverseService(QObject):
         """
         self._is_querying = False
         self.queryingStateChanged.emit()
-        for jObject in objects:
-            self._things.append(self._api_client.convertJsonToThing(jObject))
+        self._things.extend(objects)
         self.thingsChanged.emit()
 
     def _clearSearchResults(self) -> None:

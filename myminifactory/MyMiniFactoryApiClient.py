@@ -8,10 +8,9 @@ from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkReques
 from UM.Logger import Logger
 from cura.CuraApplication import CuraApplication
 
-from ..Settings import Settings
-from ..api.APIClient import ApiClient
-from ..api.JSONObject import JSONObject
-from ..api.Models import Thing
+from ..Settings import Settings  # type: ignore
+from ..api.APIClient import ApiClient  # type: ignore
+from ..api.JSONObject import JSONObject, Thing, ThingFile  # type: ignore
 
 class MyMiniFactoryApiClient(ApiClient):
     """ Client for interacting with the MyMiniFactory API. """
@@ -23,7 +22,7 @@ class MyMiniFactoryApiClient(ApiClient):
 
     @property
     def _auth(self):
-        return None
+        return "Query Key", "key={}".format(Settings.MYMINIFACTORY_API_TOKEN)
 
     @property
     def user_id(self):
@@ -36,13 +35,14 @@ class MyMiniFactoryApiClient(ApiClient):
         return "collections/{}".format(collection_id)
 
     def getLikesUrl(self) -> str:
-        return "users/{}/objects_liked".format(self.user_id)
+        url = "users/{}/objects_liked".format(self.user_id)
+        return url
 
     def getUserThingsUrl(self) -> str:
         return "users/{}/objects".format(self.user_id)
 
     def getUserMakesUrl(self) -> str:
-        return None
+        pass
 
     def getThing(self, thing_id: int, on_finished: Callable[[JSONObject], Any],
                  on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
@@ -96,16 +96,34 @@ class MyMiniFactoryApiClient(ApiClient):
         :param on_finished: Callback method to receive the async result on.
         :param on_failed: Callback method to receive failed request on.
         """
-        url = "{}/{}?per_page={}&page={}&key={}".format(self._root_url, query, Settings.MYMINIFACTORY_API_PER_PAGE, page, Settings.MYMINIFACTORY_API_TOKEN)
+        url = "{}/{}?per_page={}&page={}".format(self._root_url, query, Settings.MYMINIFACTORY_API_PER_PAGE, page)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed)
 
     @staticmethod
-    def convertJsonToThing(data: Union[JSONObject, List[JSONObject]]) -> Thing:
+    def _jsonDecoder(data: dict) -> Thing:
+        if 'url' in data:
+            return MyMiniFactoryApiClient._jsonThingDecoder(data)
+        elif 'filename' in data:
+            return MyMiniFactoryApiClient._jsonThingFileDecoder(data)
+        else:
+            return ApiClient._jsonDecoder(data)
+
+    @staticmethod
+    def _jsonThingDecoder(data: dict) -> Thing:
         return Thing({
-            'URL': data.public_url if hasattr(data, 'public_url') else None,
-            'ID': data.id if hasattr(data, 'id') else None,
-            'NAME': data.name if hasattr(data, 'name') else None,
-            'DESCRIPTION': data.description if hasattr(data, 'description') else None,
-            'THUMBNAIL': data.thumbnail if hasattr(data, 'thumbnail') else None
+            'URL': data['url'],
+            'ID': data['id'],
+            'NAME': data['name'],
+            'DESCRIPTION': data['description'] if 'description' in data else None,
+            'THUMBNAIL': data['images'][0]['thumbnail']['url'] if 'images' in data else None
+        })
+
+    @staticmethod
+    def _jsonThingFileDecoder(data: dict) -> ThingFile:
+        return ThingFile({
+            'URL': data['url'],
+            'ID': data['id'],
+            'NAME': data['name'],
+            'THUMBNAIL': data['thumbnail']
         })

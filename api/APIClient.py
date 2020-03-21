@@ -13,15 +13,7 @@ import abc
 from abc import ABC, abstractmethod
 
 from ..Settings import Settings # type: ignore
-from ..api.Models import Thing, ThingFile # type: ignore
-
-class JSONObject(QObject):
-    """ Simple class that converts a JSON object to a Python model. """
-    def __init__(self, _dict: Dict[str, any]):
-        if _dict:
-            vars(self).update(_dict)
-        super().__init__()
-
+from ..api.JSONObject import JSONObject, Thing, ThingFile # type: ignore
 
 class ApiClient(ABC):
     """ Client for interacting with the Thingiverse API. """
@@ -117,12 +109,18 @@ class ApiClient(ABC):
         request = QNetworkRequest(QUrl().fromUserInput(url))
         request.setHeader(QNetworkRequest.ContentTypeHeader, content_type)
         request.setAttribute(QNetworkRequest.RedirectPolicyAttribute, True)  # file downloads reply with a 302 first
-        if (self._auth is not None):
-            request.setRawHeader(b"Authorization", self._auth)
+        auth_type, auth = self._auth
+        if auth is not None:
+            if auth_type == "Authorization":
+                request.setRawHeader(b"Authorization", auth)
+            else:
+                operator = "&" if url.find("?") > 0 else "?"
+                request.setUrl("{}{}{}".format(url, operator, auth))
+        Logger.log('i', 'URL: {}'.format(url))
         return request
 
     @staticmethod
-    def _parseReply(reply: QNetworkReply) -> Tuple[int, Optional[Union[List[Any], Dict[str, Any]]]]:
+    def _parseReply(reply: QNetworkReply, json_decoder: Callable[[dict], Any]) -> Tuple[int, Union[JSONObject, List[JSONObject]]]:
         """
         Parse the given JSON network reply into a status code and JSON object.
         :param reply: The reply from the server.
@@ -131,10 +129,10 @@ class ApiClient(ABC):
         status_code = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
         try:
             response = bytes(reply.readAll()).decode()
-            return status_code, json.loads(response)
+            return status_code, json.loads(response, object_hook=json_decoder)
         except (UnicodeDecodeError, JSONDecodeError, ValueError) as err:
             Logger.logException("e", "Could not parse the API response: %s", err)
-            return status_code, None
+            return status_code, []
 
     def _addCallback(self, reply: QNetworkReply, on_finished: Union[Callable[[JSONObject], Any],
                                                                     Callable[[List[JSONObject]], Any]],
@@ -148,25 +146,21 @@ class ApiClient(ABC):
         """
         def parse() -> None:
             self._anti_gc_callbacks.remove(parse)
-            status_code, response = self._parseReply(reply)
+            status_code, response = self._parseReply(reply, self._jsonDecoder)
             if not status_code or status_code >= 400:
                 url_desc = ""
                 if request_url:
                     url_desc = " for {}".format(request_url)
                 Logger.log("w", "API returned status code {}{}: {}".format(status_code, url_desc, response))
-                return on_failed(JSONObject(response) if response else None)
-            result = [JSONObject(item) for item in response] if isinstance(response, list) else JSONObject(response)
-            on_finished(result)
+                if on_failed:
+                    return on_failed(response if response else None)
+                return
+            on_finished(response)
 
         self._anti_gc_callbacks.append(parse)
         reply.finished.connect(parse)
 
     @staticmethod
     @abstractmethod
-    def convertJsonToThing(data: Union[JSONObject, List[JSONObject]]) -> Thing:
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def convertJsonToThingFile(data: Union[JSONObject, List[JSONObject]]) -> ThingFile:
-        pass
+    def _jsonDecoder(data: dict) -> JSONObject:
+        return JSONObject(data)

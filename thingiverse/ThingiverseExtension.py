@@ -9,7 +9,7 @@ from UM.Extension import Extension
 from UM.PluginRegistry import PluginRegistry
 from cura.CuraApplication import CuraApplication
 
-from ..Settings import Settings
+from ..Settings import Settings  # type: ignore
 from .ThingiverseService import ThingiverseService
 from .Analytics import Analytics
 
@@ -31,7 +31,7 @@ class ThingiverseExtension(Extension):
         self._analytics = Analytics()  # type: Analytics
         
         # The UI objects.
-        self._main_dialog = None
+        self._main_dialog = None # type: Optional[QObject]
         self._settings_dialog = None
                
         # Configure the 'extension' menu.
@@ -44,7 +44,8 @@ class ThingiverseExtension(Extension):
         """
         if not self._main_dialog:
             self._main_dialog = self._createComponent("Thingiverse.qml")
-        self._main_dialog.show()
+        if self._main_dialog:
+            self._main_dialog.show()
         self._service.updateSupportedFileTypes()
         self._service.search("ultimaker")
 
@@ -54,7 +55,8 @@ class ThingiverseExtension(Extension):
         """
         if not self._settings_dialog:
             self._settings_dialog = self._createComponent("ThingiSettings.qml")
-        self._settings_dialog.show()
+        if self._settings_dialog:
+            self._settings_dialog.show()
 
     def _createComponent(self, qml_file_path: str) -> Optional[QObject]:
         """
