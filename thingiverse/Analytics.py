@@ -49,6 +49,6 @@ class Analytics(QObject):
         headers = {"User-Agent": self._user_agent}
         url = "https://www.google-analytics.com/collect?{}".format(urlencode({**params, **data}))
         try:
-            response = requests.post(url, headers=headers)
+            requests.post(url, headers=headers)
         except Exception as err:
             Logger.log("w", "Could not call Analytics API: %s", err)

@@ -89,6 +89,16 @@ class ThingiverseApiClient:
                                                                 Settings.THINGIVERSE_API_PER_PAGE, page)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed)
+        
+    def getMessage(self, on_finished: Callable[[JSONObject], Any]) -> None:
+        """
+        Get a message to show to the user when the plugin loads.
+        Can be used to dynamically show content without having to re-release the plugin.
+        :param on_finished: Callback method to receive the async result on.
+        """
+        url = "https://christerbeke.com/thingibrowser/message.json"
+        reply = self._manager.get(self._createEmptyRequest(url))
+        self._addCallback(reply, on_finished)
 
     def _createEmptyRequest(self, url: str, content_type: str = "application/json") -> QNetworkRequest:
         """
@@ -117,8 +127,8 @@ class ThingiverseApiClient:
             Logger.logException("e", "Could not parse the API response: %s", err)
             return status_code, None
 
-    def _addCallback(self, reply: QNetworkReply, on_finished: Union[Callable[[JSONObject], Any],
-                                                                    Callable[[List[JSONObject]], Any]],
+    def _addCallback(self, reply: QNetworkReply,
+                     on_finished: Union[Callable[[JSONObject], Any], Callable[[List[JSONObject]], Any]],
                      on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
         """
         Creates a callback function so that it includes the parsing of the response into the correct model.

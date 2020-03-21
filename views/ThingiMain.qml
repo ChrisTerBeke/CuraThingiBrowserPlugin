@@ -14,6 +14,16 @@ ColumnLayout
     // the header
     ThingiHeader {}
 
+    // dynamic message for all users fetched from API
+    Text
+    {
+        visible: ThingiService.message != ""
+        text: ThingiService.message
+        width: parent.width
+        Layout.leftMargin: 5
+        Layout.topMargin: 5
+    }
+
     // the search page
     ThingSearchPage
     {

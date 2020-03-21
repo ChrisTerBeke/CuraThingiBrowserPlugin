@@ -19,6 +19,9 @@ class ThingiverseService(QObject):
     """
     The ThingiverseService uses the API client to serve Thingiverse content to the UI.
     """
+    
+    # Signal emitted when the dynamic display message changed.
+    messageChanged = pyqtSignal()
 
     # Signal triggered when new things are found.
     thingsChanged = pyqtSignal()
@@ -44,6 +47,9 @@ class ThingiverseService(QObject):
     def __init__(self, extension: "ThingiverseExtension", parent=None):
         super().__init__(parent)
         self._extension = extension  # type: ThingiverseExtension
+        
+        # Hold the dynamic display message.
+        self._message = None  # type: Optional[str]
 
         # Hold the things found in query results.
         self._things = []  # type: List[JSONObject]
@@ -70,6 +76,13 @@ class ThingiverseService(QObject):
         """ Refresh the available file types (triggered when plugin window is loaded). """
         supported_file_types = CuraApplication.getInstance().getMeshFileHandler().getSupportedFileTypesRead()
         self._supported_file_types = list(supported_file_types.keys())
+        
+    @pyqtProperty(str, notify=messageChanged)
+    def message(self) -> str:
+        """
+        Get the dynamic display message.
+        """
+        return self._message or ""
 
     @pyqtSlot(name="openSettings")
     def openSettings(self) -> None:
@@ -268,6 +281,12 @@ class ThingiverseService(QObject):
         self.downloadingStateChanged.emit()
         self._api_client.downloadThingFile(file_id, lambda data: self._onDownloadFinished(data, file_name))
 
+    def loadDynamicDisplayMessage(self):
+        """
+        Get the dynamic display message.
+        """
+        self._api_client.getMessage(self._onMessage)
+
     def _executeQuery(self, new_query: Optional[str] = None, is_from_collection: Optional[bool] = False) -> None:
         """
         Internal function to query the API for things.
@@ -325,6 +344,14 @@ class ThingiverseService(QObject):
         self.queryingStateChanged.emit()
         self._things.extend(things)
         self.thingsChanged.emit()
+
+    def _onMessage(self, response: JSONObject) -> None:
+        """
+        Callback for the dynamic display message.
+        :param response: The message response.
+        """
+        self._message = str(response.message)
+        self.messageChanged.emit()
 
     def _clearSearchResults(self) -> None:
         """

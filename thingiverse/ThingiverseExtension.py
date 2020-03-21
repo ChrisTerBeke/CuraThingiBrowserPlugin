@@ -45,6 +45,7 @@ class ThingiverseExtension(Extension):
         self._main_dialog.show()
         self._service.updateSupportedFileTypes()
         self._service.search("ultimaker")
+        self._service.loadDynamicDisplayMessage()
 
     def showSettingsWindow(self) -> None:
         """
