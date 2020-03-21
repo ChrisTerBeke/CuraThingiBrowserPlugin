@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Chris ter Beke.
+# Copyright (c) 2020 Chris ter Beke.
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
 import pathlib
 import tempfile

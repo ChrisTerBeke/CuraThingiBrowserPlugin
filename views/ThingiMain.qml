@@ -1,4 +1,4 @@
-// Copyright (c) 2018 Chris ter Beke.
+// Copyright (c) 2020 Chris ter Beke.
 // Thingiverse plugin is released under the terms of the LGPLv3 or higher.
 import QtQuick 2.2
 import QtQuick.Controls 2.0
@@ -12,10 +12,7 @@ ColumnLayout
     anchors.fill: parent
 
     // the header
-    ThingiHeader
-    {
-        // has no props
-    }
+    ThingiHeader {}
 
     // the search page
     ThingSearchPage
@@ -23,7 +20,6 @@ ColumnLayout
         width: parent.width
         visible: !ThingiService.hasActiveThing
         Layout.fillHeight: true
-
         onVisibleChanged: {
             Analytics.trackScreen("search")
         }
@@ -37,7 +33,6 @@ ColumnLayout
         thingFiles: ThingiService.activeThingFiles
         visible: ThingiService.hasActiveThing
         Layout.fillHeight: true
-
         onVisibleChanged: {
             Analytics.trackScreen("details")
         }
