@@ -182,7 +182,7 @@ class ThingiverseService(QObject):
         Search for things by search term.
         :param search_term: What to search for.
         """
-        self._executeQuery("search/{}".format(search_term))
+        self._executeQuery(self._api_client.getSearchUrl(search_term))
 
     @pyqtSlot(name="getLiked")
     def getLiked(self) -> None:
@@ -203,8 +203,13 @@ class ThingiverseService(QObject):
         if not self._checkUserNameConfigured():
             return
         self._clearSearchResults()
-        query = self._api_client.getUserCollectionsUrl()
-        self._executeQuery(query)
+        self._query_page = 1
+        if self._is_from_collection != False:
+            self._is_from_collection = False
+            self.isFromCollectionChanged.emit()
+        self._is_querying = True
+        self.queryingStateChanged.emit()
+        self._api_client.getUserCollections(on_finished=self._onQueryFinished, on_failed=self._onRequestFailed)
 
     @pyqtSlot(name="getMyThings")
     def getMyThings(self) -> None:
@@ -234,7 +239,7 @@ class ThingiverseService(QObject):
         Get the most popular things.
         The result is async and will be populated in self._things.
         """
-        self._executeQuery("popular")
+        self._executeQuery(self._api_client.getPopularUrl())
 
     @pyqtSlot(name="getFeatured")
     def getFeatured(self) -> None:
@@ -242,7 +247,7 @@ class ThingiverseService(QObject):
         Get the featured things.
         The result is async and will be populated in self._things.
         """
-        self._executeQuery("featured")
+        self._executeQuery(self._api_client.getFeaturedUrl())
 
     @pyqtSlot(name="getNewest")
     def getNewest(self) -> None:
@@ -250,7 +255,7 @@ class ThingiverseService(QObject):
         Get the newest things.
         The result is async and will be populated in self._things.
         """
-        self._executeQuery("newest")
+        self._executeQuery(self._api_client.getNewestUrl())
 
     @pyqtSlot(name="addPage")
     def addPage(self) -> None:
@@ -268,8 +273,14 @@ class ThingiverseService(QObject):
         :param collection_id: The ID of the collection.
         """
         self._clearSearchResults()
-        query = self._api_client.getCollectionUrl(collection_id)
-        self._executeQuery(query, True)
+        self._query_page = 1
+        if self._is_from_collection != True:
+            self._is_from_collection = True
+            self.isFromCollectionChanged.emit()
+        self._is_querying = True
+        self.queryingStateChanged.emit()
+        self._api_client.getCollection(collection_id=collection_id, on_finished=self._onQueryFinished,
+                                                                    on_failed=self._onRequestFailed)
 
     @pyqtSlot(int, name="showThingDetails")
     def showThingDetails(self, thing_id: int) -> None:

@@ -10,7 +10,7 @@ from cura.CuraApplication import CuraApplication
 
 from ..Settings import Settings  # type: ignore
 from ..api.APIClient import ApiClient  # type: ignore
-from ..api.JSONObject import JSONObject, Thing, ThingFile  # type: ignore
+from ..api.JSONObject import JSONObject, Collection, Thing, ThingFile  # type: ignore
 
 class MyMiniFactoryApiClient(ApiClient):
     """ Client for interacting with the MyMiniFactory API. """
@@ -28,11 +28,30 @@ class MyMiniFactoryApiClient(ApiClient):
     def user_id(self):
         return CuraApplication.getInstance().getPreferences().getValue(Settings.MYMINIFACTORY_USER_NAME_PREFERENCES_KEY)
 
-    def getUserCollectionsUrl(self) -> str:
-        return "users/{}/collections".format(self.user_id)
+    def getSearchUrl(self, term: str) -> str:
+        return "search?q={}".format(term)
 
-    def getCollectionUrl(self, collection_id: int) -> str:
-        return "collections/{}".format(collection_id)
+    def getUserCollections(self, on_finished: Callable[[JSONObject], Any],
+                                 on_failed: Optional[Callable[[JSONObject], Any]]) -> None:
+        url = "{}/users/{}/collections".format(self._root_url, self.user_id)
+        reply = self._manager.get(self._createEmptyRequest(url))
+
+        def convertResponse(response) -> None:
+            _collections = [MyMiniFactoryApiClient._jsonCollectionDecoder(collection) for collection in response.items] if response.items else []
+            on_finished(_collections)
+
+        self._anti_gc_callbacks.append(convertResponse)
+        self._addCallback(reply, convertResponse, on_failed)
+
+    def getCollection(self, collection_id: int, on_finished: Callable[[JSONObject], Any],
+                                                on_failed: Optional[Callable[[JSONObject], Any]]) -> None:
+        url = "collections/{}".format(collection_id)
+        
+        def convert_response(response) -> None:
+            _things = [MyMiniFactoryApiClient._jsonThingDecoder(thing) for thing in response.objects.items] if response.objects and response.objects.items else []
+            on_finished(_things)
+
+        self.get(url, 1, on_finished, on_failed, convert_response)
 
     def getLikesUrl(self) -> str:
         url = "users/{}/objects_liked".format(self.user_id)
@@ -43,6 +62,15 @@ class MyMiniFactoryApiClient(ApiClient):
 
     def getUserMakesUrl(self) -> str:
         pass
+
+    def getPopularUrl(self) -> str:
+        return "search?sort=popularity"
+
+    def getFeaturedUrl(self) -> str:
+        return "search?featured=1"
+
+    def getNewestUrl(self) -> str:
+        return "search?sort=date"
 
     def getThing(self, thing_id: int, on_finished: Callable[[JSONObject], Any],
                  on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
@@ -56,7 +84,7 @@ class MyMiniFactoryApiClient(ApiClient):
         reply = self._manager.get(self._createEmptyRequest(url))
 
         def convertResponse(response) -> None:
-            on_finished(MyMiniFactoryApiClient._jsonThingDecoder(response))
+            on_finished(MyMiniFactoryApiClient._jsonThingDecoder(response) if response else None)
 
         self._anti_gc_callbacks.append(convertResponse)
         self._addCallback(reply, convertResponse, on_failed)
@@ -73,9 +101,7 @@ class MyMiniFactoryApiClient(ApiClient):
         reply = self._manager.get(self._createEmptyRequest(url))
 
         def convertResponse(response) -> None:
-            _files = [MyMiniFactoryApiClient._jsonThingFileDecoder(file_data, response.id) for file_data in response.files.items]
-            if not _files and on_failed:
-                on_failed(response)
+            _files = [MyMiniFactoryApiClient._jsonThingFileDecoder(file_data, response.id) for file_data in response.files.items] if response.files and response.files.items else []
             on_finished(_files)
 
         self._anti_gc_callbacks.append(convertResponse)
@@ -103,7 +129,8 @@ class MyMiniFactoryApiClient(ApiClient):
         reply.finished.connect(parse)
 
     def get(self, query: str, page: int, on_finished: Callable[[List[JSONObject]], Any],
-            on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
+            on_failed: Optional[Callable[[JSONObject], Any]] = None,
+            convert_response: Optional[Callable[[JSONObject], Any]] = None) -> None:
         """
         Get things by query.
         :param query: The things to get.
@@ -111,17 +138,30 @@ class MyMiniFactoryApiClient(ApiClient):
         :param on_finished: Callback method to receive the async result on.
         :param on_failed: Callback method to receive failed request on.
         """
-        url = "{}/search?q={}&per_page={}&page={}".format(self._root_url, query, Settings.MYMINIFACTORY_API_PER_PAGE, page)
+        operator = "?"
+        if query.find("?") > -1:
+            operator = "&"
+        url = "{}/{}{}per_page={}&page={}".format(self._root_url, query, operator, Settings.MYMINIFACTORY_API_PER_PAGE, page)
+        Logger.log('i', 'GET URL: {}'.format(url))
         reply = self._manager.get(self._createEmptyRequest(url))
 
-        def convertResponse(response) -> None:
-            _things = [MyMiniFactoryApiClient._jsonThingDecoder(thing) for thing in response.items]
-            if not _things and on_failed:
-                on_failed(response)
-            on_finished(_things)
+        if not convert_response:
+            def convert_response(response) -> None:
+                _things = [MyMiniFactoryApiClient._jsonThingDecoder(thing) for thing in response.items] if response.items else []
+                on_finished(_things)
 
-        self._anti_gc_callbacks.append(convertResponse)
-        self._addCallback(reply, convertResponse, on_failed, request_url=url)
+        self._anti_gc_callbacks.append(convert_response)
+        self._addCallback(reply, convert_response, on_failed, request_url=url)
+
+    @staticmethod
+    def _jsonCollectionDecoder(data: JSONObject) -> Collection:
+        return Collection({
+            'URL': data.url,
+            'ID': data.id,
+            'NAME': data.name,
+            'DESCRIPTION': data.description if hasattr(data, 'description') else None,
+            'THUMBNAIL': data.cover_object.images[0].thumbnail.url if hasattr(data, 'cover_object') else None
+        })
 
     @staticmethod
     def _jsonThingDecoder(data: JSONObject) -> Thing:
@@ -136,7 +176,7 @@ class MyMiniFactoryApiClient(ApiClient):
     @staticmethod
     def _jsonThingFileDecoder(data: JSONObject, thing_id: int) -> ThingFile:
         return ThingFile({
-            'URL': data.viewer_url,
+            'URL': None,
             'ID': thing_id, # MyMiniFactory needs the thing's id instead of file id
             'NAME': data.filename,
             'THUMBNAIL': data.thumbnail_url

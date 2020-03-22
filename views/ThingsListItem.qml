@@ -57,10 +57,12 @@ Item
             text: catalog.i18nc("@button", "Details")
             onClicked: {
                 Analytics.trackEvent("more_details", "button_clicked")
-                if (thing.URL.indexOf("/collections/") > 0) {
-                    ThingiService.showCollectionDetails(thing.ID)
-                } else {
-                    ThingiService.showThingDetails(thing.ID)
+                switch (thing.TYPE) {
+                    case "Collection":
+                        ThingiService.showCollectionDetails(thing.ID)
+                    case "Thing":
+                    default:
+                        ThingiService.showThingDetails(thing.ID)                        
                 }
             }
             Layout.rightMargin: 20

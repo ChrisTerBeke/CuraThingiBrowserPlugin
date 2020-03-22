@@ -38,11 +38,17 @@ class ApiClient(ABC):
     _anti_gc_callbacks = []  # type: List[Callable[[], None]]
 
     @abstractmethod
-    def getUserCollectionsUrl(self) -> str:
+    def getSearchUrl(self, term: str) -> str:
         pass
 
     @abstractmethod
-    def getCollectionUrl(self, collection_id: int) -> str:
+    def getUserCollections(self, on_finished: Callable[[JSONObject], Any],
+                                 on_failed: Optional[Callable[[JSONObject], Any]]) -> None:
+        pass
+
+    @abstractmethod
+    def getCollection(self, collection_id: int, on_finished: Callable[[JSONObject], Any],
+                                                on_failed: Optional[Callable[[JSONObject], Any]]) -> None:
         pass
 
     @abstractmethod
@@ -55,6 +61,18 @@ class ApiClient(ABC):
 
     @abstractmethod
     def getUserMakesUrl(self) -> str:
+        pass
+
+    @abstractmethod
+    def getPopularUrl(self) -> str:
+        pass
+
+    @abstractmethod
+    def getFeaturedUrl(self) -> str:
+        pass
+
+    @abstractmethod
+    def getNewestUrl(self) -> str:
         pass
 
     @abstractmethod

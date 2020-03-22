@@ -26,11 +26,25 @@ class ThingiverseApiClient(ApiClient):
     def user_id(self):
         return CuraApplication.getInstance().getPreferences().getValue(Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY)
 
-    def getUserCollectionsUrl(self) -> str:
-        return "users/{}/collections".format(self.user_id)
+    def getSearchUrl(self, term: str) -> str:
+        return "search/{}/?sort=relevent".format(term)
 
-    def getCollectionUrl(self, collection_id: int) -> str:
-        return "collections/{}/things".format(collection_id)
+    def getUserCollections(self, on_finished: Callable[[JSONObject], Any],
+                                 on_failed: Optional[Callable[[JSONObject], Any]]) -> None:
+        url = "{}/users/{}/collections".format(self._root_url, self.user_id)
+        reply = self._manager.get(self._createEmptyRequest(url))
+
+        def convertResponse(response) -> None:
+            _collections = [ThingiverseApiClient._jsonCollectionDecoder(collection) for collection in response] if response else []
+            on_finished(_collections)
+
+        self._anti_gc_callbacks.append(convertResponse)
+        self._addCallback(reply, convertResponse, on_failed)
+
+    def getCollection(self, collection_id: int, on_finished: Callable[[JSONObject], Any],
+                                                on_failed: Optional[Callable[[JSONObject], Any]]) -> None:
+        url = "collections/{}/things".format(collection_id)
+        self.get(url, 1, on_finished, on_failed)
 
     def getLikesUrl(self) -> str:
         return "users/{}/likes".format(self.user_id)
@@ -40,6 +54,15 @@ class ThingiverseApiClient(ApiClient):
 
     def getUserMakesUrl(self) -> str:
         return "users/{}/copies".format(self.user_id)
+
+    def getPopularUrl(self) -> str:
+        return "popular"
+
+    def getFeaturedUrl(self) -> str:
+        return "featured"
+
+    def getNewestUrl(self) -> str:
+        return "newest"
 
     def getThing(self, thing_id: int, on_finished: Callable[[JSONObject], Any],
                  on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
@@ -53,7 +76,7 @@ class ThingiverseApiClient(ApiClient):
         reply = self._manager.get(self._createEmptyRequest(url))
 
         def convertResponse(response) -> None:
-            on_finished(ThingiverseApiClient._jsonThingDecoder(response))
+            on_finished(ThingiverseApiClient._jsonThingDecoder(response) if response else None)
 
         self._anti_gc_callbacks.append(convertResponse)
         self._addCallback(reply, convertResponse, on_failed)
@@ -70,9 +93,7 @@ class ThingiverseApiClient(ApiClient):
         reply = self._manager.get(self._createEmptyRequest(url))
 
         def convertResponse(response) -> None:
-            _files = [ThingiverseApiClient._jsonThingFileDecoder(thing) for thing in response]
-            if not _files and on_failed:
-                on_failed(response)
+            _files = [ThingiverseApiClient._jsonThingFileDecoder(thing) for thing in response] if response else []
             on_finished(_files)
 
         self._anti_gc_callbacks.append(convertResponse)
@@ -98,7 +119,8 @@ class ThingiverseApiClient(ApiClient):
         reply.finished.connect(parse)
         
     def get(self, query: str, page: int, on_finished: Callable[[List[JSONObject]], Any],
-            on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
+            on_failed: Optional[Callable[[JSONObject], Any]] = None,
+            convert_response: Optional[Callable[[JSONObject], Any]] = None) -> None:
         """
         Get things by query.
         :param query: The things to get.
@@ -106,17 +128,19 @@ class ThingiverseApiClient(ApiClient):
         :param on_finished: Callback method to receive the async result on.
         :param on_failed: Callback method to receive failed request on.
         """
-        url = "{}/{}/?sort=relevent&per_page={}&page={}".format(self._root_url, query, Settings.THINGIVERSE_API_PER_PAGE, page)
+        operator = "?"
+        if query.find("?") > -1:
+            operator = "&"
+        url = "{}/{}{}per_page={}&page={}".format(self._root_url, query, operator, Settings.THINGIVERSE_API_PER_PAGE, page)
         reply = self._manager.get(self._createEmptyRequest(url))
 
-        def convertResponse(response) -> None:
-            _things = [ThingiverseApiClient._jsonThingDecoder(thing) for thing in response]
-            if not _things and on_failed:
-                on_failed(response)
-            on_finished(_things)
+        if not convert_response:
+            def convert_response(response) -> None:
+                _things = [ThingiverseApiClient._jsonThingDecoder(thing) for thing in response] if response else []
+                on_finished(_things)
 
-        self._anti_gc_callbacks.append(convertResponse)
-        self._addCallback(reply, convertResponse, on_failed)
+        self._anti_gc_callbacks.append(convert_response)
+        self._addCallback(reply, convert_response, on_failed)
 
     @staticmethod
     def _jsonCollectionDecoder(data: JSONObject) -> Collection:
