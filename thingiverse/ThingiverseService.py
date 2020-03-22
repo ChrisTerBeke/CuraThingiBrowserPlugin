@@ -298,7 +298,7 @@ class ThingiverseService(QObject):
         """
         self._is_downloading = True
         self.downloadingStateChanged.emit()
-        self._api_client.downloadThingFile(file_id, lambda data: self._onDownloadFinished(data, file_name))
+        self._api_client.downloadThingFile(file_id, file_name, lambda data: self._onDownloadFinished(data, file_name))
 
     def _executeQuery(self, new_query: Optional[str] = None, is_from_collection: Optional[bool] = False) -> None:
         """

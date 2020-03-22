@@ -6,7 +6,7 @@ from cura.CuraApplication import CuraApplication
 
 from ..Settings import Settings  # type: ignore
 from ..api.APIClient import ApiClient  # type: ignore
-from ..api.JSONObject import JSONObject, Thing, ThingFile  # type: ignore
+from ..api.JSONObject import JSONObject, Collection, Thing, ThingFile  # type: ignore
 
 from UM.Logger import Logger
 
@@ -78,7 +78,7 @@ class ThingiverseApiClient(ApiClient):
         self._anti_gc_callbacks.append(convertResponse)
         self._addCallback(reply, convertResponse, on_failed)
 
-    def downloadThingFile(self, file_id: int, on_finished: Callable[[bytes], Any]) -> None:
+    def downloadThingFile(self, file_id: int, file_name: str, on_finished: Callable[[bytes], Any]) -> None:
         """
         Download a thing file by its ID.
         :param file_id: The file ID to download.
@@ -119,6 +119,16 @@ class ThingiverseApiClient(ApiClient):
         self._addCallback(reply, convertResponse, on_failed)
 
     @staticmethod
+    def _jsonCollectionDecoder(data: JSONObject) -> Collection:
+        return Collection({
+            'URL': data.url,
+            'ID': data.id,
+            'NAME': data.name,
+            'DESCRIPTION': data.description if hasattr(data, 'description') else None,
+            'THUMBNAIL': data.thumbnail if hasattr(data, 'thumbnail') else None
+        })
+
+    @staticmethod
     def _jsonThingDecoder(data: JSONObject) -> Thing:
         return Thing({
             'URL': data.public_url,
@@ -131,8 +141,8 @@ class ThingiverseApiClient(ApiClient):
     @staticmethod
     def _jsonThingFileDecoder(data: JSONObject) -> ThingFile:
         return ThingFile({
-            'URL': data['public_url'] if 'public_url' in data else data['url'],
-            'ID': data['id'],
-            'NAME': data['name'],
-            'THUMBNAIL': data['thumbnail']
+            'URL': data.public_url if hasattr(data, 'public_url') else data.url,
+            'ID': data.id,
+            'NAME': data.name,
+            'THUMBNAIL': data.thumbnail
         })

@@ -69,11 +69,11 @@ class MyMiniFactoryApiClient(ApiClient):
         :param on_finished: Callback method to receive the async result on.
         :param on_failed: Callback method to receive failed request on.
         """
-        url = "{}/objects/{}/files".format(self._root_url, thing_id)
+        url = "{}/objects/{}".format(self._root_url, thing_id)
         reply = self._manager.get(self._createEmptyRequest(url))
 
         def convertResponse(response) -> None:
-            _files = [MyMiniFactoryApiClient._jsonThingFileDecoder(thing) for thing in response.items]
+            _files = [MyMiniFactoryApiClient._jsonThingFileDecoder(file_data, response.id) for file_data in response.files.items]
             if not _files and on_failed:
                 on_failed(response)
             on_finished(_files)
@@ -81,13 +81,15 @@ class MyMiniFactoryApiClient(ApiClient):
         self._anti_gc_callbacks.append(convertResponse)
         self._addCallback(reply, convertResponse, on_failed)
 
-    def downloadThingFile(self, file_id: int, on_finished: Callable[[bytes], Any]) -> None:
+    def downloadThingFile(self, file_id: int, file_name: str, on_finished: Callable[[bytes], Any]) -> None:
         """
         Download a thing file by its ID.
         :param file_id: The file ID to download.
         :param on_finished: Callback method to receive the async result on as bytes.
         """
-        url = "{}/download/{}/?downloadfile={}.stl".format(self._root_url, file_id, file_id)
+        # Have to remove the /api/v2 portion of the root for this particual endpoint
+        url = "{}/download/{}?downloadfile={}".format(self._root_url[: -7], file_id, file_name)
+        Logger.log('i', "Download URL: {}".format(url))
         reply = self._manager.get(self._createEmptyRequest(url))
 
         # We use a custom parse function for this API call because the response is not a JSON model.
@@ -132,10 +134,10 @@ class MyMiniFactoryApiClient(ApiClient):
         })
 
     @staticmethod
-    def _jsonThingFileDecoder(data: JSONObject) -> ThingFile:
+    def _jsonThingFileDecoder(data: JSONObject, thing_id: int) -> ThingFile:
         return ThingFile({
-            'URL': None,
-            'ID': data.id,
+            'URL': data.viewer_url,
+            'ID': thing_id, # MyMiniFactory needs the thing's id instead of file id
             'NAME': data.filename,
             'THUMBNAIL': data.thumbnail_url
         })

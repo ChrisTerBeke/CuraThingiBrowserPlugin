@@ -26,7 +26,7 @@ ListView
             Image
             {
                 Layout.leftMargin: 20
-                source: modelData.thumbnail
+                source: modelData.THUMBNAIL
                 sourceSize.width: 75 // 75 is the thumbnail size
                 sourceSize.height: 75
             }
@@ -34,7 +34,7 @@ ListView
              // file name
             Label
             {
-                text: modelData.name
+                text: modelData.NAME
                 color: UM.Theme.getColor("text")
                 font: UM.Theme.getFont("large")
                 elide: Text.ElideRight
@@ -48,7 +48,7 @@ ListView
             {
                 text: catalog.i18nc("@button", "Add to build plate")
                 onClicked: {
-                    ThingiService.downloadThingFile(modelData.id, modelData.name)
+                    ThingiService.downloadThingFile(modelData.ID, modelData.NAME)
                     Analytics.trackEvent("add_to_build_plate", "button_clicked")
                 }
                 busy: ThingiService.isDownloading // indicate that we're busy downloading

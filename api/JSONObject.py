@@ -15,6 +15,10 @@ class BaseModel(JSONObject):
     ID = None # type: str
     NAME = None # type: str
 
+class Collection(BaseModel):
+    DESCRIPTION = None # type: Optional[str]
+    THUMBNAIL = None # type: Optional[str]
+
 class Thing(BaseModel):
     DESCRIPTION = None # type: Optional[str]
     THUMBNAIL = None # type: Optional[str]

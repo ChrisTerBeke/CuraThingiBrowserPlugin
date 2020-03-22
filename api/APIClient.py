@@ -80,7 +80,7 @@ class ApiClient(ABC):
         pass
 
     @abstractmethod
-    def downloadThingFile(self, file_id: int, on_finished: Callable[[bytes], Any]) -> None:
+    def downloadThingFile(self, file_id: int, file_name: str, on_finished: Callable[[bytes], Any]) -> None:
         """
         Download a thing file by its ID.
         :param file_id: The file ID to download.
