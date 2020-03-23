@@ -1,4 +1,4 @@
-// Copyright (c) 2018 Chris ter Beke.
+// Copyright (c) 2020 Chris ter Beke.
 // Thingiverse plugin is released under the terms of the LGPLv3 or higher.
 import QtQuick 2.2
 import QtQuick.Controls 2.0
@@ -7,7 +7,8 @@ import UM 1.1 as UM
 import Cura 1.0 as Cura
 
 // the main window header
-Item {
+Item
+{
     id: header
     width: parent.width
     height: UM.Theme.getSize("toolbox_header").height
@@ -16,8 +17,6 @@ Item {
         left: parent.left
         right: parent.right
         margins: 5
-        leftMargin: UM.Theme.getSize("default_margin").width
-        rightMargin: UM.Theme.getSize("default_margin").width
     }
 
     ThingiSearchbar {
@@ -35,6 +34,10 @@ Item {
 
     ConfigButton {
         id: configButton
-        anchors { top: parent.top; bottom: parent.bottom; right: parent.right }
+        anchors {
+            top: parent.top
+            bottom: parent.bottom
+            right: parent.right
+        }
     }
 }

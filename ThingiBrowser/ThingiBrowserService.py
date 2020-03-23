@@ -1,28 +1,25 @@
-# Copyright (c) 2018 Chris ter Beke.
+# Copyright (c) 2020 Chris ter Beke.
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
 import pathlib
 import tempfile
-from typing import List, Optional, Dict, TYPE_CHECKING
+from typing import List, Optional, TYPE_CHECKING, Dict, Any
 
 from PyQt5.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot, QUrl
 from PyQt5.QtWidgets import QMessageBox
 
 from cura.CuraApplication import CuraApplication
+from .PreferencesHelper import PreferencesHelper
 
-from ..api.APIClient import ApiClient  # type: ignore
-from .ThingiverseApiClient import ThingiverseApiClient
-from ..myminifactory.MyMiniFactoryApiClient import MyMiniFactoryApiClient  # type: ignore
-
-from ..Settings import Settings  # type: ignore
-from ..api.JSONObject import JSONObject, Thing, ThingFile  # type: ignore
-
-from UM.Logger import Logger
+from .api.AbstractApiClient import AbstractApiClient
+from .api.JsonObject import JsonObject
+from .drivers.thingiverse.ThingiverseApiClient import ThingiverseApiClient
+from .drivers.myminifactory.MyMiniFactoryApiClient import MyMiniFactoryApiClient
 
 if TYPE_CHECKING:
-    from .ThingiverseExtension import ThingiverseExtension
+    from .ThingiBrowserExtension import ThingiBrowserExtension
 
 
-class ThingiverseService(QObject):
+class ThingiBrowserService(QObject):
     """
     The ThingiverseService uses the API client to serve Thingiverse content to the UI.
     """
@@ -33,8 +30,8 @@ class ThingiverseService(QObject):
     # Signal triggered when the from collection state changed.
     isFromCollectionChanged = pyqtSignal()
 
-    # Signal triggered when user name changed.
-    userNameChanged = pyqtSignal(str)
+    # Signal triggered the value of a setting changed.
+    settingChanged = pyqtSignal(str, str)
 
     # Signal triggered when the querying state changed.
     queryingStateChanged = pyqtSignal()
@@ -48,47 +45,53 @@ class ThingiverseService(QObject):
     # Signal triggered when a file has started or stopped downloading.
     downloadingStateChanged = pyqtSignal()
 
-    # Signal triggered when the API Client is switched
-    apiClientChanged = pyqtSignal()
+    # Signal triggered when the active API driver is changed.
+    activeDriverChanged = pyqtSignal()
 
-    def __init__(self, extension: "ThingiverseExtension", parent=None):
+    def __init__(self, extension: "ThingiBrowserExtension", parent=None):
         super().__init__(parent)
-        self._extension = extension  # type: ThingiverseExtension
-
-        # Hold the things found in query results.
-        self._things = []  # type: List[Thing]
-        self._query = ""  # type: str
-        self._query_page = 1  # type: int
-        self._is_from_collection = False  # type: bool
-
-        # Hold the thing and thing files that we currently see the details of.
-        self._thing_details = None  # type: Optional[Thing]
-        self._thing_files = []  # type: List[ThingFile]
-        self._is_downloading = False  # type: bool
-        
-        # The API client that we do all calls to Thingiverse with.
-        self._api_client = ThingiverseApiClient()  # type: ApiClient
-
-        self._initSettings(Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY, "")
-        self._initSettings(Settings.MYMINIFACTORY_USER_NAME_PREFERENCES_KEY, "")
+        self._extension = extension  # type: ThingiBrowserExtension
 
         # List of supported file types.
         self._supported_file_types = []  # type: List[str]
 
-    @pyqtSlot(str, name="setService")
-    def setService(self, value: str) -> None:
-        changed = False
-        if (value == "ThingiverseApiClient"):
-            changed = self._api_client.__class__.__name__ != value
-            self._api_client = ThingiverseApiClient()
-        elif (value == "MyMiniFactoryApiClient"):
-            changed = self._api_client.__class__.__name__ != value
-            self._api_client = MyMiniFactoryApiClient()
-        if (changed):
-            self.apiClientChanged.emit()
+        # Hold the things found in query results.
+        self._things = []  # type: List[JsonObject]
+        self._query = ""  # type: str
+        self._query_page = 1  # type: int
+        self._is_querying = False  # type: bool
+        self._is_from_collection = False  # type: bool
+
+        # Hold the thing and thing files that we currently see the details of.
+        self._thing_details = None  # type: Optional[JsonObject]
+        self._thing_files = []  # type: List[JsonObject]
+        self._is_downloading = False  # type: bool
+
+        # Drivers for the services we can interact with.
+        self._drivers = {
+            "thingiverse": ThingiverseApiClient(),
+            "myminifactory": MyMiniFactoryApiClient()
+        }  # type: Dict[str, AbstractApiClient]
+        self._active_driver_name = None  # type: Optional[str]
+
+    @pyqtSlot(str, name="setActiveDriver")
+    def setActiveDriver(self, driver: str) -> None:
+        """
+        Set the active API driver.
+        Checks if the selected driver is actually available.
+        :param driver: The name of the driver to activate.
+        """
+        if driver == self._active_driver_name:
+            return
+        if driver not in self._drivers:
+            return
+        self._active_driver_name = driver
+        self.activeDriverChanged.emit()
 
     def updateSupportedFileTypes(self) -> None:
-        """ Refresh the available file types (triggered when plugin window is loaded). """
+        """
+        Refresh the available file types (triggered when plugin window is loaded).
+        """
         supported_file_types = CuraApplication.getInstance().getMeshFileHandler().getSupportedFileTypesRead()
         self._supported_file_types = list(supported_file_types.keys())
 
@@ -99,45 +102,35 @@ class ThingiverseService(QObject):
             return
         self._extension.showSettingsWindow()
 
-    @pyqtProperty(list, notify=apiClientChanged)
-    def disabledViews(self) -> list:
+    @pyqtProperty(list, notify=activeDriverChanged)
+    def availableViews(self) -> List[str]:
         """
-        Get any disabled views for the current API Client
-        :return: List of view labels that should not be visible
+        Get any disabled views for the current API driver.
+        :return: List of views that should be visible.
         """
-        return self._api_client.disabled_views
+        return self._getActiveDriver().available_views
 
-    @pyqtProperty(str, notify=userNameChanged)
-    def thingiverseUserName(self) -> str:
+    @pyqtProperty(list, notify=settingChanged)
+    def userName(self) -> str:
         """
-        Get the configured Thingiverse username for viewing collections and likes.
-        :return: The username.
+        Get the username for the current API driver.
+        Can be none in which case we return an empty string to the UI.
+        :return: The username or an empty string.
         """
-        return CuraApplication.getInstance().getPreferences().getValue(Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY) or ""
-
-    @pyqtProperty(str, notify=userNameChanged)
-    def myMiniFactoryUserName(self) -> str:
-        """
-        Get the configured MyMiniFactory username for viewing collections and likes.
-        :return: The username.
-        """
-        return CuraApplication.getInstance().getPreferences().getValue(Settings.MYMINIFACTORY_USER_NAME_PREFERENCES_KEY) or ""
+        return self._getActiveDriver().user_id or ""
 
     @pyqtSlot(str, str, name="saveSetting")
-    def setSetting(self, name: str, value: str) -> None:
+    def setSetting(self, setting_name: str, value: str) -> None:
         """
         Change the value of a setting.
-        :param name: The name of the setting.
+        :param setting_name: The name of the setting.
         :param value: The new value.
         """
-        preference_key = "{}/{}".format(Settings.PREFERENCE_KEY_BASE, name)
-        CuraApplication.getInstance().getPreferences().setValue(preference_key, value)
-        if preference_key == Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY or \
-           preference_key == Settings.MYMINIFACTORY_USER_NAME_PREFERENCES_KEY:
-            self.userNameChanged.emit(value)
+        PreferencesHelper.setSetting(setting_name, value)
+        self.settingChanged.emit(setting_name, value)
 
     @pyqtProperty("QVariantList", notify=thingsChanged)
-    def things(self) -> List[Thing]:
+    def things(self) -> List[Dict[str, Any]]:
         """
         Get a list of found things. Updated when performing a search.
         :return: The things.
@@ -161,7 +154,7 @@ class ThingiverseService(QObject):
         return self._is_querying
 
     @pyqtProperty("QVariant", notify=activeThingChanged)
-    def activeThing(self) -> Thing:
+    def activeThing(self) -> Dict[str, Any]:
         """
         Get the current active thing details.
         :return: The thing.
@@ -169,7 +162,7 @@ class ThingiverseService(QObject):
         return self._thing_details.__dict__ if self._thing_details else None
 
     @pyqtProperty("QVariantList", notify=activeThingFilesChanged)
-    def activeThingFiles(self) -> List[ThingFile]:
+    def activeThingFiles(self) -> List[Dict[str, Any]]:
         """
         Get the current active thing files.
         :return: The thing files.
@@ -198,7 +191,8 @@ class ThingiverseService(QObject):
         Search for things by search term.
         :param search_term: What to search for.
         """
-        self._executeQuery(self._api_client.getSearchUrl(search_term))
+        query = self._getActiveDriver().getThingsBySearchQuery(search_term)
+        self._executeQuery(query)
 
     @pyqtSlot(name="getLiked")
     def getLiked(self) -> None:
@@ -207,25 +201,8 @@ class ThingiverseService(QObject):
         """
         if not self._checkUserNameConfigured():
             return
-        self._clearSearchResults()
-        query = self._api_client.getLikesUrl()
+        query = self._getActiveDriver().getThingsLikedByUserQuery()
         self._executeQuery(query)
-
-    @pyqtSlot(name="getCollections")
-    def getCollections(self) -> None:
-        """
-        Get the current user's collections.
-        """
-        if not self._checkUserNameConfigured():
-            return
-        self._clearSearchResults()
-        self._query_page = 1
-        if self._is_from_collection != False:
-            self._is_from_collection = False
-            self.isFromCollectionChanged.emit()
-        self._is_querying = True
-        self.queryingStateChanged.emit()
-        self._api_client.getUserCollections(on_finished=self._onQueryFinished, on_failed=self._onRequestFailed)
 
     @pyqtSlot(name="getMyThings")
     def getMyThings(self) -> None:
@@ -234,9 +211,8 @@ class ThingiverseService(QObject):
         """
         if not self._checkUserNameConfigured():
             return
-        self._clearSearchResults()
-        query = self._api_client.getUserThingsUrl()
-        self._executeQuery(query) 
+        query = self._getActiveDriver().getThingsMadeByUserQuery()
+        self._executeQuery(query)
 
     @pyqtSlot(name="getMakes")
     def getMakes(self) -> None:
@@ -245,9 +221,8 @@ class ThingiverseService(QObject):
         """
         if not self._checkUserNameConfigured():
             return
-        self._clearSearchResults()
-        query = self._api_client.getUserMakesUrl()
-        self._executeQuery(query)  
+        query = self._getActiveDriver().getThingsMadeByUserQuery()
+        self._executeQuery(query)
 
     @pyqtSlot(name="getPopular")
     def getPopular(self) -> None:
@@ -255,7 +230,8 @@ class ThingiverseService(QObject):
         Get the most popular things.
         The result is async and will be populated in self._things.
         """
-        self._executeQuery(self._api_client.getPopularUrl())
+        query = self._getActiveDriver().getPopularThingsQuery()
+        self._executeQuery(query)
 
     @pyqtSlot(name="getFeatured")
     def getFeatured(self) -> None:
@@ -263,7 +239,8 @@ class ThingiverseService(QObject):
         Get the featured things.
         The result is async and will be populated in self._things.
         """
-        self._executeQuery(self._api_client.getFeaturedUrl())
+        query = self._getActiveDriver().getFeaturedThingsQuery()
+        self._executeQuery(query)
 
     @pyqtSlot(name="getNewest")
     def getNewest(self) -> None:
@@ -271,7 +248,8 @@ class ThingiverseService(QObject):
         Get the newest things.
         The result is async and will be populated in self._things.
         """
-        self._executeQuery(self._api_client.getNewestUrl())
+        query = self._getActiveDriver().getNewestThingsQuery()
+        self._executeQuery(query)
 
     @pyqtSlot(name="addPage")
     def addPage(self) -> None:
@@ -282,21 +260,39 @@ class ThingiverseService(QObject):
         self._query_page += 1
         self._executeQuery(is_from_collection=self._is_from_collection)
 
+    @pyqtSlot(name = "getCollections")
+    def getCollections(self) -> None:
+        """
+        Get the current user's collections.
+        """
+        # TODO: de-duplicate this stuff
+        # if not self._checkUserNameConfigured():
+        #     return
+        # self._clearSearchResults()
+        # self._query_page = 1
+        # if self._is_from_collection:
+        #     self._is_from_collection = False
+        #     self.isFromCollectionChanged.emit()
+        # self._is_querying = True
+        # self.queryingStateChanged.emit()
+        # self._api_client.getUserCollections(on_finished=self._onQueryFinished, on_failed=self._onRequestFailed)
+
     @pyqtSlot(int, name="showCollectionDetails")
     def showCollectionDetails(self, collection_id: int) -> None:
         """
         Get and show the details of a single collection.
         :param collection_id: The ID of the collection.
         """
-        self._clearSearchResults()
-        self._query_page = 1
-        if self._is_from_collection != True:
-            self._is_from_collection = True
-            self.isFromCollectionChanged.emit()
-        self._is_querying = True
-        self.queryingStateChanged.emit()
-        self._api_client.getCollection(collection_id=collection_id, on_finished=self._onQueryFinished,
-                                                                    on_failed=self._onRequestFailed)
+        # TODO: de-duplicate this stuff
+        # self._clearSearchResults()
+        # self._query_page = 1
+        # if self._is_from_collection != True:
+        #     self._is_from_collection = True
+        #     self.isFromCollectionChanged.emit()
+        # self._is_querying = True
+        # self.queryingStateChanged.emit()
+        # self._api_client.getCollection(collection_id=collection_id, on_finished=self._onQueryFinished,
+        #                                                             on_failed=self._onRequestFailed)
 
     @pyqtSlot(int, name="showThingDetails")
     def showThingDetails(self, thing_id: int) -> None:
@@ -304,8 +300,8 @@ class ThingiverseService(QObject):
         Get and show the details of a single thing.
         :param thing_id: The ID of the thing.
         """
-        self._api_client.getThing(thing_id, self._onThingDetailsFinished, on_failed=self._onRequestFailed)
-        self._api_client.getThingFiles(thing_id, self._onThingFilesFinished, on_failed=self._onRequestFailed)
+        self._getActiveDriver().getThing(thing_id, self._onThingDetailsFinished, on_failed=self._onRequestFailed)
+        self._getActiveDriver().getThingFiles(thing_id, self._onThingFilesFinished, on_failed=self._onRequestFailed)
 
     @pyqtSlot(name="hideThingDetails")
     def hideThingDetails(self) -> None:
@@ -325,7 +321,8 @@ class ThingiverseService(QObject):
         """
         self._is_downloading = True
         self.downloadingStateChanged.emit()
-        self._api_client.downloadThingFile(file_id, file_name, lambda data: self._onDownloadFinished(data, file_name))
+        self._getActiveDriver().downloadThingFile(file_id, file_name,
+                                                  on_finished=lambda data: self._onDownloadFinished(data, file_name))
 
     def _executeQuery(self, new_query: Optional[str] = None, is_from_collection: Optional[bool] = False) -> None:
         """
@@ -342,10 +339,10 @@ class ThingiverseService(QObject):
             self.isFromCollectionChanged.emit()
         self._is_querying = True
         self.queryingStateChanged.emit()
-        self._api_client.get(query=self._query, page=self._query_page, on_finished=self._onQueryFinished,
-                             on_failed=self._onRequestFailed)
+        self._getActiveDriver().getThings(query=self._query, page=self._query_page, on_finished=self._onQueryFinished,
+                                          on_failed=self._onRequestFailed)
 
-    def _onThingDetailsFinished(self, thing: JSONObject) -> None:
+    def _onThingDetailsFinished(self, thing: JsonObject) -> None:
         """
         Callback for receiving thing details on.
         :param thing: The thing.
@@ -353,7 +350,7 @@ class ThingiverseService(QObject):
         self._thing_details = thing
         self.activeThingChanged.emit()
 
-    def _onThingFilesFinished(self, thing_files: List[JSONObject]) -> None:
+    def _onThingFilesFinished(self, thing_files: List[JsonObject]) -> None:
         """
         Callback for receiving a list of thing files on. Filtered on supported file types of Cura.
         :param thing_files: The thing files.
@@ -377,14 +374,14 @@ class ThingiverseService(QObject):
         self._is_downloading = False
         self.downloadingStateChanged.emit()
 
-    def _onQueryFinished(self, objects: List[JSONObject]) -> None:
+    def _onQueryFinished(self, things: List[JsonObject]) -> None:
         """
         Callback for receiving search results on.
         :param things: The found things.
         """
         self._is_querying = False
         self.queryingStateChanged.emit()
-        self._things.extend(objects)
+        self._things.extend(things)
         self.thingsChanged.emit()
 
     def _clearSearchResults(self) -> None:
@@ -397,7 +394,7 @@ class ThingiverseService(QObject):
         self.thingsChanged.emit()
 
     @staticmethod
-    def _onRequestFailed(error: Optional[JSONObject] = None) -> None:
+    def _onRequestFailed(error: Optional[JsonObject] = None) -> None:
         """
         Callback for when a request failed.
         :param error: An optional error object that was returned by the Thingiverse API.
@@ -408,28 +405,27 @@ class ThingiverseService(QObject):
         error_message = "Unknown"
         if error:
             error_message = error.error if hasattr(error, "error") else error
-        mb.setText("Thingiverse returned an error: {}.".format(error_message))
+        mb.setText("The API returned an error: {}.".format(error_message))
         mb.setDetailedText(str(error.__dict__) if error else "")
         mb.exec()
-
-    @staticmethod
-    def _initSettings(key: str, default_value: Optional[str] = None) -> str:
-        """
-        Initialize plugin settings in Cura's preferences.
-        :param key: Setting key.
-        :param default_value: Setting default value.
-        :return: Setting value (or default value).
-        """
-        preferences = CuraApplication.getInstance().getPreferences()
-        preferences.addPreference(key, default_value)
-        return preferences.getValue(key)
 
     def _checkUserNameConfigured(self) -> bool:
         """
         Checks if the username setting was configured and open the settings window if it was not.
         :return:
         """
-        if not self._api_client.user_id or self._api_client.user_id == "":
+        user_id = self._getActiveDriver().user_id
+        if not user_id or user_id == "":
             self.openSettings()
             return False
         return True
+
+    def _getActiveDriver(self) -> AbstractApiClient:
+        """
+        Get the currently active driver.
+        Sets the first available driver to active if none was set.
+        :return: The active API driver.
+        """
+        if not self._active_driver_name:
+            self._active_driver_name = list(self._drivers.keys())[0]
+        return self._drivers[self._active_driver_name]

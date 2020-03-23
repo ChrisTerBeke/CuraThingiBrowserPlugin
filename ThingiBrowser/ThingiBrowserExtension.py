@@ -9,31 +9,29 @@ from UM.Extension import Extension
 from UM.PluginRegistry import PluginRegistry
 from cura.CuraApplication import CuraApplication
 
-from ..Settings import Settings  # type: ignore
-from .ThingiverseService import ThingiverseService
-from .Analytics import Analytics
+from ..Settings import Settings
+from .ThingiBrowserService import ThingiBrowserService
+from .api.Analytics import Analytics
 
 
-class ThingiverseExtension(Extension):
+class ThingiBrowserExtension(Extension):
     """
     Thingiverse plugin main file. Controls all UI and behaviour.
     """
-    
+
     def __init__(self) -> None:
         super().__init__()
 
-        self._cura_app = CuraApplication.getInstance()
-        
         # The API client that we do all calls to Thingiverse with.
-        self._service = ThingiverseService(self)  # type: ThingiverseService
-        
+        self._service = ThingiBrowserService(self)  # type: ThingiBrowserService
+
         # The API client that will talk to Google Analytics.
         self._analytics = Analytics()  # type: Analytics
-        
+
         # The UI objects.
         self._main_dialog = None # type: Optional[QObject]
         self._settings_dialog = None
-               
+
         # Configure the 'extension' menu.
         self.setMenuName(Settings.DISPLAY_NAME)
         self.addMenuItem(Settings.MENU_TEXT, self.showMainWindow)
@@ -68,14 +66,14 @@ class ThingiverseExtension(Extension):
         if not plugin_path:
             return None
         path = os.path.join(plugin_path, "views", qml_file_path)
-    
         # Create the dialog component from a QML file.
-        dialog = self._cura_app.createQmlComponent(path, {
-            "ThingiExtension": self,
-            "THINGIVERSE_UESR_NAME_PREFERENCES_KEY": Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY,
-            "MYMINIFACTORY_USER_NAME_PREFERENCES_KEY": Settings.MYMINIFACTORY_USER_NAME_PREFERENCES_KEY,
+        dialog = CuraApplication.getInstance().createQmlComponent(path, {
             "ThingiService": self._service,
-            "Analytics": self._analytics
+            "Analytics": self._analytics,
+            # TODO: remove these
+            "ThingiExtension": self,
+            "THINGIVERSE_USER_NAME_PREFERENCES_KEY": Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY,
+            "MYMINIFACTORY_USER_NAME_PREFERENCES_KEY": Settings.MYMINIFACTORY_USER_NAME_PREFERENCES_KEY,
         })
         if not dialog:
             raise Exception("Failed to create Thingiverse dialog")

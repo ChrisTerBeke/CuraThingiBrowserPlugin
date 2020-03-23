@@ -26,7 +26,7 @@ Cura.ExpandablePopup {
     }
 
     function checkIfEnabled(viewName) {
-        return ThingiService.disabledViews.indexOf(viewName) === -1
+        return ThingiService.availableViews.indexOf(viewName) > -1
     }
 
     headerItem: Label {

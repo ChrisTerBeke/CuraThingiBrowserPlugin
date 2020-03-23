@@ -1,14 +1,17 @@
+# Copyright (c) 2020 Chris ter Beke.
+# Thingiverse plugin is released under the terms of the LGPLv3 or higher.
 import uuid
 from urllib.parse import urlencode
 from typing import Dict
-import requests
 
+import requests
 from PyQt5.QtCore import pyqtSlot, QObject
 
 from UM.Logger import Logger
 from cura.CuraApplication import CuraApplication
 
-from ..Settings import Settings
+from ..PreferencesHelper import PreferencesHelper
+from ...Settings import Settings
 
 
 class Analytics(QObject):
@@ -17,18 +20,8 @@ class Analytics(QObject):
     def __init__(self, parent = None):
         super().__init__(parent)
         application = CuraApplication.getInstance()
-        self._client_id = self._getClientId()  # type: str
-        self._user_agent = "{}/{}".format(application.getApplicationName(), application.getVersion())  # type: str
-
-    @staticmethod
-    def _getClientId() -> str:
-        preferences = CuraApplication.getInstance().getPreferences()
-        preferences.addPreference(Settings.ANALYTICS_CLIENT_ID_PREFERENCES_KEY, "")
-        client_id = preferences.getValue(Settings.ANALYTICS_CLIENT_ID_PREFERENCES_KEY)
-        if not client_id or client_id == "":
-            client_id = str(uuid.uuid4())
-            preferences.setValue(Settings.ANALYTICS_CLIENT_ID_PREFERENCES_KEY, client_id)
-        return client_id
+        self._client_id = PreferencesHelper.initSetting(Settings.ANALYTICS_CLIENT_ID_PREFERENCES_KEY, str(uuid.uuid4()))
+        self._user_agent = "{}/{}".format(application.getApplicationName(), application.getVersion())
 
     @pyqtSlot(str, name="trackScreen")
     def trackScreen(self, screen_name: str) -> None:

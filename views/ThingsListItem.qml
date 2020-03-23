@@ -25,7 +25,7 @@ Item
         Image
         {
             Layout.leftMargin: 20
-            source: thing.THUMBNAIL
+            source: thing.thumbnail
             sourceSize.width: 75 // 75 is the thumbnail size
             sourceSize.height: 75
         }
@@ -35,7 +35,7 @@ Item
             // thing title
             Label
             {
-                text: thing.NAME
+                text: thing.name
                 color: UM.Theme.getColor("text")
                 font: UM.Theme.getFont("large")
                 elide: Text.ElideRight
@@ -46,8 +46,8 @@ Item
             // link to web page
             Link
             {
-                text: thing.URL
-                url: thing.URL
+                text: thing.url
+                url: thing.url
             }
         }
 
@@ -55,17 +55,16 @@ Item
         Cura.PrimaryButton
         {
             text: catalog.i18nc("@button", "Details")
-            onClicked: {
-                Analytics.trackEvent("more_details", "button_clicked")
-                switch (thing.TYPE) {
-                    case "Collection":
-                        ThingiService.showCollectionDetails(thing.ID)
-                    case "Thing":
-                    default:
-                        ThingiService.showThingDetails(thing.ID)                        
-                }
-            }
             Layout.rightMargin: 20
+            onClicked: {
+                switch (thing.type) {
+                    case "Collection":
+                        ThingiService.showCollectionDetails(thing.id)
+                    case "Thing":
+                        ThingiService.showThingDetails(thing.id)
+                }
+                Analytics.trackEvent("more_details", "button_clicked")
+            }
         }
     }
 }

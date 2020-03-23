@@ -4,8 +4,9 @@ import QtQuick.Layouts 1.3
 import UM 1.1 as UM
 import Cura 1.0 as Cura
 
-ViewSelector {
-    property string headerImageSource: "thingiverse-logo-2015.png"
+ViewSelector
+{
+    property string headerImageSource: "imagesthingiverse-logo-2015.png"
 
     function setHeaderImageSource(value) {
         serviceSelector.toggleContent()
@@ -30,16 +31,22 @@ ViewSelector {
         }
     }
 
-    contentItem: ColumnLayout {
+    contentItem: ColumnLayout
+    {
         id: contentContainer
         spacing: 0
-        anchors { top: serviceSelector.bottom; left: serviceSelector.left; right: serviceSelector.right }
+        anchors {
+            top: serviceSelector.bottom
+            left: serviceSelector.left
+            right: serviceSelector.right
+        }
 
-        ServiceButton {
+        ServiceButton
+        {
             id: thingiverseButton
             width: parent.width
             height: serviceSelector.height
-            backgroundImageSource: "thingiverse-logo-2015.png"
+            backgroundImageSource: "images/thingiverse-logo-2015.png"
             onClicked: {
                 serviceSelector.setHeaderImageSource(thingiverseButton.backgroundImageSource)
                 ThingiService.setService("ThingiverseApiClient")
@@ -48,11 +55,12 @@ ViewSelector {
 
         ViewButtonSeparator { /* No Attributes Needed */ }
 
-        ServiceButton {
+        ServiceButton
+        {
             id: myMiniFactoryButton
             width: parent.width
             height: serviceSelector.height
-            backgroundImageSource: "my-mini-factory-logo-dropshadow-sm.png"
+            backgroundImageSource: "images/my-mini-factory-logo-dropshadow-sm.png"
             onClicked: {
                 serviceSelector.setHeaderImageSource(myMiniFactoryButton.backgroundImageSource)
                 ThingiService.setService("MyMiniFactoryApiClient")

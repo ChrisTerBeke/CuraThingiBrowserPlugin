@@ -1,4 +1,4 @@
-// Copyright (c) 2018 Chris ter Beke.
+// Copyright (c) 2020 Chris ter Beke.
 // Thingiverse plugin is released under the terms of the LGPLv3 or higher.
 import QtQuick 2.2
 import QtQuick.Controls 2.0
@@ -10,10 +10,10 @@ import Cura 1.0 as Cura
 
 ColumnLayout
 {
-    BusyIndicator
+    AnimatedImage
     {
         visible: ThingiService.things.length === 0
-        running: true
+        source: "images/loading.gif"
         Layout.alignment: Qt.AlignHCenter
         Layout.topMargin: (parent.height / 2) - (height / 2)
     }
@@ -21,13 +21,13 @@ ColumnLayout
     Cura.SecondaryButton
     {
         text: "Back to collections"
-        onClicked: {
-            ThingiService.getCollections();
-        }
         visible: ThingiService.isFromCollection === true && ThingiService.isQuerying === false
         Layout.leftMargin: 20
         Layout.topMargin: 10
         Layout.bottomMargin: 10
+         onClicked: {
+            ThingiService.getCollections()
+        }
     }
 
     ThingsList
@@ -44,11 +44,11 @@ ColumnLayout
     {
         text: catalog.i18nc("@button", "Show more results")
         visible: ThingiService.things.length > 0
+        Layout.leftMargin: 20
+        Layout.bottomMargin: 20
         onClicked: {
             ThingiService.addPage()
             Analytics.trackEvent("show_more_results", "button_clicked")
         }
-        Layout.leftMargin: 20
-        Layout.bottomMargin: 20
     }
 }
