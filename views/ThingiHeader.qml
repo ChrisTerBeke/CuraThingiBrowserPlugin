@@ -7,32 +7,34 @@ import UM 1.1 as UM
 import Cura 1.0 as Cura
 
 // the main window header
-Item
-{
+Item {
     id: header
     width: parent.width
     height: UM.Theme.getSize("toolbox_header").height
-    anchors.top: parent.top
-    anchors.left: parent.left
-    anchors.right: parent.right
-    anchors.margins: 5
-
-    ThingiSearchbar
-    {
-        id: searchbar
-        height: parent.height
-        anchors.top: parent.top
-        anchors.bottom: parent.bottom
-        anchors.left: parent.left
-        anchors.right: configButton.left
-        anchors.rightMargin: 10
+    anchors {
+        top: parent.top
+        left: parent.left
+        right: parent.right
+        margins: 5
+        leftMargin: UM.Theme.getSize("default_margin").width
+        rightMargin: UM.Theme.getSize("default_margin").width
     }
 
-    ConfigButton
-    {
+    ThingiSearchbar {
+        id: searchbar
+        height: parent.height
+        anchors {
+            top: parent.top
+            bottom: parent.bottom
+            left: parent.left
+            right: configButton.left
+            leftMargin: 10
+            rightMargin: 10
+        }
+    }
+
+    ConfigButton {
         id: configButton
-        anchors.top: parent.top
-        anchors.bottom: parent.bottom
-        anchors.right: parent.right
+        anchors { top: parent.top; bottom: parent.bottom; right: parent.right }
     }
 }
