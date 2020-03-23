@@ -8,7 +8,7 @@ from typing import Tuple, Union, List
 
 from UM.Logger import Logger
 
-from .JsonObject import JsonObject, Thing
+from .JsonObject import JsonObject
 
 
 class ApiHelper:
@@ -28,11 +28,6 @@ class ApiHelper:
         except (UnicodeDecodeError, JSONDecodeError, ValueError) as err:
             Logger.logException("e", "Could not parse the API response: %s", err)
             return status_code, []
-
-    @classmethod
-    def parseReplyAsListOfThings(cls, reply: QNetworkReply) -> Tuple[int, List[Thing]]:
-        status_code, response = cls.parseReplyAsJson(reply)
-        return status_code, [Thing(item) for item in response]
 
     @classmethod
     def parseReplyAsBytes(cls, reply: QNetworkReply) -> Tuple[int, bytes]:

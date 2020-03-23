@@ -19,7 +19,18 @@ class Thing(JsonObject):
     thumbnail = None
     name = None
     url = None
+    description = None
 
 
 class Collection(JsonObject):
     """ Class representing a collection. """
+    thumbnail = None
+    description = None
+
+
+class ThingFile(JsonObject):
+    """ Class representing a thing file. """
+    id = None
+    thumbnail = None
+    name = None
+    url = None

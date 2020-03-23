@@ -1,14 +1,14 @@
 # Copyright (c) 2020 Chris ter Beke.
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
-from typing import List, Callable, Any, Optional
+from typing import List, Callable, Any, Optional, Tuple
 
-from PyQt5.QtNetwork import QNetworkRequest
+from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
 
 from ....Settings import Settings
 from ...PreferencesHelper import PreferencesHelper
 from ...api.AbstractApiClient import AbstractApiClient
 from ...api.ApiHelper import ApiHelper
-from ...api.JsonObject import JsonObject
+from ...api.JsonObject import JsonObject, Thing, ThingFile, Collection
 
 
 class ThingiverseApiClient(AbstractApiClient):
@@ -54,25 +54,68 @@ class ThingiverseApiClient(AbstractApiClient):
                        on_failed: Optional[Callable[[JsonObject], Any]]) -> None:
         url = "{}/users/{}/collections".format(self._root_url, self.user_id)
         reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, on_failed)
+        self._addCallback(reply, on_finished, on_failed, parser=self._parseGetCollections)
+
+    @staticmethod
+    def _parseGetCollections(reply: QNetworkReply) -> Tuple[int, List[Collection]]:
+        status_code, response = ApiHelper.parseReplyAsJson(reply)
+        return status_code, [Collection({
+            "id": item.get("id"),
+            "thumbnail": item.get("thumbnail"),
+            "name": item.get("name"),
+            "url": item.get("url"),
+            "description": response.get("description")
+        }) for item in response]
 
     def getThings(self, query: str, page: int, on_finished: Callable[[List[JsonObject]], Any],
                   on_failed: Optional[Callable[[JsonObject], Any]] = None) -> None:
         url = "{}/{}?per_page={}&page={}".format(self._root_url, query, Settings.PER_PAGE, page)
         reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, on_failed, parser=ApiHelper.parseReplyAsListOfThings)
+        self._addCallback(reply, on_finished, on_failed, parser=self._parseGetThings)
+
+    @staticmethod
+    def _parseGetThings(reply: QNetworkReply) -> Tuple[int, List[Thing]]:
+        status_code, response = ApiHelper.parseReplyAsJson(reply)
+        return status_code, [Thing({
+            "id": item.get("id"),
+            "thumbnail": item.get("thumbnail"),
+            "name": item.get("name"),
+            "url": item.get("url"),
+            "description": response.get("description")
+        }) for item in response]
 
     def getThing(self, thing_id: int, on_finished: Callable[[JsonObject], Any],
                  on_failed: Optional[Callable[[JsonObject], Any]] = None) -> None:
         url = "{}/things/{}".format(self._root_url, thing_id)
         reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, on_failed)
+        self._addCallback(reply, on_finished, on_failed, parser=self._parseGetThing)
+
+    @staticmethod
+    def _parseGetThing(reply: QNetworkReply) -> Tuple[int, Thing]:
+        status_code, response = ApiHelper.parseReplyAsJson(reply)
+        return status_code, Thing({
+            "id": response.get("id"),
+            "thumbnail": response.get("thumbnail"),
+            "name": response.get("name"),
+            "url": response.get("url"),
+            "description": response.get("description")
+        })
 
     def getThingFiles(self, thing_id: int, on_finished: Callable[[List[JsonObject]], Any],
                       on_failed: Optional[Callable[[JsonObject], Any]] = None) -> None:
         url = "{}/things/{}/files".format(self._root_url, thing_id)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed)
+
+    @staticmethod
+    def _parseGetThingFiles(reply: QNetworkReply) -> Tuple[int, List[ThingFile]]:
+        status_code, response = ApiHelper.parseReplyAsJson(reply)
+        return status_code, [ThingFile({
+            "id": item.get("id"),
+            "thumbnail": item.get("thumbnail"),
+            "name": item.get("name"),
+            "url": item.get("url")
+        }) for item in response]
 
     def downloadThingFile(self, file_id: int, file_name: str, on_finished: Callable[[bytes], Any]) -> None:
         url = "{}/files/{}/download".format(self._root_url, file_id)
