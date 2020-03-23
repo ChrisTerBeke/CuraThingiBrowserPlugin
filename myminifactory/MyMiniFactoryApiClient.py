@@ -15,6 +15,10 @@ from ..api.JSONObject import JSONObject, Collection, Thing, ThingFile  # type: i
 class MyMiniFactoryApiClient(ApiClient):
     """ Client for interacting with the MyMiniFactory API. """
 
+    @property
+    def disabled_views(self) -> list:
+        return ["My Makes"]
+
     # API constants.
     @property
     def _root_url(self):
@@ -37,7 +41,7 @@ class MyMiniFactoryApiClient(ApiClient):
         return "search?q={}".format(term)
 
     def getUserCollections(self, on_finished: Callable[[JSONObject], Any],
-                                 on_failed: Optional[Callable[[JSONObject], Any]]) -> None:
+                                 on_failed: Optional[Callable[[JSONObject], Any]] = None) -> None:
         """
         Get user's collections
         :param on_finished: Callback with user's collections
@@ -47,7 +51,13 @@ class MyMiniFactoryApiClient(ApiClient):
         reply = self._manager.get(self._createEmptyRequest(url))
 
         def convert_response(response) -> None:
-            _collections = [MyMiniFactoryApiClient._jsonCollectionDecoder(collection) for collection in response.items] if response.items else []
+            if not response.items:
+                Logger.log('w', 'Response does not have an items list as expected.')
+                if on_failed:
+                    return on_failed(response)
+                return
+            _collections = [MyMiniFactoryApiClient._jsonCollectionDecoder(collection) for collection in response.items]
+            self._anti_gc_callbacks.remove(convert_response)
             on_finished(_collections)
 
         self._anti_gc_callbacks.append(convert_response)
@@ -64,7 +74,13 @@ class MyMiniFactoryApiClient(ApiClient):
         url = "collections/{}".format(collection_id)
         
         def convert_response(response) -> None:
-            _things = [MyMiniFactoryApiClient._jsonThingDecoder(thing) for thing in response.objects.items] if response.objects and response.objects.items else []
+            if not response.objects or not response.objects.items:
+                Logger.log('w', 'Unable to convert response into compatible Collection')
+                if not on_failed:
+                    return
+                return on_failed(response)
+            _things = [MyMiniFactoryApiClient._jsonThingDecoder(thing) for thing in response.objects.items]
+            self._anti_gc_callbacks.remove(convert_response)
             on_finished(_things)
 
         self.get(url, 1, on_finished, on_failed, convert_response)
@@ -90,7 +106,7 @@ class MyMiniFactoryApiClient(ApiClient):
         However, MyMiniFactory doesn't have an endpoint for this
         :return: Formatted URL path
         """
-        pass
+        return Logger.logException('e', 'Getting user printed objects is not yet implemented by MyMiniFactory')
 
     def getPopularUrl(self) -> str:
         """
@@ -125,7 +141,9 @@ class MyMiniFactoryApiClient(ApiClient):
         reply = self._manager.get(self._createEmptyRequest(url))
 
         def convert_response(response) -> None:
-            on_finished(MyMiniFactoryApiClient._jsonThingDecoder(response) if response else None)
+            _thing = MyMiniFactoryApiClient._jsonThingDecoder(response)
+            self._anti_gc_callbacks.remove(convert_response)
+            on_finished(_thing)
 
         self._anti_gc_callbacks.append(convert_response)
         self._addCallback(reply, convert_response, on_failed)
@@ -142,7 +160,13 @@ class MyMiniFactoryApiClient(ApiClient):
         reply = self._manager.get(self._createEmptyRequest(url))
 
         def convert_response(response) -> None:
-            _files = [MyMiniFactoryApiClient._jsonThingFileDecoder(file_data, response.id) for file_data in response.files.items] if response.files and response.files.items else []
+            if not response.files and not response.files.items:
+                Logger.log('w', 'Unable to convert item into a compatible ThingFile')
+                if not on_failed:
+                    return
+                return on_failed(response)
+            _files = [MyMiniFactoryApiClient._jsonThingFileDecoder(file_data, response.id) for file_data in response.files.items]
+            self._anti_gc_callbacks.remove(convert_response)
             on_finished(_files)
 
         self._anti_gc_callbacks.append(convert_response)
@@ -189,6 +213,7 @@ class MyMiniFactoryApiClient(ApiClient):
         if not convert_response:
             def convert_response(response) -> None:
                 _things = [MyMiniFactoryApiClient._jsonThingDecoder(thing) for thing in response.items] if response.items else []
+                self._anti_gc_callbacks.remove(convert_response)
                 on_finished(_things)
 
         self._anti_gc_callbacks.append(convert_response)

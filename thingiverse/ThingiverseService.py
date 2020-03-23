@@ -48,6 +48,9 @@ class ThingiverseService(QObject):
     # Signal triggered when a file has started or stopped downloading.
     downloadingStateChanged = pyqtSignal()
 
+    # Signal triggered when the API Client is switched
+    apiClientChanged = pyqtSignal()
+
     def __init__(self, extension: "ThingiverseExtension", parent=None):
         super().__init__(parent)
         self._extension = extension  # type: ThingiverseExtension
@@ -74,10 +77,15 @@ class ThingiverseService(QObject):
 
     @pyqtSlot(str, name="setService")
     def setService(self, value: str) -> None:
-        if (value == "Thingiverse"):
+        changed = False
+        if (value == "ThingiverseApiClient"):
+            changed = self._api_client.__class__.__name__ != value
             self._api_client = ThingiverseApiClient()
-        elif (value == "MyMiniFactory"):
+        elif (value == "MyMiniFactoryApiClient"):
+            changed = self._api_client.__class__.__name__ != value
             self._api_client = MyMiniFactoryApiClient()
+        if (changed):
+            self.apiClientChanged.emit()
 
     def updateSupportedFileTypes(self) -> None:
         """ Refresh the available file types (triggered when plugin window is loaded). """
@@ -90,6 +98,14 @@ class ThingiverseService(QObject):
         if not self._extension:
             return
         self._extension.showSettingsWindow()
+
+    @pyqtProperty(list, notify=apiClientChanged)
+    def disabledViews(self) -> list:
+        """
+        Get any disabled views for the current API Client
+        :return: List of view labels that should not be visible
+        """
+        return self._api_client.disabled_views
 
     @pyqtProperty(str, notify=userNameChanged)
     def thingiverseUserName(self) -> str:

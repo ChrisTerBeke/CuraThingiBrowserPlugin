@@ -42,7 +42,7 @@ ViewSelector {
             backgroundImageSource: "thingiverse-logo-2015.png"
             onClicked: {
                 serviceSelector.setHeaderImageSource(thingiverseButton.backgroundImageSource)
-                ThingiService.setService("Thingiverse")
+                ThingiService.setService("ThingiverseApiClient")
             }
         }
 
@@ -55,7 +55,7 @@ ViewSelector {
             backgroundImageSource: "my-mini-factory-logo-dropshadow-sm.png"
             onClicked: {
                 serviceSelector.setHeaderImageSource(myMiniFactoryButton.backgroundImageSource)
-                ThingiService.setService("MyMiniFactory")
+                ThingiService.setService("MyMiniFactoryApiClient")
             }
         }
     }

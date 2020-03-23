@@ -19,6 +19,10 @@ class ApiClient(ABC):
     """ Client for interacting with the Thingiverse API. """
 
     # API constants.
+    @property
+    def disabled_views(self) -> list:
+        return []
+
     @abc.abstractproperty
     def _root_url(self):
         return "Abstract URL"
@@ -209,14 +213,19 @@ class ApiClient(ABC):
         def parse() -> None:
             self._anti_gc_callbacks.remove(parse)
             status_code, response = self._parseReply(reply, self._jsonDecoder)
-            if not status_code or status_code >= 400 or not response:
+            if not status_code or status_code >= 400:
                 url_desc = ""
                 if request_url:
                     url_desc = " for {}".format(request_url)
                 Logger.log("w", "API returned status code {}{}: {}".format(status_code, url_desc, response))
-                if on_failed:
-                    return on_failed(response if response else None)
-                return
+                if not on_failed:
+                    return
+                return on_failed(response)
+            elif not response:
+                Logger.log("i", "No results found")
+                if not on_failed:
+                    return
+                return on_failed(None)
             on_finished(response)
 
         self._anti_gc_callbacks.append(parse)

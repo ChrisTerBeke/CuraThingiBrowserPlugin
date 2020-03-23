@@ -7,8 +7,7 @@ import QtGraphicalEffects 1.0 // For the dropshadow
 import UM 1.1 as UM
 import Cura 1.0 as Cura
 
-Cura.ExpandablePopup
-{
+Cura.ExpandablePopup {
     id: viewSelector
     implicitHeight: parent.height
     implicitWidth: 200 * screenScaleFactor
@@ -26,8 +25,11 @@ Cura.ExpandablePopup
         labelText = selectedName
     }
 
-    headerItem: Label
-    {
+    function checkIfEnabled(viewName) {
+        return ThingiService.disabledViews.indexOf(viewName) === -1
+    }
+
+    headerItem: Label {
         id: viewSelectorLabel
         text: viewSelector.labelText
         color: UM.Theme.getColor("text")
@@ -35,14 +37,14 @@ Cura.ExpandablePopup
         verticalAlignment: Qt.AlignVCenter
     }
 
-    contentItem: ColumnLayout
-    {
+    contentItem: ColumnLayout {
         id: contentContainer
         spacing: 0
 
-        ViewButton
-        {
+        ViewButton {
+            id: myLikes
             text: "My Likes"
+            visible: checkIfEnabled(this.text)
             backgroundColor: UM.Theme.getColor("main_background")
             onClicked: {
                 viewSelector.setAndToggle(text)
@@ -50,11 +52,13 @@ Cura.ExpandablePopup
             }
         }
 
-        ViewButtonSeparator { /* No Attributes Needed */ }
+        ViewButtonSeparator { visible: myLikes.visible }
 
         ViewButton
         {
+            id: myCollections
             text: "My Collections"
+            visible: checkIfEnabled(this.text)
             backgroundColor: UM.Theme.getColor("main_background")
             onClicked: {
                 viewSelector.setAndToggle(text)
@@ -62,11 +66,12 @@ Cura.ExpandablePopup
             }
         }
 
-        ViewButtonSeparator { /* No Attributes Needed */ }
+        ViewButtonSeparator { visible: myCollections.visible }
 
-        ViewButton
-        {
+        ViewButton {
+            id: myThings
             text: "My Things"
+            visible: checkIfEnabled(this.text)
             backgroundColor: UM.Theme.getColor("main_background")
             onClicked: {
                 viewSelector.setAndToggle(text)
@@ -74,11 +79,12 @@ Cura.ExpandablePopup
             }
         }
 
-        ViewButtonSeparator { /* No Attributes Needed */ }
+        ViewButtonSeparator { visible: myThings.visible }
 
-        ViewButton
-        {
+        ViewButton {
+            id: myMakes
             text: "My Makes"
+            visible: checkIfEnabled(this.text)
             backgroundColor: UM.Theme.getColor("main_background")
             onClicked: {
                 viewSelector.setAndToggle(text)
@@ -86,11 +92,12 @@ Cura.ExpandablePopup
             }
         }
 
-        ViewButtonSeparator { /* No Attributes Needed */ }
+        ViewButtonSeparator { visible: myMakes.visible }
 
-        ViewButton
-        {
+        ViewButton {
+            id: popular
             text: "Popular"
+            visible: checkIfEnabled(this.text)
             backgroundColor: UM.Theme.getColor("main_background")
             onClicked: {
                 viewSelector.setAndToggle(text)
@@ -99,11 +106,12 @@ Cura.ExpandablePopup
             }
         }
 
-        ViewButtonSeparator { /* No Attributes Needed */ }
+        ViewButtonSeparator { visible: popular.visible }
 
-        ViewButton
-        {
+        ViewButton {
+            id: featured
             text: "Featured"
+            visible: checkIfEnabled(this.text)
             backgroundColor: UM.Theme.getColor("main_background")
             onClicked: {
                 viewSelector.setAndToggle(text)
@@ -112,11 +120,12 @@ Cura.ExpandablePopup
             }
         }
 
-        ViewButtonSeparator { /* No Attributes Needed */ }
+        ViewButtonSeparator { visible: featured.visible }
 
-        ViewButton
-        {
+        ViewButton {
+            id: newest
             text: "Newest"
+            visible: checkIfEnabled(this.text)
             backgroundColor: UM.Theme.getColor("main_background")
             onClicked: {
                 viewSelector.setAndToggle(text)
@@ -125,7 +134,7 @@ Cura.ExpandablePopup
             }
         }
 
-        ViewButtonSeparator { /* No Attributes Needed */ }
+        ViewButtonSeparator { visible: newest.visible }
     }
 
     Component.onCompleted: {

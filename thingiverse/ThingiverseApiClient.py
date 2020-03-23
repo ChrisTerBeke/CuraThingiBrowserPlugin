@@ -45,7 +45,8 @@ class ThingiverseApiClient(ApiClient):
         reply = self._manager.get(self._createEmptyRequest(url))
 
         def convert_response(response) -> None:
-            _collections = [ThingiverseApiClient._jsonCollectionDecoder(collection) for collection in response] if response else []
+            _collections = [ThingiverseApiClient._jsonCollectionDecoder(collection) for collection in response]
+            self._anti_gc_callbacks.remove(convert_response)
             on_finished(_collections)
 
         self._anti_gc_callbacks.append(convert_response)
@@ -116,7 +117,9 @@ class ThingiverseApiClient(ApiClient):
         reply = self._manager.get(self._createEmptyRequest(url))
 
         def convert_response(response) -> None:
-            on_finished(ThingiverseApiClient._jsonThingDecoder(response) if response else None)
+            _thing = ThingiverseApiClient._jsonThingDecoder(response)
+            self._anti_gc_callbacks.remove(convert_response)
+            on_finished(_thing)
 
         self._anti_gc_callbacks.append(convert_response)
         self._addCallback(reply, convert_response, on_failed)
@@ -133,7 +136,8 @@ class ThingiverseApiClient(ApiClient):
         reply = self._manager.get(self._createEmptyRequest(url))
 
         def convert_response(response) -> None:
-            _files = [ThingiverseApiClient._jsonThingFileDecoder(thing) for thing in response] if response else []
+            _files = [ThingiverseApiClient._jsonThingFileDecoder(thing) for thing in response]
+            self._anti_gc_callbacks.remove(convert_response)
             on_finished(_files)
 
         self._anti_gc_callbacks.append(convert_response)
@@ -178,7 +182,8 @@ class ThingiverseApiClient(ApiClient):
 
         if not convert_response:
             def convert_response(response) -> None:
-                _things = [ThingiverseApiClient._jsonThingDecoder(thing) for thing in response] if response else []
+                _things = [ThingiverseApiClient._jsonThingDecoder(thing) for thing in response]
+                self._anti_gc_callbacks.remove(convert_response)
                 on_finished(_things)
 
         self._anti_gc_callbacks.append(convert_response)
