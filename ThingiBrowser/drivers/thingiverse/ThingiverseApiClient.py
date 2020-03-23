@@ -64,7 +64,7 @@ class ThingiverseApiClient(AbstractApiClient):
             "thumbnail": item.get("thumbnail"),
             "name": item.get("name"),
             "url": item.get("url"),
-            "description": response.get("description")
+            "description": item.get("description")
         }) for item in response]
 
     def getThings(self, query: str, page: int, on_finished: Callable[[List[JsonObject]], Any],
@@ -81,7 +81,7 @@ class ThingiverseApiClient(AbstractApiClient):
             "thumbnail": item.get("thumbnail"),
             "name": item.get("name"),
             "url": item.get("public_url"),
-            "description": response.get("description")
+            "description": item.get("description")
         }) for item in response]
 
     def getThing(self, thing_id: int, on_finished: Callable[[JsonObject], Any],
@@ -92,13 +92,13 @@ class ThingiverseApiClient(AbstractApiClient):
 
     @staticmethod
     def _parseGetThing(reply: QNetworkReply) -> Tuple[int, Thing]:
-        status_code, response = ApiHelper.parseReplyAsJson(reply)
+        status_code, item = ApiHelper.parseReplyAsJson(reply)
         return status_code, Thing({
-            "id": response.get("id"),
-            "thumbnail": response.get("thumbnail"),
-            "name": response.get("name"),
-            "url": response.get("public_url") or response.get("url"),
-            "description": response.get("description")
+            "id": item.get("id"),
+            "thumbnail": item.get("thumbnail"),
+            "name": item.get("name"),
+            "url": item.get("public_url") or item.get("url"),
+            "description": item.get("description")
         })
 
     def getThingFiles(self, thing_id: int, on_finished: Callable[[List[JsonObject]], Any],
@@ -114,7 +114,7 @@ class ThingiverseApiClient(AbstractApiClient):
             "id": item.get("id"),
             "thumbnail": item.get("thumbnail"),
             "name": item.get("name"),
-            "url": response.get("public_url") or response.get("url"),
+            "url": item.get("public_url") or item.get("url"),
         }) for item in response]
 
     def downloadThingFile(self, file_id: int, file_name: str, on_finished: Callable[[bytes], Any]) -> None:

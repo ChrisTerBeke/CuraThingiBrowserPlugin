@@ -6,7 +6,7 @@ import Cura 1.0 as Cura
 
 ViewSelector
 {
-    property string headerImageSource: "imagesthingiverse-logo-2015.png"
+    property string headerImageSource: "images/thingiverse-logo-2015.png"
 
     function setHeaderImageSource(value) {
         serviceSelector.toggleContent()
@@ -18,11 +18,13 @@ ViewSelector
     headerCornerSide: Cura.RoundedRectangle.Direction.All
     enableHeaderShadow: false
 
-    headerItem:  Item {
+    headerItem: Item
+    {
         id: serviceSelectorHeader
         anchors.fill: serviceSelector
 
-        Image {
+        Image
+        {
             id: serviceSelectorImage
             source: serviceSelector.headerImageSource
             cache: false
@@ -43,13 +45,11 @@ ViewSelector
 
         ServiceButton
         {
-            id: thingiverseButton
             width: parent.width
             height: serviceSelector.height
-            backgroundImageSource: "images/thingiverse-logo-2015.png"
             onClicked: {
-                serviceSelector.setHeaderImageSource(thingiverseButton.backgroundImageSource)
-                ThingiService.setService("ThingiverseApiClient")
+                serviceSelector.setHeaderImageSource("images/thingiverse-logo-2015.png")
+                ThingiService.setService("thingiverse")
             }
         }
 
@@ -57,13 +57,11 @@ ViewSelector
 
         ServiceButton
         {
-            id: myMiniFactoryButton
             width: parent.width
             height: serviceSelector.height
-            backgroundImageSource: "images/my-mini-factory-logo-dropshadow-sm.png"
             onClicked: {
-                serviceSelector.setHeaderImageSource(myMiniFactoryButton.backgroundImageSource)
-                ThingiService.setService("MyMiniFactoryApiClient")
+                serviceSelector.setHeaderImageSource("images/my-mini-factory-logo-dropshadow-sm.png")
+                ThingiService.setService("myminifactory")
             }
         }
     }

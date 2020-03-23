@@ -1,7 +1,5 @@
 # Copyright (c) 2020 Chris ter Beke.
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
-import json
-from json import JSONDecodeError
 from typing import List, Callable, Any, Union, Tuple, Optional
 
 from PyQt5.QtCore import QUrl
@@ -12,7 +10,7 @@ from UM.Logger import Logger
 from abc import ABC, abstractmethod
 
 from .ApiHelper import ApiHelper
-from .JSONObject import JsonObject
+from .JsonObject import JsonObject
 
 
 class AbstractApiClient(ABC):
@@ -167,9 +165,9 @@ class AbstractApiClient(ABC):
         The callback is added to the 'finished' signal of the reply.
         :param reply: The reply that should be listened to.
         :param on_finished: The callback in case the response is successful.
+        :param parser: A custom parser for the response data, defaults to a JSON parser.
         """
         def parse() -> None:
-            # TODO: handle file download callbacks differently
             self._anti_gc_callbacks.remove(parse)
             status_code, response = parser(reply) if parser else ApiHelper.parseReplyAsJson(reply)
             if not status_code or status_code >= 400 or not response:

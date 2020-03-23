@@ -47,34 +47,36 @@ class MyMiniFactoryApiClient(AbstractApiClient):
         return "search?sort=date"
     
     def getThingsBySearchQuery(self, search_terms: str) -> str:
-        return ""
+        return "search?q={}".format(search_terms)
 
     def getThing(self, thing_id: int, on_finished: Callable[[JsonObject], Any],
                  on_failed: Optional[Callable[[JsonObject], Any]] = None) -> None:
         url = "{}/objects/{}".format(self._root_url, thing_id)
         reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, on_failed)
+        self._addCallback(reply, on_finished, on_failed)  # TODO: custom parser
         
     def getCollections(self, on_finished: Callable[[List[JsonObject]], Any],
                        on_failed: Optional[Callable[[JsonObject], Any]]) -> None:
-        pass  # TODO
+        url = "{}/collections/{}".format(self._root_url, self.user_id)
+        reply = self._manager.get(self._createEmptyRequest(url))
+        self._addCallback(reply, on_finished, on_failed)  # TODO: custom parser
 
     def getThingFiles(self, thing_id: int, on_finished: Callable[[List[JsonObject]], Any],
                       on_failed: Optional[Callable[[JsonObject], Any]] = None) -> None:
         url = "{}/objects/{}".format(self._root_url, thing_id)
         reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, on_failed)
-
-    def downloadThingFile(self, file_id: int, file_name: str, on_finished: Callable[[bytes], Any]) -> None:
-        url = "https://www.myminifactory.com/download/{}?downloadfile={}".format(file_id, file_name)
-        reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished)
+        self._addCallback(reply, on_finished, on_failed)  # TODO: custom parser
 
     def getThings(self, query: str, page: int, on_finished: Callable[[List[JsonObject]], Any],
                   on_failed: Optional[Callable[[JsonObject], Any]] = None) -> None:
         url = "{}/{}&per_page={}&page={}".format(self._root_url, query, Settings.PER_PAGE, page)
         reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, on_failed)
+        self._addCallback(reply, on_finished, on_failed)  # TODO: custom parser
+
+    def downloadThingFile(self, file_id: int, file_name: str, on_finished: Callable[[bytes], Any]) -> None:
+        url = "https://www.myminifactory.com/download/{}?downloadfile={}".format(file_id, file_name)
+        reply = self._manager.get(self._createEmptyRequest(url))
+        self._addCallback(reply, on_finished)
 
     @property
     def _root_url(self):
