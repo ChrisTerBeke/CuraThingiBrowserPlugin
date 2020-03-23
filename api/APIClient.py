@@ -39,40 +39,80 @@ class ApiClient(ABC):
 
     @abstractmethod
     def getSearchUrl(self, term: str) -> str:
+        """
+        Get URL path for seraching for an object
+        :param term: Term to use in search
+        :return: Formatted URL path
+        """
         pass
 
     @abstractmethod
     def getUserCollections(self, on_finished: Callable[[JSONObject], Any],
                                  on_failed: Optional[Callable[[JSONObject], Any]]) -> None:
+        """
+        Get user's collections
+        :param on_finished: Callback with user's collections
+        :param on_failed: Callback with server response
+        """
         pass
 
     @abstractmethod
     def getCollection(self, collection_id: int, on_finished: Callable[[JSONObject], Any],
                                                 on_failed: Optional[Callable[[JSONObject], Any]]) -> None:
+        """
+        Get a specific collection's objects
+        :param collection_id: ID of the collection
+        :param on_finished: Callback with user's collections
+        :param on_failed: Callback with server response
+        """
         pass
 
     @abstractmethod
     def getLikesUrl(self) -> str:
+        """
+        Get URL path for a user's liked objects
+        :return: Formatted URL path
+        """
         pass
 
     @abstractmethod
     def getUserThingsUrl(self) -> str:
+        """
+        Get URL path for a user's uploaded objects
+        :return: Formatted URL path
+        """
         pass
 
     @abstractmethod
     def getUserMakesUrl(self) -> str:
+        """
+        Get URL path for a user's printed objects
+        :return: Formatted URL path
+        """
         pass
 
     @abstractmethod
     def getPopularUrl(self) -> str:
+        """
+        Get URL path for most popular objects
+        :return: Formatted URL path
+        """
         pass
 
     @abstractmethod
     def getFeaturedUrl(self) -> str:
+        """
+        Get URL path for featured objects
+        :return: Formatted URL path
+        """
         pass
 
     @abstractmethod
     def getNewestUrl(self) -> str:
+        """
+        Get URL path for the newest objects
+        :return: Formatted URL path
+        """
         pass
 
     @abstractmethod
@@ -102,6 +142,7 @@ class ApiClient(ABC):
         """
         Download a thing file by its ID.
         :param file_id: The file ID to download.
+        :param file_name: The file's name including extension
         :param on_finished: Callback method to receive the async result on as bytes.
         """
         pass
@@ -115,6 +156,7 @@ class ApiClient(ABC):
         :param page: Page number of query results (for pagination).
         :param on_finished: Callback method to receive the async result on.
         :param on_failed: Callback method to receive failed request on.
+        :param convert_response: Callback to convert the response
         """
         pass
 
@@ -122,6 +164,7 @@ class ApiClient(ABC):
         """
         Create a new network request with the needed HTTP headers.
         :param url: The full URL to do the request on.
+        :param content_type: Content-Type header value
         :return: The QNetworkRequest.
         """
         request = QNetworkRequest(QUrl().fromUserInput(url))
@@ -141,6 +184,7 @@ class ApiClient(ABC):
         """
         Parse the given JSON network reply into a status code and JSON object.
         :param reply: The reply from the server.
+        :param json_decoder: Callback that returns a python object for every json object loaded
         :return: A tuple with a status code and a dictionary.
         """
         status_code = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
@@ -160,6 +204,7 @@ class ApiClient(ABC):
         The callback is added to the 'finished' signal of the reply.
         :param reply: The reply that should be listened to.
         :param on_finished: The callback in case the response is successful.
+        :param request_url: URL attempted used in failure logging
         """
         def parse() -> None:
             self._anti_gc_callbacks.remove(parse)
@@ -179,4 +224,9 @@ class ApiClient(ABC):
 
     @staticmethod
     def _jsonDecoder(data: dict) -> JSONObject:
+        """
+        Function to convert dictionary for every json object in
+        responses into a python object
+        :param data: dictionary of key-value pairs in JSONObject
+        """
         return JSONObject(data)
