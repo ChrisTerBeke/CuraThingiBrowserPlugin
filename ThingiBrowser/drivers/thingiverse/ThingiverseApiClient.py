@@ -80,7 +80,7 @@ class ThingiverseApiClient(AbstractApiClient):
             "id": item.get("id"),
             "thumbnail": item.get("thumbnail"),
             "name": item.get("name"),
-            "url": item.get("url"),
+            "url": item.get("public_url"),
             "description": response.get("description")
         }) for item in response]
 
@@ -97,7 +97,7 @@ class ThingiverseApiClient(AbstractApiClient):
             "id": response.get("id"),
             "thumbnail": response.get("thumbnail"),
             "name": response.get("name"),
-            "url": response.get("url"),
+            "url": response.get("public_url") or response.get("url"),
             "description": response.get("description")
         })
 
@@ -114,7 +114,7 @@ class ThingiverseApiClient(AbstractApiClient):
             "id": item.get("id"),
             "thumbnail": item.get("thumbnail"),
             "name": item.get("name"),
-            "url": item.get("url")
+            "url": response.get("public_url") or response.get("url"),
         }) for item in response]
 
     def downloadThingFile(self, file_id: int, file_name: str, on_finished: Callable[[bytes], Any]) -> None:
