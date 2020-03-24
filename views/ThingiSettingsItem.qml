@@ -26,6 +26,7 @@ RowLayout
         id: inputField
         text: thingiSettingsItem.value
         Layout.fillWidth: true
+        selectByMouse: true
         onEditingFinished: {
             ThingiService.saveSetting(thingiSettingsItem.key, thingiSettingsItem.value)
         }
