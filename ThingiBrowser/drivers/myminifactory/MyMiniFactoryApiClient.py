@@ -37,7 +37,7 @@ class MyMiniFactoryApiClient(AbstractApiClient):
         return "users/{}/objects".format(self.user_id)
 
     def getThingsMadeByUserQuery(self) -> str:
-        pass  # TODO: handle this
+        return "users/{}/objects".format(self.user_id)
 
     def getPopularThingsQuery(self) -> str:
         return "search?sort=popularity"
