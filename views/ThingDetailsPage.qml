@@ -24,7 +24,7 @@ ColumnLayout
     // button to navigate back to the search results page
     Cura.SecondaryButton
     {
-        text: catalog.i18nc("@button", "Back to results")
+        text: "Back to results"
         Layout.leftMargin: 20
         Layout.topMargin: 10
         Layout.bottomMargin: 10

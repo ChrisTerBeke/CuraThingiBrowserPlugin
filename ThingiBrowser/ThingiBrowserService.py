@@ -81,7 +81,7 @@ class ThingiBrowserService(QObject):
         """
         supported_file_types = CuraApplication.getInstance().getMeshFileHandler().getSupportedFileTypesRead()
         self._supported_file_types = list(supported_file_types.keys())
-        
+
     def runDefaultQuery(self) -> None:
         """
         Run the default query that searches for items with the keyword 'ultimaker'.
@@ -93,7 +93,7 @@ class ThingiBrowserService(QObject):
         # TODO implement this
         return {}
 
-    @pyqtSlot(str, str, name = "saveSetting")
+    @pyqtSlot(str, str, name="saveSetting")
     def setSetting(self, setting_name: str, value: str) -> None:
         """
         Change the value of a setting.
@@ -115,7 +115,7 @@ class ThingiBrowserService(QObject):
         # TODO: implement this
         return {}
 
-    @pyqtSlot(str, name = "setActiveDriver")
+    @pyqtSlot(str, name="setActiveDriver")
     def setActiveDriver(self, driver: str) -> None:
         """
         Set the active API driver.
@@ -258,17 +258,37 @@ class ThingiBrowserService(QObject):
         """
         query = self._getActiveDriver().getNewestThingsQuery()
         self._executeQuery(query)
-
-    @pyqtSlot(name="addPage")
-    def addPage(self) -> None:
+        
+    @pyqtProperty(int, notify=thingsChanged)
+    def currentPage(self) -> int:
         """
-        Append search Thing list with the next page of results.
+        Get the current query results page.
+        :return: The page number, starting with 1.
+        """
+        return self._query_page
+
+    @pyqtSlot(name="previousPage")
+    def previousPage(self) -> None:
+        """
+        Navigate to the previous page of query results.
+        The search is done async and the result will be populated in self._things.
+        Can not go lower than page 1.
+        """
+        if self._query_page == 1:
+            return
+        self._query_page -= 1
+        self._executeQuery(is_from_collection=self._is_from_collection)
+
+    @pyqtSlot(name="nextPage")
+    def nextPage(self) -> None:
+        """
+        Navigate to the next page of query results.
         The search is done async and the result will be populated in self._things.
         """
         self._query_page += 1
         self._executeQuery(is_from_collection=self._is_from_collection)
 
-    @pyqtSlot(name = "getCollections")
+    @pyqtSlot(name="getCollections")
     def getCollections(self) -> None:
         """
         Get the current user's collections.
@@ -389,7 +409,7 @@ class ThingiBrowserService(QObject):
         """
         self._is_querying = False
         self.queryingStateChanged.emit()
-        self._things.extend(things)
+        self._things = things
         self.thingsChanged.emit()
 
     def _clearSearchResults(self) -> None:

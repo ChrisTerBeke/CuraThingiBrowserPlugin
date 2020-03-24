@@ -12,7 +12,10 @@ ColumnLayout
     anchors.fill: parent
 
     // the header
-    ThingiHeader {}
+    ThingiHeader
+    {
+        Layout.alignment: Qt.AlignTop
+    }
 
     // the search page
     ThingSearchPage

@@ -1,4 +1,4 @@
-// Copyright (c) 2018 Chris ter Beke.
+// Copyright (c) 2020 Chris ter Beke.
 // Thingiverse plugin is released under the terms of the LGPLv3 or higher.
 import QtQuick 2.2
 import QtQuick.Controls 2.0
@@ -18,15 +18,7 @@ Window
     minimumHeight: Math.round(UM.Theme.getSize("modal_window_minimum").height)
     width: minimumWidth
     height: minimumHeight
-
-    // translations
-    UM.I18nCatalog
-    {
-        id: catalog
-        name: "thingiverse"
-    }
-
-    title: catalog.i18nc("@title", "Thingiverse")
+    title: "ThingiBrowser"
 
     // area to provide un-focus option for search field
     MouseArea

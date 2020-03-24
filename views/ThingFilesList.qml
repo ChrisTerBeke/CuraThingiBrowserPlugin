@@ -46,8 +46,8 @@ ListView
             // download button
             Cura.PrimaryButton
             {
-                text: catalog.i18nc("@button", "Add to build plate")
-                tooltip: catalog.i18nc("@tooltip", "Place this 3D model onto the build plate")
+                text: "Add to build plate"
+                tooltip: "Place this 3D model onto the build plate"
                 visible: !ThingiService.isDownloading
                 Layout.rightMargin: 20
                 onClicked: {
