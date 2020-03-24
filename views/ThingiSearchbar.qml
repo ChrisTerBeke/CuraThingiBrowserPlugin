@@ -12,7 +12,6 @@ RowLayout
         Layout.fillWidth: true
         selectByMouse: true
         onAccepted: {
-            viewSelector.labelText = "Search"
             ThingiService.search(thingSearchField.text)
             Analytics.trackEvent("search_field", "enter_pressed")
         }
@@ -23,7 +22,6 @@ RowLayout
         text: "Search"
         Layout.alignment: Qt.AlignLeft
         onClicked: {
-            viewSelector.labelText = "Search"
             ThingiService.search(thingSearchField.text)
             Analytics.trackEvent("search_field", "button_clicked")
         }
