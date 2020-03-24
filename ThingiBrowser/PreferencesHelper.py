@@ -1,6 +1,6 @@
 # Copyright (c) 2020 Chris ter Beke.
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
-from typing import Optional
+from typing import Optional, Dict, List
 
 from cura.CuraApplication import CuraApplication
 
@@ -8,7 +8,7 @@ from ..Settings import Settings
 
 
 class PreferencesHelper:
-    
+
     @classmethod
     def initSetting(cls, setting_name: str, default_value: Optional[str] = "") -> str:
         """
@@ -21,6 +21,25 @@ class PreferencesHelper:
         preferences = CuraApplication.getInstance().getPreferences()
         preferences.addPreference(preference_key, default_value)
         return preferences.getValue(preference_key)
+
+    @classmethod
+    def getAllSettings(cls) -> List[Dict[str, str]]:
+        """
+        Get all settings as key:value dict.
+        :return: The settings dict.
+        """
+        return [
+            {
+                "key": Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY,
+                "value": cls.getSettingValue(Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY),
+                "label": "Thingiverse username"
+            },
+            {
+                "key": Settings.MYMINIFACTORY_USER_NAME_PREFERENCES_KEY,
+                "value": cls.getSettingValue(Settings.MYMINIFACTORY_USER_NAME_PREFERENCES_KEY),
+                "label": "MyMiniFactory username"
+            }
+        ]
 
     @classmethod
     def setSetting(cls, setting_name: str, value: str) -> None:

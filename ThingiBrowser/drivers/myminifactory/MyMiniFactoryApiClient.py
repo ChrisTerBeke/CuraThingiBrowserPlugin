@@ -14,7 +14,7 @@ from ...api.JsonObject import JsonObject, Collection, Thing, ThingFile
 
 class MyMiniFactoryApiClient(AbstractApiClient):
     """ Client for interacting with the MyMiniFactory API. """
-    
+
     def __init__(self) -> None:
         super().__init__()
         PreferencesHelper.initSetting(Settings.MYMINIFACTORY_USER_NAME_PREFERENCES_KEY, "")
@@ -29,16 +29,16 @@ class MyMiniFactoryApiClient(AbstractApiClient):
 
     def getThingsFromCollectionQuery(self, collection_id: int) -> str:
         return "collections/{}".format(collection_id)
-    
+
     def getThingsLikedByUserQuery(self) -> str:
         return "users/{}/objects_liked".format(self.user_id)
-    
+
     def getThingsByUserQuery(self) -> str:
         return "users/{}/objects".format(self.user_id)
-    
+
     def getThingsMadeByUserQuery(self) -> str:
         raise NotImplementedError("Provider 'MyMiniFactory' does not support user-made things.")
-    
+
     def getPopularThingsQuery(self) -> str:
         return "search?sort=popularity"
 
@@ -47,7 +47,7 @@ class MyMiniFactoryApiClient(AbstractApiClient):
 
     def getNewestThingsQuery(self) -> str:
         return "search?sort=date"
-    
+
     def getThingsBySearchQuery(self, search_terms: str) -> str:
         return "search?q={}".format(search_terms)
 
@@ -64,7 +64,7 @@ class MyMiniFactoryApiClient(AbstractApiClient):
             "id": item.get("id"),
             "thumbnail": item.get("images")[0]["thumbnail"]["url"] if item.get("images") else None,
             "name": item.get("name"),
-            "url": item.get("public_url"),
+            "url": item.get("url"),
             "description": item.get("description")
         })
 
@@ -123,7 +123,7 @@ class MyMiniFactoryApiClient(AbstractApiClient):
             "id": item.get("id"),
             "thumbnail": item.get("images")[0]["thumbnail"]["url"] if item.get("images") else None,
             "name": item.get("name"),
-            "url": item.get("public_url"),
+            "url": item.get("url"),
             "description": item.get("description")
         }) for item in response.get("items")]
 

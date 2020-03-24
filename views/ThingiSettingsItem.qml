@@ -1,4 +1,4 @@
-// Copyright (c) 2018 Chris ter Beke.
+// Copyright (c) 2020 Chris ter Beke.
 // Thingiverse plugin is released under the terms of the LGPLv3 or higher.
 import QtQuick 2.2
 import QtQuick.Controls 2.0
@@ -9,6 +9,7 @@ RowLayout
 {
     id: thingiSettingsItem
 
+    property var key: ""
     property var label: ""
     property var value: ""
 
@@ -25,9 +26,13 @@ RowLayout
         id: inputField
         text: thingiSettingsItem.value
         Layout.fillWidth: true
+        onEditingFinished: {
+            ThingiService.saveSetting(thingiSettingsItem.key, thingiSettingsItem.value)
+        }
     }
 
-    Binding {
+    Binding
+    {
         target: thingiSettingsItem
         property: "value"
         value: inputField.text

@@ -4,7 +4,6 @@ import QtQuick 2.7
 import QtQuick.Controls 2.2
 import QtQuick.Layouts 1.3
 import UM 1.1 as UM
-import Cura 1.0 as Cura
 
 ListView
 {
@@ -44,10 +43,9 @@ ListView
             }
 
             // download button
-            Cura.PrimaryButton
+            Button
             {
                 text: "Add to build plate"
-                tooltip: "Place this 3D model onto the build plate"
                 visible: !ThingiService.isDownloading
                 Layout.rightMargin: 20
                 onClicked: {

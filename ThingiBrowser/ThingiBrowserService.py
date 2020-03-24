@@ -2,7 +2,7 @@
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
 import pathlib
 import tempfile
-from typing import List, Optional, TYPE_CHECKING, Dict, Any
+from typing import List, Optional, TYPE_CHECKING, Dict, Any, Union
 
 from PyQt5.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot, QUrl
 from PyQt5.QtWidgets import QMessageBox
@@ -11,7 +11,7 @@ from cura.CuraApplication import CuraApplication
 
 from .PreferencesHelper import PreferencesHelper
 from .api.AbstractApiClient import AbstractApiClient
-from .api.JsonObject import JsonObject, Thing, ThingFile
+from .api.JsonObject import JsonObject, Thing, ThingFile, Collection
 from .drivers.thingiverse.ThingiverseApiClient import ThingiverseApiClient
 from .drivers.myminifactory.MyMiniFactoryApiClient import MyMiniFactoryApiClient
 
@@ -69,8 +69,8 @@ class ThingiBrowserService(QObject):
 
         # Drivers for the services we can interact with.
         self._drivers = {
-            "myminifactory": MyMiniFactoryApiClient(),
             "thingiverse": ThingiverseApiClient(),
+            "myminifactory": MyMiniFactoryApiClient(),
         }  # type: Dict[str, AbstractApiClient]
         self._active_driver_name = None  # type: Optional[str]
         self.activeDriverChanged.connect(self._onDriverChanged)
@@ -89,9 +89,12 @@ class ThingiBrowserService(QObject):
         self.search("ultimaker")
 
     @pyqtProperty(list, notify=settingChanged)
-    def getSettings(self) -> Dict[str, Any]:
-        # TODO implement this
-        return {}
+    def getSettings(self) -> List[Dict[str, Any]]:
+        """
+        Get all the available settings so the UI can display them.
+        :return: The settings.
+        """
+        return PreferencesHelper.getAllSettings()
 
     @pyqtSlot(str, str, name="saveSetting")
     def setSetting(self, setting_name: str, value: str) -> None:
@@ -258,52 +261,16 @@ class ThingiBrowserService(QObject):
         """
         query = self._getActiveDriver().getNewestThingsQuery()
         self._executeQuery(query)
-        
-    @pyqtProperty(int, notify=thingsChanged)
-    def currentPage(self) -> int:
-        """
-        Get the current query results page.
-        :return: The page number, starting with 1.
-        """
-        return self._query_page
-
-    @pyqtSlot(name="previousPage")
-    def previousPage(self) -> None:
-        """
-        Navigate to the previous page of query results.
-        The search is done async and the result will be populated in self._things.
-        Can not go lower than page 1.
-        """
-        if self._query_page == 1:
-            return
-        self._query_page -= 1
-        self._executeQuery(is_from_collection=self._is_from_collection)
-
-    @pyqtSlot(name="nextPage")
-    def nextPage(self) -> None:
-        """
-        Navigate to the next page of query results.
-        The search is done async and the result will be populated in self._things.
-        """
-        self._query_page += 1
-        self._executeQuery(is_from_collection=self._is_from_collection)
 
     @pyqtSlot(name="getCollections")
     def getCollections(self) -> None:
         """
         Get the current user's collections.
         """
-        # TODO: de-duplicate this stuff
-        # if not self._checkUserNameConfigured():
-        #     return
-        # self._clearSearchResults()
-        # self._query_page = 1
-        # if self._is_from_collection:
-        #     self._is_from_collection = False
-        #     self.isFromCollectionChanged.emit()
-        # self._is_querying = True
-        # self.queryingStateChanged.emit()
-        # self._api_client.getUserCollections(on_finished=self._onQueryFinished, on_failed=self._onRequestFailed)
+        if not self._checkUserNameConfigured():
+            return
+        self._prepQuery("user_collections", is_from_collection=False)
+        self._getActiveDriver().getCollections(on_finished=self._onQueryFinished, on_failed=self._onRequestFailed)
 
     @pyqtSlot(int, name="showCollectionDetails")
     def showCollectionDetails(self, collection_id: int) -> None:
@@ -311,16 +278,8 @@ class ThingiBrowserService(QObject):
         Get and show the details of a single collection.
         :param collection_id: The ID of the collection.
         """
-        # TODO: de-duplicate this stuff
-        # self._clearSearchResults()
-        # self._query_page = 1
-        # if self._is_from_collection != True:
-        #     self._is_from_collection = True
-        #     self.isFromCollectionChanged.emit()
-        # self._is_querying = True
-        # self.queryingStateChanged.emit()
-        # self._api_client.getCollection(collection_id=collection_id, on_finished=self._onQueryFinished,
-        #                                                             on_failed=self._onRequestFailed)
+        query = self._getActiveDriver().getThingsFromCollectionQuery(str(collection_id))
+        self._executeQuery(query, is_from_collection=True)
 
     @pyqtSlot(int, name="showThingDetails")
     def showThingDetails(self, thing_id: int) -> None:
@@ -352,11 +311,50 @@ class ThingiBrowserService(QObject):
         self._getActiveDriver().downloadThingFile(file_id, file_name,
                                                   on_finished=lambda data: self._onDownloadFinished(data, file_name))
 
+    @pyqtProperty(int, notify=thingsChanged)
+    def currentPage(self) -> int:
+        """
+        Get the current query results page.
+        :return: The page number, starting with 1.
+        """
+        return self._query_page
+
+    @pyqtSlot(name="previousPage")
+    def previousPage(self) -> None:
+        """
+        Navigate to the previous page of query results.
+        The search is done async and the result will be populated in self._things.
+        Can not go lower than page 1.
+        """
+        if self._query_page == 1:
+            return
+        self._query_page -= 1
+        self._executeQuery(is_from_collection=self._is_from_collection)
+
+    @pyqtSlot(name="nextPage")
+    def nextPage(self) -> None:
+        """
+        Navigate to the next page of query results.
+        The search is done async and the result will be populated in self._things.
+        """
+        self._query_page += 1
+        self._executeQuery(is_from_collection=self._is_from_collection)
+
     def _executeQuery(self, new_query: Optional[str] = None, is_from_collection: Optional[bool] = False) -> None:
         """
         Internal function to query the API for things.
         :param new_query: Perform a new query instead of adding a new page to the existing one.
-        :param is_from_collection: Specifies whether the resulting Things are part of a collection or not
+        :param is_from_collection: Specifies whether the resulting Things are part of a collection or not.
+        """
+        self._prepQuery(new_query, is_from_collection)
+        self._getActiveDriver().getThings(query=self._query, page=self._query_page, on_finished=self._onQueryFinished,
+                                          on_failed=self._onRequestFailed)
+
+    def _prepQuery(self, new_query: Optional[str] = None, is_from_collection: Optional[bool] = False) -> None:
+        """
+        State configuration that needs to happen before each query.
+        :param new_query: Perform a new query instead of adding a new page to the existing one.
+        :param is_from_collection: Specifies whether the resulting Things are part of a collection or not.
         """
         if new_query:
             self._query = new_query
@@ -367,8 +365,6 @@ class ThingiBrowserService(QObject):
             self.isFromCollectionChanged.emit()
         self._is_querying = True
         self.queryingStateChanged.emit()
-        self._getActiveDriver().getThings(query=self._query, page=self._query_page, on_finished=self._onQueryFinished,
-                                          on_failed=self._onRequestFailed)
 
     def _onThingDetailsFinished(self, thing: Thing) -> None:
         """
@@ -402,7 +398,7 @@ class ThingiBrowserService(QObject):
         self._is_downloading = False
         self.downloadingStateChanged.emit()
 
-    def _onQueryFinished(self, things: List[Thing]) -> None:
+    def _onQueryFinished(self, things: Union[List[Thing], List[Collection]]) -> None:
         """
         Callback for receiving search results on.
         :param things: The found things.
@@ -447,7 +443,7 @@ class ThingiBrowserService(QObject):
     def _checkUserNameConfigured(self) -> bool:
         """
         Checks if the username setting was configured and open the settings window if it was not.
-        :return:
+        :return: True if the username was already configured, False otherwise.
         """
         user_id = self._getActiveDriver().user_id
         if not user_id or user_id == "":

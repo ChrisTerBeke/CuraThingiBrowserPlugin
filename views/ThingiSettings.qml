@@ -6,7 +6,6 @@ import QtQuick.Dialogs 1.1
 import QtQuick.Layouts 1.3
 import QtQuick.Window 2.2
 import UM 1.1 as UM
-import Cura 1.0 as Cura
 
 // the popup window
 Window
@@ -14,7 +13,7 @@ Window
     id: thingiSettingsWindow
 
     // window configuration
-    title: "Thingiverse Settings"
+    title: "ThingiBrower - Settings"
     color: UM.Theme.getColor("viewport_background")
     width: 500
     height: 300
@@ -34,18 +33,15 @@ Window
         anchors.fill: parent
         anchors.margins: 20
 
-        ThingiSettingsItem
+        Repeater
         {
-            id: thingiverseUserNameSettingsItem
-            label: "Account username"
-            value: ThingiService.userName
-        }
-
-        ThingiSettingsItem
-        {
-            id: myMiniFactoryUserNameSettingsItem
-            label: "MyMiniFactory Account Name"
-            value: ThingiService.myMiniFactoryUserName
+            model: ThingiService.getSettings
+            ThingiSettingsItem
+            {
+                key: modelData.key
+                label: modelData.label
+                value: modelData.value
+            }
         }
 
         RowLayout
@@ -55,13 +51,11 @@ Window
                 Layout.fillWidth: true
             }
 
-            Cura.PrimaryButton
+            Button
             {
                 id: btnSave
-                text: "Save"
+                text: "Close"
                 onClicked: {
-                    ThingiService.saveSetting("user_name", thingiverseUserNameSettingsItem.value)
-                    ThingiService.saveSetting("myminifactory_user_name", myMiniFactoryUserNameSettingsItem.value)
                     thingiSettingsWindow.close()
                 }
             }

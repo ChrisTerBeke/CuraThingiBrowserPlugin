@@ -28,6 +28,8 @@ Item
 
         ColumnLayout
         {
+            Layout.fillWidth: true
+
             // thing title
             Label
             {
@@ -44,6 +46,7 @@ Item
             {
                 text: thing.url
                 url: thing.url
+                elide: Text.ElideRight
             }
         }
 
@@ -56,8 +59,10 @@ Item
                 switch (thing.type) {
                     case "Collection":
                         ThingiService.showCollectionDetails(thing.id)
+                        break
                     case "Thing":
                         ThingiService.showThingDetails(thing.id)
+                        break
                 }
                 Analytics.trackEvent("more_details", "button_clicked")
             }

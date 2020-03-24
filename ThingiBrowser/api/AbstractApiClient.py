@@ -9,7 +9,7 @@ from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkReques
 from UM.Logger import Logger
 
 from .ApiHelper import ApiHelper
-from .JsonObject import JsonObject, Thing, ThingFile
+from .JsonObject import JsonObject, Thing, ThingFile, Collection
 
 
 class AbstractApiClient(ABC):
@@ -72,14 +72,14 @@ class AbstractApiClient(ABC):
         raise NotImplementedError("getThingsBySearchQuery must be implemented")
 
     @abstractmethod
-    def getCollections(self, on_finished: Callable[[List[JsonObject]], Any],
+    def getCollections(self, on_finished: Callable[[List[Collection]], Any],
                        on_failed: Optional[Callable[[JsonObject], Any]]) -> None:
         """
         Get user's collections.
         :param on_finished: Callback with user's collections.
         :param on_failed: Callback with server response.
         """
-        raise NotImplementedError("getUserCollections must be implemented")
+        raise NotImplementedError("getCollections must be implemented")
 
     @abstractmethod
     def getThing(self, thing_id: int, on_finished: Callable[[Thing], Any],

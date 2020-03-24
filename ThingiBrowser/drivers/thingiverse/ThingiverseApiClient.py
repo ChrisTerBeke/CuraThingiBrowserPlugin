@@ -31,7 +31,7 @@ class ThingiverseApiClient(AbstractApiClient):
 
     def getThingsBySearchQuery(self, search_terms: str) -> str:
         return "search/{}/?sort=relevent".format(search_terms)
-    
+
     def getThingsLikedByUserQuery(self) -> str:
         return "users/{}/likes".format(self.user_id)
 

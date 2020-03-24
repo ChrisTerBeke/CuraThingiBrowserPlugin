@@ -1,4 +1,5 @@
 import QtQuick 2.2
+import QtQuick.Controls 2.3
 import QtQuick.Layouts 1.3
 
 // the main window header
@@ -24,8 +25,13 @@ RowLayout
         Layout.fillWidth: true
     }
 
-    //        ConfigButton
-    //        {
-    //            id: configButton
-    //        }
+    Button
+    {
+        id: configButton
+        text: "Settings"
+        onClicked: {
+            ThingiService.openSettings()
+            Analytics.trackEvent("config_button", "clicked")
+        }
+    }
 }
