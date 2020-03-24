@@ -114,9 +114,24 @@ class ThingiBrowserService(QObject):
         self._extension.showSettingsWindow()
 
     @pyqtProperty(list, notify=activeDriverChanged)
-    def drivers(self) -> Dict[str, Any]:
-        # TODO: implement this
-        return {}
+    def drivers(self) -> List[Dict[str, Any]]:
+        """
+        Get the available drivers for selecting in the UI.
+        # FIXME: convert to QtListModel.
+        :return: The drivers.
+        """
+        return [
+            {
+                "key": "thingiverse",
+                "label": "Thingiverse",
+                "image": "images/thingiverse-logo-2015.png"
+            },
+            {
+                "key": "myminifactory",
+                "label": "MyMiniFactory",
+                "image": "images/my-mini-factory-logo-dropshadow-sm.png"
+            }
+        ]
 
     @pyqtSlot(str, name="setActiveDriver")
     def setActiveDriver(self, driver: str) -> None:

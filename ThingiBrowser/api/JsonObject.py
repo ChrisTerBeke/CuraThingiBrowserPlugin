@@ -24,7 +24,10 @@ class Thing(JsonObject):
 
 class Collection(JsonObject):
     """ Class representing a collection. """
+    id = None
     thumbnail = None
+    name = None
+    url = None
     description = None
 
 

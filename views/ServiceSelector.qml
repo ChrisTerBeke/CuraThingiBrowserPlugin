@@ -3,22 +3,10 @@ import QtQuick.Controls 2.3
 
 ComboBox
 {
-    textRole: "text"
-    model: ListModel {
-        id: servicesListModel
-        ListElement {
-            text: "ThingiVerse"
-            image: "images/thingiverse-logo-2015.png"
-            value: "thingiverse"
-        }
-        ListElement {
-            text: "MyMiniFactory"
-            image: "images/my-mini-factory-logo-dropshadow-sm.png"
-            value: "myminifactory"
-        }
-    }
+    textRole: "label"
+    model: ThingiService.drivers
     onActivated: {
-        ThingiService.setActiveDriver(servicesListModel.get(currentIndex).value)
+        ThingiService.setActiveDriver(model[currentIndex].key)
         Analytics.trackEvent("driver_selected", "button_clicked")
     }
 }

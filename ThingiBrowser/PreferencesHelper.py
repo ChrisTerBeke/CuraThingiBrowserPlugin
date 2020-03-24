@@ -26,6 +26,7 @@ class PreferencesHelper:
     def getAllSettings(cls) -> List[Dict[str, str]]:
         """
         Get all settings as key:value dict.
+        # FIXME: convert to QtListModel.
         :return: The settings dict.
         """
         return [
