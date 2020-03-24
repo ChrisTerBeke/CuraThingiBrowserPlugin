@@ -11,33 +11,33 @@ Item
 {
     id: header
     width: parent.width
-    height: UM.Theme.getSize("toolbox_header").height
-    anchors {
-        top: parent.top
-        left: parent.left
-        right: parent.right
-        margins: 5
-    }
+    height: 40
+    anchors.margins: 5
 
-    ThingiSearchbar {
-        id: searchbar
-        height: parent.height
-        anchors {
-            top: parent.top
-            bottom: parent.bottom
-            left: parent.left
-            right: configButton.left
-            leftMargin: 10
-            rightMargin: 10
-        }
-    }
+    RowLayout
+    {
+        anchors.fill: parent
+        spacing: 0
 
-    ConfigButton {
-        id: configButton
-        anchors {
-            top: parent.top
-            bottom: parent.bottom
-            right: parent.right
+        ServiceSelector
+        {
+            id: serviceSelector
         }
+
+//        ThingiSearchbar
+//        {
+//            id: searchbar
+//            Layout.fillWidth: true
+//        }
+//
+//        ViewSelector
+//        {
+//            id: viewSelector
+//        }
+//
+//        ConfigButton
+//        {
+//            id: configButton
+//        }
     }
 }

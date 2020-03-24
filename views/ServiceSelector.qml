@@ -1,72 +1,30 @@
 import QtQuick 2.0
-import QtQuick.Controls 2.0
+import QtQuick.Controls 2.3
 import QtQuick.Layouts 1.3
 import UM 1.1 as UM
 import Cura 1.0 as Cura
 
-ViewSelector
+Item
 {
-    property string headerImageSource: "images/thingiverse-logo-2015.png"
-
-    function setHeaderImageSource(value) {
-        serviceSelector.toggleContent()
-        headerImageSource = value
-    }
-
-    id: serviceSelector
-    headerRadius: 5
-    headerCornerSide: Cura.RoundedRectangle.Direction.All
-    enableHeaderShadow: false
-
-    headerItem: Item
+    ComboBox
     {
-        id: serviceSelectorHeader
-        anchors.fill: serviceSelector
-
-        Image
-        {
-            id: serviceSelectorImage
-            source: serviceSelector.headerImageSource
-            cache: false
-            fillMode: Image.PreserveAspectFit
-            anchors.fill: parent  
-        }
-    }
-
-    contentItem: ColumnLayout
-    {
-        id: contentContainer
-        spacing: 0
-        anchors {
-            top: serviceSelector.bottom
-            left: serviceSelector.left
-            right: serviceSelector.right
-        }
-
-        ServiceButton
-        {
-            width: parent.width
-            height: serviceSelector.height
-            onClicked: {
-                serviceSelector.setHeaderImageSource("images/thingiverse-logo-2015.png")
-                ThingiService.setService("thingiverse")
+        textRole: "text"
+        model: ListModel {
+            id: servicesListModel
+            ListElement {
+                text: "ThingiVerse"
+                image: "images/thingiverse-logo-2015.png"
+                value: "thingiverse"
+            }
+            ListElement {
+                text: "MyMiniFactory"
+                image: "images/my-mini-factory-logo-dropshadow-sm.png"
+                value: "myminifactory"
             }
         }
-
-        ViewButtonSeparator { /* No Attributes Needed */ }
-
-        ServiceButton
-        {
-            width: parent.width
-            height: serviceSelector.height
-            onClicked: {
-                serviceSelector.setHeaderImageSource("images/my-mini-factory-logo-dropshadow-sm.png")
-                ThingiService.setService("myminifactory")
-            }
+        onActivated: {
+            ThingiService.setActiveDriver(servicesListModel.get(currentIndex).value)
+            Analytics.trackEvent("driver_selected", "button_clicked")
         }
-    }
-
-    Component.onCompleted: {
-        contentContainer.width = serviceSelector.width + serviceSelector.anchors.margins
     }
 }

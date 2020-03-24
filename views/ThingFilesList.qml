@@ -1,4 +1,4 @@
-// Copyright (c) 2018 Chris ter Beke.
+// Copyright (c) 2020 Chris ter Beke.
 // Thingiverse plugin is released under the terms of the LGPLv3 or higher.
 import QtQuick 2.7
 import QtQuick.Controls 2.2
@@ -26,7 +26,7 @@ ListView
             Image
             {
                 Layout.leftMargin: 20
-                source: modelData.THUMBNAIL
+                source: modelData.thumbnail
                 sourceSize.width: 75 // 75 is the thumbnail size
                 sourceSize.height: 75
             }
@@ -34,7 +34,7 @@ ListView
              // file name
             Label
             {
-                text: modelData.NAME
+                text: modelData.name
                 color: UM.Theme.getColor("text")
                 font: UM.Theme.getFont("large")
                 elide: Text.ElideRight
@@ -47,14 +47,21 @@ ListView
             Cura.PrimaryButton
             {
                 text: catalog.i18nc("@button", "Add to build plate")
+                tooltip: catalog.i18nc("@tooltip", "Place this 3D model onto the build plate")
+                visible: !ThingiService.isDownloading
+                Layout.rightMargin: 20
                 onClicked: {
-                    ThingiService.downloadThingFile(modelData.ID, modelData.NAME)
+                    ThingiService.downloadThingFile(modelData.id, modelData.name)
                     Analytics.trackEvent("add_to_build_plate", "button_clicked")
                 }
-                busy: ThingiService.isDownloading // indicate that we're busy downloading
-                enabled: !ThingiService.isDownloading // only allow a single download at a time
+            }
+
+            // loading spinner
+            AnimatedImage
+            {
+                visible: ThingiService.isDownloading
+                source: "images/loading.gif"
                 Layout.rightMargin: 20
-                tooltip: "Place this 3D model onto the build plate"
             }
         }
     }

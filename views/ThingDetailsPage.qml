@@ -1,4 +1,4 @@
-// Copyright (c) 2018 Chris ter Beke.
+// Copyright (c) 2020 Chris ter Beke.
 // Thingiverse plugin is released under the terms of the LGPLv3 or higher.
 import QtQuick 2.2
 import QtQuick.Controls 2.2
@@ -25,19 +25,19 @@ ColumnLayout
     Cura.SecondaryButton
     {
         text: catalog.i18nc("@button", "Back to results")
+        Layout.leftMargin: 20
+        Layout.topMargin: 10
+        Layout.bottomMargin: 10
         onClicked: {
             ThingiService.hideThingDetails()
             Analytics.trackEvent("back_to_results", "button_clicked")
         }
-        Layout.leftMargin: 20
-        Layout.topMargin: 10
-        Layout.bottomMargin: 10
     }
 
     Label
     {
         id: thingTitle
-        text: thing.NAME
+        text: thing.name
         font: UM.Theme.getFont("large")
         color: UM.Theme.getColor("text")
         renderType: Text.NativeRendering
@@ -48,8 +48,8 @@ ColumnLayout
     // link to web page
     Link
     {
-        text: thing.URL
-        url: thing.URL
+        text: thing.url
+        url: thing.url
         Layout.leftMargin: 20
         Layout.bottomMargin: 20
     }
@@ -67,7 +67,7 @@ ColumnLayout
             Label
             {
                 id: thingDescription
-                text: thing.DESCRIPTION
+                text: thing.description
                 font: UM.Theme.getFont("medium")
                 color: UM.Theme.getColor("text")
                 renderType: Text.NativeRendering

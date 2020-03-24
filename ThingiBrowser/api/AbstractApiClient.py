@@ -1,16 +1,15 @@
 # Copyright (c) 2020 Chris ter Beke.
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
-from typing import List, Callable, Any, Union, Tuple, Optional
+from typing import List, Callable, Any, Tuple, Optional
+from abc import ABC, abstractmethod
 
 from PyQt5.QtCore import QUrl
 from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
 
 from UM.Logger import Logger
 
-from abc import ABC, abstractmethod
-
 from .ApiHelper import ApiHelper
-from .JsonObject import JsonObject
+from .JsonObject import JsonObject, Thing, ThingFile
 
 
 class AbstractApiClient(ABC):
@@ -83,7 +82,7 @@ class AbstractApiClient(ABC):
         raise NotImplementedError("getUserCollections must be implemented")
 
     @abstractmethod
-    def getThing(self, thing_id: int, on_finished: Callable[[JsonObject], Any],
+    def getThing(self, thing_id: int, on_finished: Callable[[Thing], Any],
                  on_failed: Optional[Callable[[JsonObject], Any]] = None) -> None:
         """
         Get a single thing by ID.
@@ -94,7 +93,7 @@ class AbstractApiClient(ABC):
         raise NotImplementedError("getThing must be implemented")
 
     @abstractmethod
-    def getThingFiles(self, thing_id: int, on_finished: Callable[[List[JsonObject]], Any],
+    def getThingFiles(self, thing_id: int, on_finished: Callable[[List[ThingFile]], Any],
                       on_failed: Optional[Callable[[JsonObject], Any]] = None) -> None:
         """
         Get a thing's files by ID.
@@ -115,7 +114,7 @@ class AbstractApiClient(ABC):
         raise NotImplementedError("downloadThingFile must be implemented")
 
     @abstractmethod
-    def getThings(self, query: str, page: int, on_finished: Callable[[List[JsonObject]], Any],
+    def getThings(self, query: str, page: int, on_finished: Callable[[List[Thing]], Any],
                   on_failed: Optional[Callable[[JsonObject], Any]] = None) -> None:
         """
         Get things by query.
@@ -156,15 +155,15 @@ class AbstractApiClient(ABC):
         return request
 
     def _addCallback(self, reply: QNetworkReply,
-                     on_finished: Union[Callable[[JsonObject], Any], Callable[[List[JsonObject]], Any],
-                                        Callable[[bytes], Any]],
+                     on_finished: Callable[[Any], Any],
                      on_failed: Optional[Callable[[JsonObject], Any]] = None,
                      parser: Optional[Callable[[QNetworkReply], Tuple[int, Any]]] = None) -> None:
         """
         Creates a callback function so that it includes the parsing of the response into the correct model.
         The callback is added to the 'finished' signal of the reply.
         :param reply: The reply that should be listened to.
-        :param on_finished: The callback in case the response is successful.
+        :param on_finished: The callback in case the request is successful.
+        :param on_failed: The callback in case the request fails.
         :param parser: A custom parser for the response data, defaults to a JSON parser.
         """
         def parse() -> None:

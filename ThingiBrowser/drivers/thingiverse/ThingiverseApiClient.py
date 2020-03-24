@@ -50,7 +50,7 @@ class ThingiverseApiClient(AbstractApiClient):
     def getNewestThingsQuery(self) -> str:
         return "newest"
 
-    def getCollections(self, on_finished: Callable[[List[JsonObject]], Any],
+    def getCollections(self, on_finished: Callable[[List[Collection]], Any],
                        on_failed: Optional[Callable[[JsonObject], Any]]) -> None:
         url = "{}/users/{}/collections".format(self._root_url, self.user_id)
         reply = self._manager.get(self._createEmptyRequest(url))
@@ -59,6 +59,8 @@ class ThingiverseApiClient(AbstractApiClient):
     @staticmethod
     def _parseGetCollections(reply: QNetworkReply) -> Tuple[int, List[Collection]]:
         status_code, response = ApiHelper.parseReplyAsJson(reply)
+        if not response:
+            return status_code, []
         return status_code, [Collection({
             "id": item.get("id"),
             "thumbnail": item.get("thumbnail"),
@@ -67,7 +69,7 @@ class ThingiverseApiClient(AbstractApiClient):
             "description": item.get("description")
         }) for item in response]
 
-    def getThings(self, query: str, page: int, on_finished: Callable[[List[JsonObject]], Any],
+    def getThings(self, query: str, page: int, on_finished: Callable[[List[Thing]], Any],
                   on_failed: Optional[Callable[[JsonObject], Any]] = None) -> None:
         url = "{}/{}?per_page={}&page={}".format(self._root_url, query, Settings.PER_PAGE, page)
         reply = self._manager.get(self._createEmptyRequest(url))
@@ -76,6 +78,8 @@ class ThingiverseApiClient(AbstractApiClient):
     @staticmethod
     def _parseGetThings(reply: QNetworkReply) -> Tuple[int, List[Thing]]:
         status_code, response = ApiHelper.parseReplyAsJson(reply)
+        if not response:
+            return status_code, []
         return status_code, [Thing({
             "id": item.get("id"),
             "thumbnail": item.get("thumbnail"),
@@ -84,7 +88,7 @@ class ThingiverseApiClient(AbstractApiClient):
             "description": item.get("description")
         }) for item in response]
 
-    def getThing(self, thing_id: int, on_finished: Callable[[JsonObject], Any],
+    def getThing(self, thing_id: int, on_finished: Callable[[Thing], Any],
                  on_failed: Optional[Callable[[JsonObject], Any]] = None) -> None:
         url = "{}/things/{}".format(self._root_url, thing_id)
         reply = self._manager.get(self._createEmptyRequest(url))
@@ -101,7 +105,7 @@ class ThingiverseApiClient(AbstractApiClient):
             "description": item.get("description")
         })
 
-    def getThingFiles(self, thing_id: int, on_finished: Callable[[List[JsonObject]], Any],
+    def getThingFiles(self, thing_id: int, on_finished: Callable[[List[ThingFile]], Any],
                       on_failed: Optional[Callable[[JsonObject], Any]] = None) -> None:
         url = "{}/things/{}/files".format(self._root_url, thing_id)
         reply = self._manager.get(self._createEmptyRequest(url))
@@ -110,6 +114,8 @@ class ThingiverseApiClient(AbstractApiClient):
     @staticmethod
     def _parseGetThingFiles(reply: QNetworkReply) -> Tuple[int, List[ThingFile]]:
         status_code, response = ApiHelper.parseReplyAsJson(reply)
+        if not response:
+            return status_code, []
         return status_code, [ThingFile({
             "id": item.get("id"),
             "thumbnail": item.get("thumbnail"),

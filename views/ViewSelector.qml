@@ -7,7 +7,8 @@ import QtGraphicalEffects 1.0 // For the dropshadow
 import UM 1.1 as UM
 import Cura 1.0 as Cura
 
-Cura.ExpandablePopup {
+Cura.ExpandablePopup
+{
     id: viewSelector
     implicitHeight: parent.height
     implicitWidth: 200 * screenScaleFactor

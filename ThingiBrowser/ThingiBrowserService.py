@@ -8,10 +8,10 @@ from PyQt5.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot, QUrl
 from PyQt5.QtWidgets import QMessageBox
 
 from cura.CuraApplication import CuraApplication
-from .PreferencesHelper import PreferencesHelper
 
+from .PreferencesHelper import PreferencesHelper
 from .api.AbstractApiClient import AbstractApiClient
-from .api.JsonObject import JsonObject
+from .api.JsonObject import JsonObject, Thing, ThingFile
 from .drivers.thingiverse.ThingiverseApiClient import ThingiverseApiClient
 from .drivers.myminifactory.MyMiniFactoryApiClient import MyMiniFactoryApiClient
 
@@ -56,25 +56,66 @@ class ThingiBrowserService(QObject):
         self._supported_file_types = []  # type: List[str]
 
         # Hold the things found in query results.
-        self._things = []  # type: List[JsonObject]
+        self._things = []  # type: List[Thing]
         self._query = ""  # type: str
         self._query_page = 1  # type: int
         self._is_querying = False  # type: bool
         self._is_from_collection = False  # type: bool
 
         # Hold the thing and thing files that we currently see the details of.
-        self._thing_details = None  # type: Optional[JsonObject]
-        self._thing_files = []  # type: List[JsonObject]
+        self._thing_details = None  # type: Optional[Thing]
+        self._thing_files = []  # type: List[ThingFile]
         self._is_downloading = False  # type: bool
 
         # Drivers for the services we can interact with.
         self._drivers = {
+            "myminifactory": MyMiniFactoryApiClient(),
             "thingiverse": ThingiverseApiClient(),
-            "myminifactory": MyMiniFactoryApiClient()
         }  # type: Dict[str, AbstractApiClient]
         self._active_driver_name = None  # type: Optional[str]
+        self.activeDriverChanged.connect(self._onDriverChanged)
 
-    @pyqtSlot(str, name="setActiveDriver")
+    def updateSupportedFileTypes(self) -> None:
+        """
+        Refresh the available file types (triggered when plugin window is loaded).
+        """
+        supported_file_types = CuraApplication.getInstance().getMeshFileHandler().getSupportedFileTypesRead()
+        self._supported_file_types = list(supported_file_types.keys())
+        
+    def runDefaultQuery(self) -> None:
+        """
+        Run the default query that searches for items with the keyword 'ultimaker'.
+        """
+        self.search("ultimaker")
+
+    @pyqtProperty(list, notify=settingChanged)
+    def getSettings(self) -> Dict[str, Any]:
+        # TODO implement this
+        return {}
+
+    @pyqtSlot(str, str, name = "saveSetting")
+    def setSetting(self, setting_name: str, value: str) -> None:
+        """
+        Change the value of a setting.
+        :param setting_name: The name of the setting.
+        :param value: The new value.
+        """
+        PreferencesHelper.setSetting(setting_name, value)
+        self.settingChanged.emit(setting_name, value)
+
+    @pyqtSlot(name="openSettings")
+    def openSettings(self) -> None:
+        """ Open the settings window. """
+        if not self._extension:
+            return
+        self._extension.showSettingsWindow()
+
+    @pyqtProperty(list, notify=activeDriverChanged)
+    def drivers(self) -> Dict[str, Any]:
+        # TODO: implement this
+        return {}
+
+    @pyqtSlot(str, name = "setActiveDriver")
     def setActiveDriver(self, driver: str) -> None:
         """
         Set the active API driver.
@@ -88,20 +129,6 @@ class ThingiBrowserService(QObject):
         self._active_driver_name = driver
         self.activeDriverChanged.emit()
 
-    def updateSupportedFileTypes(self) -> None:
-        """
-        Refresh the available file types (triggered when plugin window is loaded).
-        """
-        supported_file_types = CuraApplication.getInstance().getMeshFileHandler().getSupportedFileTypesRead()
-        self._supported_file_types = list(supported_file_types.keys())
-
-    @pyqtSlot(name="openSettings")
-    def openSettings(self) -> None:
-        """ Open the settings window. """
-        if not self._extension:
-            return
-        self._extension.showSettingsWindow()
-
     @pyqtProperty(list, notify=activeDriverChanged)
     def availableViews(self) -> List[str]:
         """
@@ -109,25 +136,6 @@ class ThingiBrowserService(QObject):
         :return: List of views that should be visible.
         """
         return self._getActiveDriver().available_views
-
-    @pyqtProperty(list, notify=settingChanged)
-    def userName(self) -> str:
-        """
-        Get the username for the current API driver.
-        Can be none in which case we return an empty string to the UI.
-        :return: The username or an empty string.
-        """
-        return self._getActiveDriver().user_id or ""
-
-    @pyqtSlot(str, str, name="saveSetting")
-    def setSetting(self, setting_name: str, value: str) -> None:
-        """
-        Change the value of a setting.
-        :param setting_name: The name of the setting.
-        :param value: The new value.
-        """
-        PreferencesHelper.setSetting(setting_name, value)
-        self.settingChanged.emit(setting_name, value)
 
     @pyqtProperty("QVariantList", notify=thingsChanged)
     def things(self) -> List[Dict[str, Any]]:
@@ -342,7 +350,7 @@ class ThingiBrowserService(QObject):
         self._getActiveDriver().getThings(query=self._query, page=self._query_page, on_finished=self._onQueryFinished,
                                           on_failed=self._onRequestFailed)
 
-    def _onThingDetailsFinished(self, thing: JsonObject) -> None:
+    def _onThingDetailsFinished(self, thing: Thing) -> None:
         """
         Callback for receiving thing details on.
         :param thing: The thing.
@@ -350,15 +358,15 @@ class ThingiBrowserService(QObject):
         self._thing_details = thing
         self.activeThingChanged.emit()
 
-    def _onThingFilesFinished(self, thing_files: List[JsonObject]) -> None:
+    def _onThingFilesFinished(self, thing_files: List[ThingFile]) -> None:
         """
         Callback for receiving a list of thing files on. Filtered on supported file types of Cura.
         :param thing_files: The thing files.
         """
         self._thing_files = []
-        for f in thing_files:
-            if pathlib.Path(f.NAME).suffix.lower().strip(".") in self._supported_file_types:
-                self._thing_files.append(f)
+        for file in thing_files:
+            if pathlib.Path(file.name).suffix.lower().strip(".") in self._supported_file_types:
+                self._thing_files.append(file)
         self.activeThingFilesChanged.emit()
 
     def _onDownloadFinished(self, file_bytes: bytes, file_name: str) -> None:
@@ -374,7 +382,7 @@ class ThingiBrowserService(QObject):
         self._is_downloading = False
         self.downloadingStateChanged.emit()
 
-    def _onQueryFinished(self, things: List[JsonObject]) -> None:
+    def _onQueryFinished(self, things: List[Thing]) -> None:
         """
         Callback for receiving search results on.
         :param things: The found things.
@@ -392,6 +400,13 @@ class ThingiBrowserService(QObject):
         self._query_page = 1
         self.hideThingDetails()
         self.thingsChanged.emit()
+
+    def _onDriverChanged(self) -> None:
+        """
+        Execute default search query when driver changes.
+        This is needed to prevent compatibility issues with the cached query.
+        """
+        self.runDefaultQuery()
 
     @staticmethod
     def _onRequestFailed(error: Optional[JsonObject] = None) -> None:

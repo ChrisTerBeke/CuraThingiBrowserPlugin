@@ -14,14 +14,14 @@ class Settings:
         VERSION = json.load(file).get("version", "1.0.0")
     
     # Plugin name displayed in several location.
-    DISPLAY_NAME = "Thingiverse"
+    DISPLAY_NAME = "ThingiBrowser"
 
     # Text shown in Cura's extension menu.
-    MENU_TEXT = "Browse Thingiverse"
-    
+    MENU_TEXT = "Open"
+
     # Generic API settings
     PER_PAGE = 20
-    
+
     # Thingiverse API options
     THINGIVERSE_API_TOKEN = "d1057e7ec3da66ac1b81f8632606ca0a"
 

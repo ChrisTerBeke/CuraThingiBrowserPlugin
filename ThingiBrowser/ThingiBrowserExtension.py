@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Chris ter Beke.
+# Copyright (c) 2020 Chris ter Beke.
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
 import os
 from typing import Optional
@@ -45,7 +45,7 @@ class ThingiBrowserExtension(Extension):
         if self._main_dialog:
             self._main_dialog.show()
         self._service.updateSupportedFileTypes()
-        self._service.search("ultimaker")
+        self._service.runDefaultQuery()
 
     def showSettingsWindow(self) -> None:
         """
@@ -69,11 +69,7 @@ class ThingiBrowserExtension(Extension):
         # Create the dialog component from a QML file.
         dialog = CuraApplication.getInstance().createQmlComponent(path, {
             "ThingiService": self._service,
-            "Analytics": self._analytics,
-            # TODO: remove these
-            "ThingiExtension": self,
-            "THINGIVERSE_USER_NAME_PREFERENCES_KEY": Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY,
-            "MYMINIFACTORY_USER_NAME_PREFERENCES_KEY": Settings.MYMINIFACTORY_USER_NAME_PREFERENCES_KEY,
+            "Analytics": self._analytics
         })
         if not dialog:
             raise Exception("Failed to create Thingiverse dialog")
