@@ -1,7 +1,7 @@
-# Cura Thingiverse Browser
-This Cura plugin lets your search and import Thingiverse objects directly from Ultimaker Cura.
+# ThingiBrowser
+Search and import 3D files from popular online repositories directly in Cura.
 
-*This plugin is not affiliated with Thingiverse or MakerBot.*
+*This plugin is not affiliated with Thingiverse or MyMiniFactory.*
 
 ## Installation
 You can install this plugin in the Ultimaker Cura (4.0 or higher) Marketplace.
