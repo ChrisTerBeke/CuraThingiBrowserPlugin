@@ -21,7 +21,7 @@ class MyMiniFactoryApiClient(AbstractApiClient):
 
     @property
     def available_views(self) -> List[str]:
-        return ["My Likes", "My Collections", "My Things", "Popular", "Featured", "Newest"]
+        return ["userLikes", "userCollections", "userThings", "popular", "featured", "newest"]
 
     @property
     def user_id(self) -> str:
@@ -37,7 +37,7 @@ class MyMiniFactoryApiClient(AbstractApiClient):
         return "users/{}/objects".format(self.user_id)
 
     def getThingsMadeByUserQuery(self) -> str:
-        raise NotImplementedError("Provider 'MyMiniFactory' does not support user-made things.")
+        pass  # TODO: handle this
 
     def getPopularThingsQuery(self) -> str:
         return "search?sort=popularity"
@@ -70,7 +70,7 @@ class MyMiniFactoryApiClient(AbstractApiClient):
 
     def getCollections(self, on_finished: Callable[[List[Collection]], Any],
                        on_failed: Optional[Callable[[JsonObject], Any]]) -> None:
-        url = "{}/collections/{}".format(self._root_url, self.user_id)
+        url = "{}/users/{}/collections".format(self._root_url, self.user_id)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed, parser=self._parseGetCollections)
 
@@ -86,7 +86,7 @@ class MyMiniFactoryApiClient(AbstractApiClient):
             "name": item.get("name"),
             "url": item.get("url"),
             "description": item.get("description")
-        }) for item in response]
+        }) for item in response.get("items")]
 
     def getThingFiles(self, thing_id: int, on_finished: Callable[[List[ThingFile]], Any],
                       on_failed: Optional[Callable[[JsonObject], Any]] = None) -> None:
@@ -110,7 +110,8 @@ class MyMiniFactoryApiClient(AbstractApiClient):
 
     def getThings(self, query: str, page: int, on_finished: Callable[[List[Thing]], Any],
                   on_failed: Optional[Callable[[JsonObject], Any]] = None) -> None:
-        url = "{}/{}&per_page={}&page={}".format(self._root_url, query, Settings.PER_PAGE, page)
+        operator = "&" if query.find("?") > 0 else "?"
+        url = "{}/{}{}per_page={}&page={}".format(self._root_url, query, operator, Settings.PER_PAGE, page)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed, parser=self._parseGetThings)
 
@@ -119,13 +120,14 @@ class MyMiniFactoryApiClient(AbstractApiClient):
         status_code, response = ApiHelper.parseReplyAsJson(reply)
         if not response:
             return status_code, []
+        items = response.get("objects")["items"] if response.get("objects") else response.get("items")
         return status_code, [Thing({
             "id": item.get("id"),
             "thumbnail": item.get("images")[0]["thumbnail"]["url"] if item.get("images") else None,
             "name": item.get("name"),
             "url": item.get("url"),
             "description": item.get("description")
-        }) for item in response.get("items")]
+        }) for item in items]
 
     def downloadThingFile(self, file_id: int, file_name: str, on_finished: Callable[[bytes], Any]) -> None:
         url = "https://www.myminifactory.com/download/{}?downloadfile={}".format(file_id, file_name)

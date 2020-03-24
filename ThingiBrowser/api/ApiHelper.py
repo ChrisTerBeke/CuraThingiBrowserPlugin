@@ -4,16 +4,16 @@ import json
 from json import JSONDecodeError
 
 from PyQt5.QtNetwork import QNetworkReply, QNetworkRequest
-from typing import Tuple, Union, List, Dict, Any
+from typing import Tuple, Union, List, Dict, Any, Optional
 
 from UM.Logger import Logger
 
 
 class ApiHelper:
     """ Assorted helper functions for API interaction. """
-    
+
     @classmethod
-    def parseReplyAsJson(cls, reply: QNetworkReply) -> Tuple[int, Union[Dict[str, Any], List[Dict[str, Any]]]]:
+    def parseReplyAsJson(cls, reply: QNetworkReply) -> Tuple[int, Optional[Union[Dict[str, Any], List[Dict[str, Any]]]]]:
         """
         Parse the given API reply into a status code and JSON object.
         :param reply: The reply from the server.
@@ -24,8 +24,8 @@ class ApiHelper:
             response = bytes(reply.readAll()).decode()
             return status_code, json.loads(response)
         except (UnicodeDecodeError, JSONDecodeError, ValueError) as err:
-            Logger.logException("e", "Could not parse the API response: %s", err)
-            return status_code, []
+            Logger.log("e", "Could not parse the API response: %s", err)
+            return status_code, None
 
     @classmethod
     def parseReplyAsBytes(cls, reply: QNetworkReply) -> Tuple[int, bytes]:

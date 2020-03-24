@@ -34,7 +34,7 @@ ColumnLayout
         width: parent.width
         thing: ThingiService.activeThing
         thingFiles: ThingiService.activeThingFiles
-        visible: ThingiService.hasActiveThing
+        visible: ThingiService.hasActiveThing && ThingiService.activeThing
         Layout.fillHeight: true
         onVisibleChanged: {
             Analytics.trackScreen("details")

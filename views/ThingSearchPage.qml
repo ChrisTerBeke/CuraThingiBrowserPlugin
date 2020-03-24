@@ -7,38 +7,21 @@ import UM 1.1 as UM
 
 ColumnLayout
 {
-    Item
+    Button
     {
-        Layout.fillWidth: true
-        Layout.fillHeight: true
-        visible: ThingiService.isQuerying
-
-        AnimatedImage
-        {
-            // TODO: center loading spinner
-            source: "images/loading.gif"
-            anchors.top: (parent.height / 2) - (height / 2)
-            anchors.left: (parent.width / 2) - (width / 2)
+        text: "Back to collections"
+        visible: ThingiService.isFromCollection === true && ThingiService.isQuerying === false
+        Layout.leftMargin: 20
+        Layout.topMargin: 10
+        Layout.bottomMargin: 10
+        onClicked: {
+            ThingiService.getCollections()
         }
     }
-
-    // TODO: fix collections
-    //    Button
-    //    {
-    //        text: "Back to collections"
-    //        visible: ThingiService.isFromCollection === true && ThingiService.isQuerying === false
-    //        Layout.leftMargin: 20
-    //        Layout.topMargin: 10
-    //        Layout.bottomMargin: 10
-    //        onClicked: {
-    //            ThingiService.getCollections()
-    //        }
-    //    }
 
     ThingsList
     {
         id: thingsList
-        visible: !ThingiService.isQuerying
         model: ThingiService.things
         Layout.fillWidth: true
         Layout.fillHeight: true
@@ -77,6 +60,12 @@ ColumnLayout
             text: "Page " + ThingiService.currentPage
             font: UM.Theme.getFont("medium")
             renderType: Text.NativeRendering
+        }
+
+        AnimatedImage
+        {
+            source: "images/loading.gif"
+            visible: ThingiService.isQuerying
         }
     }
 }

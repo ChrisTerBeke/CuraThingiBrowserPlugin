@@ -46,6 +46,7 @@ Item
             {
                 text: thing.url
                 url: thing.url
+                visible: thing.url
                 elide: Text.ElideRight
             }
         }

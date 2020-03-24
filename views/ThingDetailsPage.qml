@@ -10,13 +10,10 @@ ColumnLayout
     id: detailsPage
 
     // the active thing
-    property var thing: null
+    property var thing
 
     // the files for the active thing
-    property var thingFiles: []
-
-    // hide the whole page if no thing is actually set
-    visible: thing != undefined
+    property var thingFiles
 
     // button to navigate back to the search results page
     Button
@@ -34,7 +31,7 @@ ColumnLayout
     Label
     {
         id: thingTitle
-        text: thing.name
+        text: thing ? thing.name : ""
         font: UM.Theme.getFont("large")
         color: UM.Theme.getColor("text")
         renderType: Text.NativeRendering
@@ -45,8 +42,8 @@ ColumnLayout
     // link to web page
     Link
     {
-        text: thing.url
-        url: thing.url
+        text: thing ? thing.url : ""
+        url: thing ? thing.url : ""
         Layout.leftMargin: 20
         Layout.bottomMargin: 20
     }
@@ -64,7 +61,7 @@ ColumnLayout
             Label
             {
                 id: thingDescription
-                text: thing.description
+                text: thing ? thing.description : ""
                 font: UM.Theme.getFont("medium")
                 color: UM.Theme.getColor("text")
                 renderType: Text.NativeRendering

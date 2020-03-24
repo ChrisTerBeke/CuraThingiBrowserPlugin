@@ -237,7 +237,7 @@ class ThingiBrowserService(QObject):
         """
         if not self._checkUserNameConfigured():
             return
-        query = self._getActiveDriver().getThingsMadeByUserQuery()
+        query = self._getActiveDriver().getThingsByUserQuery()
         self._executeQuery(query)
 
     @pyqtSlot(name="getMakes")
@@ -439,12 +439,12 @@ class ThingiBrowserService(QObject):
         """
         self.runDefaultQuery()
 
-    @staticmethod
-    def _onRequestFailed(error: Optional[JsonObject] = None) -> None:
+    def _onRequestFailed(self, error: Optional[JsonObject] = None) -> None:
         """
         Callback for when a request failed.
         :param error: An optional error object that was returned by the Thingiverse API.
         """
+        self._is_querying = False
         mb = QMessageBox()
         mb.setIcon(QMessageBox.Critical)
         mb.setWindowTitle("Oh no!")

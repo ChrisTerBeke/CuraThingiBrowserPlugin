@@ -20,7 +20,7 @@ class ThingiverseApiClient(AbstractApiClient):
 
     @property
     def available_views(self) -> List[str]:
-        return ["My Likes", "My Collections", "My Things", "My Makes", "Popular", "Featured", "Newest"]
+        return ["userLikes", "userCollections", "userThings", "userMakes", "popular", "featured", "newest"]
 
     @property
     def user_id(self):
@@ -65,8 +65,8 @@ class ThingiverseApiClient(AbstractApiClient):
             "id": item.get("id"),
             "thumbnail": item.get("thumbnail"),
             "name": item.get("name"),
-            "url": item.get("url"),
-            "description": item.get("description")
+            "description": item.get("description"),
+            "url": None  # collections have no public URL
         }) for item in response]
 
     def getThings(self, query: str, page: int, on_finished: Callable[[List[Thing]], Any],
@@ -83,9 +83,9 @@ class ThingiverseApiClient(AbstractApiClient):
         return status_code, [Thing({
             "id": item.get("id"),
             "thumbnail": item.get("thumbnail"),
-            "name": item.get("name"),
+            "name": item.get("thing")["name"] if item.get("thing") else item.get("name"),
             "url": item.get("public_url"),
-            "description": item.get("description")
+            "description": item.get("description_html") or item.get("description")
         }) for item in response]
 
     def getThing(self, thing_id: int, on_finished: Callable[[Thing], Any],
@@ -102,14 +102,14 @@ class ThingiverseApiClient(AbstractApiClient):
             "thumbnail": item.get("thumbnail"),
             "name": item.get("name"),
             "url": item.get("public_url") or item.get("url"),
-            "description": item.get("description")
+            "description": item.get("description_html") or item.get("description")
         })
 
     def getThingFiles(self, thing_id: int, on_finished: Callable[[List[ThingFile]], Any],
                       on_failed: Optional[Callable[[JsonObject], Any]] = None) -> None:
         url = "{}/things/{}/files".format(self._root_url, thing_id)
         reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, on_failed)
+        self._addCallback(reply, on_finished, on_failed, parser=self._parseGetThingFiles)
 
     @staticmethod
     def _parseGetThingFiles(reply: QNetworkReply) -> Tuple[int, List[ThingFile]]:
