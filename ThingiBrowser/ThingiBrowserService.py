@@ -113,24 +113,15 @@ class ThingiBrowserService(QObject):
             return
         self._extension.showSettingsWindow()
 
-    @pyqtProperty(list, notify=activeDriverChanged)
+    @pyqtProperty("QVariantList", constant=True)
     def drivers(self) -> List[Dict[str, Any]]:
         """
         Get the available drivers for selecting in the UI.
-        # FIXME: convert to QtListModel.
         :return: The drivers.
         """
         return [
-            {
-                "key": "thingiverse",
-                "label": "Thingiverse",
-                "image": "images/thingiverse-logo-2015.png"
-            },
-            {
-                "key": "myminifactory",
-                "label": "MyMiniFactory",
-                "image": "images/my-mini-factory-logo-dropshadow-sm.png"
-            }
+            {"key": "thingiverse", "label": "Thingiverse"},
+            {"key": "myminifactory", "label": "MyMiniFactory"}
         ]
 
     @pyqtSlot(str, name="setActiveDriver")
@@ -179,7 +170,7 @@ class ThingiBrowserService(QObject):
         """
         return self._is_querying
 
-    @pyqtProperty("QVariant", notify=activeThingChanged)
+    @pyqtProperty("QVariantMap", notify=activeThingChanged)
     def activeThing(self) -> Dict[str, Any]:
         """
         Get the current active thing details.

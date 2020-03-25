@@ -31,7 +31,7 @@ ColumnLayout
     Label
     {
         id: thingTitle
-        text: thing ? thing.name : ""
+        text: thing && thing.name ? thing.name : ""
         font: UM.Theme.getFont("large")
         color: UM.Theme.getColor("text")
         renderType: Text.NativeRendering
@@ -42,8 +42,8 @@ ColumnLayout
     // link to web page
     Link
     {
-        text: thing ? thing.url : ""
-        url: thing ? thing.url : ""
+        text: thing && thing.url ? thing.url : ""
+        url: thing && thing.url ? thing.url : ""
         Layout.leftMargin: 20
         Layout.bottomMargin: 20
     }
@@ -61,7 +61,7 @@ ColumnLayout
             Label
             {
                 id: thingDescription
-                text: thing ? thing.description : ""
+                text: thing && thing.description ? thing.description : ""
                 font: UM.Theme.getFont("medium")
                 color: UM.Theme.getColor("text")
                 renderType: Text.NativeRendering
