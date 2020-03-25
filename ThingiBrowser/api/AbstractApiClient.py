@@ -148,7 +148,7 @@ class AbstractApiClient(ABC):
         :param content_type: Content-Type header value
         :return: The QNetworkRequest.
         """
-        request = QNetworkRequest(QUrl().fromUserInput(url))
+        request = QNetworkRequest(QUrl(url))
         request.setHeader(QNetworkRequest.ContentTypeHeader, content_type)
         request.setAttribute(QNetworkRequest.RedirectPolicyAttribute, True)  # file downloads reply with a 302 first
         self._setAuth(request)

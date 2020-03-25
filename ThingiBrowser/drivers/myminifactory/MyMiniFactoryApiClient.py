@@ -143,5 +143,5 @@ class MyMiniFactoryApiClient(AbstractApiClient):
     def _setAuth(self, request: QNetworkRequest):
         current_url = request.url().toString()
         operator = "&" if current_url.find("?") > 0 else "?"
-        new_url = QUrl().fromUserInput("{}{}key={}".format(current_url, operator, Settings.MYMINIFACTORY_API_TOKEN))
+        new_url = QUrl("{}{}key={}".format(current_url, operator, Settings.MYMINIFACTORY_API_TOKEN))
         request.setUrl(new_url)
