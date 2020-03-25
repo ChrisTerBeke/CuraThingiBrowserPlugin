@@ -64,7 +64,7 @@ class MyMiniFactoryApiClient(AbstractApiClient):
             return status_code, None
         return status_code, Thing({
             "id": item.get("id"),
-            "thumbnail": item.get("images", []).get(0).get("thumbnail", {}).get("url") if item.get("images") else None,
+            "thumbnail": item.get("images", [])[0].get("thumbnail", {}).get("url") if item.get("images") else None,
             "name": item.get("name"),
             "url": item.get("url"),
             "description": item.get("description")
@@ -125,7 +125,7 @@ class MyMiniFactoryApiClient(AbstractApiClient):
         items = response.get("objects", {}).get("items") if response.get("objects") else response.get("items")
         return status_code, [Thing({
             "id": item.get("id"),
-            "thumbnail": item.get("images", []).get(0).get("thumbnail", {}).get("url") if item.get("images") else None,
+            "thumbnail": item.get("images", [])[0].get("thumbnail", {}).get("url") if item.get("images") else None,
             "name": item.get("name"),
             "url": item.get("url"),
             "description": item.get("description")
