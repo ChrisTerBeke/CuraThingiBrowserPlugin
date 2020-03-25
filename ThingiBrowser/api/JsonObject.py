@@ -1,6 +1,7 @@
 # Copyright (c) 2020 Chris ter Beke.
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
 from typing import Dict, Any
+
 from PyQt5.QtCore import QObject
 
 
@@ -11,6 +12,11 @@ class JsonObject(QObject):
         if _dict:
             vars(self).update(_dict)
         super().__init__()
+        
+        
+class ApiError(JsonObject):
+    """ Class representing an API error. """
+    error = None
 
 
 class Thing(JsonObject):

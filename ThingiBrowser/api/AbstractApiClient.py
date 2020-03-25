@@ -6,10 +6,10 @@ from abc import ABC, abstractmethod
 from PyQt5.QtCore import QUrl
 from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
 
-from UM.Logger import Logger
+from UM.Logger import Logger  # type: ignore
 
 from .ApiHelper import ApiHelper
-from .JsonObject import JsonObject, Thing, ThingFile, Collection
+from .JsonObject import Thing, ThingFile, Collection, ApiError
 
 
 class AbstractApiClient(ABC):
@@ -73,7 +73,7 @@ class AbstractApiClient(ABC):
 
     @abstractmethod
     def getCollections(self, on_finished: Callable[[List[Collection]], Any],
-                       on_failed: Optional[Callable[[JsonObject], Any]]) -> None:
+                       on_failed: Optional[Callable[[Optional[ApiError]], Any]]) -> None:
         """
         Get user's collections.
         :param on_finished: Callback with user's collections.
@@ -83,7 +83,7 @@ class AbstractApiClient(ABC):
 
     @abstractmethod
     def getThing(self, thing_id: int, on_finished: Callable[[Thing], Any],
-                 on_failed: Optional[Callable[[JsonObject], Any]] = None) -> None:
+                 on_failed: Optional[Callable[[Optional[ApiError]], Any]] = None) -> None:
         """
         Get a single thing by ID.
         :param thing_id: The thing ID.
@@ -94,7 +94,7 @@ class AbstractApiClient(ABC):
 
     @abstractmethod
     def getThingFiles(self, thing_id: int, on_finished: Callable[[List[ThingFile]], Any],
-                      on_failed: Optional[Callable[[JsonObject], Any]] = None) -> None:
+                      on_failed: Optional[Callable[[Optional[ApiError]], Any]] = None) -> None:
         """
         Get a thing's files by ID.
         :param thing_id: The thing ID.
@@ -115,7 +115,7 @@ class AbstractApiClient(ABC):
 
     @abstractmethod
     def getThings(self, query: str, page: int, on_finished: Callable[[List[Thing]], Any],
-                  on_failed: Optional[Callable[[JsonObject], Any]] = None) -> None:
+                  on_failed: Optional[Callable[[Optional[ApiError]], Any]] = None) -> None:
         """
         Get things by query.
         :param query: The things to get.
@@ -156,7 +156,7 @@ class AbstractApiClient(ABC):
 
     def _addCallback(self, reply: QNetworkReply,
                      on_finished: Callable[[Any], Any],
-                     on_failed: Optional[Callable[[JsonObject], Any]] = None,
+                     on_failed: Optional[Callable[[Optional[ApiError]], Any]] = None,
                      parser: Optional[Callable[[QNetworkReply], Tuple[int, Any]]] = None) -> None:
         """
         Creates a callback function so that it includes the parsing of the response into the correct model.
@@ -171,8 +171,11 @@ class AbstractApiClient(ABC):
             status_code, response = parser(reply) if parser else ApiHelper.parseReplyAsJson(reply)
             if not status_code or status_code >= 400 or not response:
                 Logger.log("w", "API returned with status{} and body {}".format(status_code, response))
-                return on_failed(JsonObject(response) if response else None)
+                if on_failed:
+                    error_response = ApiError(**response.__dict__)
+                    return on_failed(error_response)
             on_finished(response)
+            reply.deleteLater()
 
         self._anti_gc_callbacks.append(parse)
-        reply.finished.connect(parse)
+        reply.finished.connect(parse)  # type: ignore

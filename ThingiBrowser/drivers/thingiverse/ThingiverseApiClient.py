@@ -4,11 +4,11 @@ from typing import List, Callable, Any, Optional, Tuple
 
 from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
 
-from ....Settings import Settings
+from ...Settings import Settings
 from ...PreferencesHelper import PreferencesHelper
 from ...api.AbstractApiClient import AbstractApiClient
 from ...api.ApiHelper import ApiHelper
-from ...api.JsonObject import JsonObject, Thing, ThingFile, Collection
+from ...api.JsonObject import ApiError, Thing, ThingFile, Collection
 
 
 class ThingiverseApiClient(AbstractApiClient):
@@ -51,16 +51,16 @@ class ThingiverseApiClient(AbstractApiClient):
         return "newest"
 
     def getCollections(self, on_finished: Callable[[List[Collection]], Any],
-                       on_failed: Optional[Callable[[JsonObject], Any]]) -> None:
+                       on_failed: Optional[Callable[[Optional[ApiError]], Any]]) -> None:
         url = "{}/users/{}/collections".format(self._root_url, self.user_id)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed, parser=self._parseGetCollections)
 
     @staticmethod
-    def _parseGetCollections(reply: QNetworkReply) -> Tuple[int, List[Collection]]:
+    def _parseGetCollections(reply: QNetworkReply) -> Tuple[int, Optional[List[Collection]]]:
         status_code, response = ApiHelper.parseReplyAsJson(reply)
-        if not response:
-            return status_code, []
+        if not response or not isinstance(response, list):
+            return status_code, None
         return status_code, [Collection({
             "id": item.get("id"),
             "thumbnail": item.get("thumbnail"),
@@ -70,33 +70,35 @@ class ThingiverseApiClient(AbstractApiClient):
         }) for item in response]
 
     def getThings(self, query: str, page: int, on_finished: Callable[[List[Thing]], Any],
-                  on_failed: Optional[Callable[[JsonObject], Any]] = None) -> None:
+                  on_failed: Optional[Callable[[Optional[ApiError]], Any]] = None) -> None:
         url = "{}/{}?per_page={}&page={}".format(self._root_url, query, Settings.PER_PAGE, page)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed, parser=self._parseGetThings)
 
     @staticmethod
-    def _parseGetThings(reply: QNetworkReply) -> Tuple[int, List[Thing]]:
+    def _parseGetThings(reply: QNetworkReply) -> Tuple[int, Optional[List[Thing]]]:
         status_code, response = ApiHelper.parseReplyAsJson(reply)
-        if not response:
-            return status_code, []
+        if not response or not isinstance(response, list):
+            return status_code, None
         return status_code, [Thing({
             "id": item.get("id"),
             "thumbnail": item.get("thumbnail"),
-            "name": item.get("thing")["name"] if item.get("thing") else item.get("name"),
+            "name": item.get("thing", {}).get("name") if item.get("thing") else item.get("name"),
             "url": item.get("public_url"),
             "description": item.get("description_html") or item.get("description")
         }) for item in response]
 
     def getThing(self, thing_id: int, on_finished: Callable[[Thing], Any],
-                 on_failed: Optional[Callable[[JsonObject], Any]] = None) -> None:
+                 on_failed: Optional[Callable[[Optional[ApiError]], Any]] = None) -> None:
         url = "{}/things/{}".format(self._root_url, thing_id)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed, parser=self._parseGetThing)
 
     @staticmethod
-    def _parseGetThing(reply: QNetworkReply) -> Tuple[int, Thing]:
+    def _parseGetThing(reply: QNetworkReply) -> Tuple[int, Optional[Thing]]:
         status_code, item = ApiHelper.parseReplyAsJson(reply)
+        if not item or not isinstance(item, dict):
+            return status_code, None
         return status_code, Thing({
             "id": item.get("id"),
             "thumbnail": item.get("thumbnail"),
@@ -106,16 +108,16 @@ class ThingiverseApiClient(AbstractApiClient):
         })
 
     def getThingFiles(self, thing_id: int, on_finished: Callable[[List[ThingFile]], Any],
-                      on_failed: Optional[Callable[[JsonObject], Any]] = None) -> None:
+                      on_failed: Optional[Callable[[Optional[ApiError]], Any]] = None) -> None:
         url = "{}/things/{}/files".format(self._root_url, thing_id)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed, parser=self._parseGetThingFiles)
 
     @staticmethod
-    def _parseGetThingFiles(reply: QNetworkReply) -> Tuple[int, List[ThingFile]]:
+    def _parseGetThingFiles(reply: QNetworkReply) -> Tuple[int, Optional[List[ThingFile]]]:
         status_code, response = ApiHelper.parseReplyAsJson(reply)
-        if not response:
-            return status_code, []
+        if not response or not isinstance(response, list):
+            return status_code, None
         return status_code, [ThingFile({
             "id": item.get("id"),
             "thumbnail": item.get("thumbnail"),

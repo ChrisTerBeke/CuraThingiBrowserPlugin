@@ -4,12 +4,13 @@ import os
 from typing import Optional
 
 from PyQt5.QtCore import QObject
+from PyQt5.QtGui import QWindow
 
-from UM.Extension import Extension
-from UM.PluginRegistry import PluginRegistry
-from cura.CuraApplication import CuraApplication
+from UM.Extension import Extension  # type: ignore
+from UM.PluginRegistry import PluginRegistry  # type: ignore
+from cura.CuraApplication import CuraApplication  # type: ignore
 
-from ..Settings import Settings
+from .Settings import Settings
 from .ThingiBrowserService import ThingiBrowserService
 from .api.Analytics import Analytics
 
@@ -29,8 +30,8 @@ class ThingiBrowserExtension(Extension):
         self._analytics = Analytics()  # type: Analytics
 
         # The UI objects.
-        self._main_dialog = None # type: Optional[QObject]
-        self._settings_dialog = None
+        self._main_dialog = None  # type: Optional[QObject]
+        self._settings_dialog = None  # type: Optional[QObject]
 
         # Configure the 'extension' menu.
         self.setMenuName(Settings.DISPLAY_NAME)
@@ -42,10 +43,10 @@ class ThingiBrowserExtension(Extension):
         """
         if not self._main_dialog:
             self._main_dialog = self._createComponent("Thingiverse.qml")
-        if self._main_dialog:
+        if self._main_dialog and isinstance(self._main_dialog, QWindow):
             self._main_dialog.show()
-        self._service.updateSupportedFileTypes()
-        self._service.runDefaultQuery()
+            self._service.updateSupportedFileTypes()
+            self._service.runDefaultQuery()
 
     def showSettingsWindow(self) -> None:
         """
@@ -53,7 +54,7 @@ class ThingiBrowserExtension(Extension):
         """
         if not self._settings_dialog:
             self._settings_dialog = self._createComponent("ThingiSettings.qml")
-        if self._settings_dialog:
+        if self._settings_dialog and isinstance(self._settings_dialog, QWindow):
             self._settings_dialog.show()
 
     def _createComponent(self, qml_file_path: str) -> Optional[QObject]:

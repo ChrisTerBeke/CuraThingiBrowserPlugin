@@ -2,16 +2,16 @@
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
 import pathlib
 import tempfile
-from typing import List, Optional, TYPE_CHECKING, Dict, Any, Union
+from typing import List, Optional, TYPE_CHECKING, Dict, Any, Union, cast
 
-from PyQt5.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot, QUrl
+from PyQt5.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot, QUrl  # type: ignore
 from PyQt5.QtWidgets import QMessageBox
 
-from cura.CuraApplication import CuraApplication
+from cura.CuraApplication import CuraApplication  # type: ignore
 
 from .PreferencesHelper import PreferencesHelper
 from .api.AbstractApiClient import AbstractApiClient
-from .api.JsonObject import JsonObject, Thing, ThingFile, Collection
+from .api.JsonObject import Thing, ThingFile, Collection, ApiError
 from .drivers.thingiverse.ThingiverseApiClient import ThingiverseApiClient
 from .drivers.myminifactory.MyMiniFactoryApiClient import MyMiniFactoryApiClient
 
@@ -171,7 +171,7 @@ class ThingiBrowserService(QObject):
         return self._is_querying
 
     @pyqtProperty("QVariantMap", notify=activeThingChanged)
-    def activeThing(self) -> Dict[str, Any]:
+    def activeThing(self) -> Optional[Dict[str, Any]]:
         """
         Get the current active thing details.
         :return: The thing.
@@ -276,7 +276,7 @@ class ThingiBrowserService(QObject):
         if not self._checkUserNameConfigured():
             return
         self._prepQuery("user_collections", is_from_collection=False)
-        self._getActiveDriver().getCollections(on_finished=self._onQueryFinished, on_failed=self._onRequestFailed)
+        self._getActiveDriver().getCollections(on_finished=self._onCollectionsFinished, on_failed=self._onRequestFailed)
 
     @pyqtSlot(int, name="showCollectionDetails")
     def showCollectionDetails(self, collection_id: int) -> None:
@@ -387,7 +387,7 @@ class ThingiBrowserService(QObject):
         """
         self._thing_files = []
         for file in thing_files:
-            if pathlib.Path(file.name).suffix.lower().strip(".") in self._supported_file_types:
+            if file.name and pathlib.Path(file.name).suffix.lower().strip(".") in self._supported_file_types:
                 self._thing_files.append(file)
         self.activeThingFilesChanged.emit()
 
@@ -404,14 +404,24 @@ class ThingiBrowserService(QObject):
         self._is_downloading = False
         self.downloadingStateChanged.emit()
 
-    def _onQueryFinished(self, things: Union[List[Thing], List[Collection]]) -> None:
+    def _onQueryFinished(self, things: List[Thing]) -> None:
         """
-        Callback for receiving search results on.
+        Callback for receiving thing results on.
         :param things: The found things.
         """
         self._is_querying = False
         self.queryingStateChanged.emit()
         self._things = things
+        self.thingsChanged.emit()
+
+    def _onCollectionsFinished(self, collections: List[Collection]) -> None:
+        """
+        Callback for receiving collections results on.
+        :param collections: The found collections.
+        """
+        self._is_querying = False
+        self.queryingStateChanged.emit()
+        self._things = cast(List[Thing], collections)  # we know that Thing and Collection are compatible, MyPy does not
         self.thingsChanged.emit()
 
     def _clearSearchResults(self) -> None:
@@ -430,7 +440,7 @@ class ThingiBrowserService(QObject):
         """
         self.runDefaultQuery()
 
-    def _onRequestFailed(self, error: Optional[JsonObject] = None) -> None:
+    def _onRequestFailed(self, error: Optional[ApiError] = None) -> None:
         """
         Callback for when a request failed.
         :param error: An optional error object that was returned by the Thingiverse API.
@@ -439,9 +449,7 @@ class ThingiBrowserService(QObject):
         mb = QMessageBox()
         mb.setIcon(QMessageBox.Critical)
         mb.setWindowTitle("Oh no!")
-        error_message = "Unknown"
-        if error:
-            error_message = error.error if hasattr(error, "error") else error
+        error_message = error.error or str(error) if error else "Unknown"
         mb.setText("The API returned an error: {}.".format(error_message))
         mb.setDetailedText(str(error.__dict__) if error else "")
         mb.exec()

@@ -2,16 +2,16 @@
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
 import uuid
 from urllib.parse import urlencode
-from typing import Dict
+from typing import Dict, Any
 
 import requests
 from PyQt5.QtCore import pyqtSlot, QObject
 
-from UM.Logger import Logger
-from cura.CuraApplication import CuraApplication
+from UM.Logger import Logger  # type: ignore
+from cura.CuraApplication import CuraApplication  # type: ignore
 
 from ..PreferencesHelper import PreferencesHelper
-from ...Settings import Settings
+from ..Settings import Settings
 
 
 class Analytics(QObject):
@@ -31,7 +31,7 @@ class Analytics(QObject):
     def trackEvent(self, category: str, event_name: str) -> None:
         self._send({"t": "event", "ec": category, "ea": event_name, "ev": 0})
 
-    def _send(self, data: Dict[str, any]):
+    def _send(self, data: Dict[str, Any]):
         params = {
             "v": 1,
             "tid": Settings.ANALYTICS_ID,

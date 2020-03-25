@@ -2,9 +2,9 @@
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
 from typing import Optional, Dict, List
 
-from cura.CuraApplication import CuraApplication
+from cura.CuraApplication import CuraApplication  # type: ignore
 
-from ..Settings import Settings
+from .Settings import Settings
 
 
 class PreferencesHelper:
