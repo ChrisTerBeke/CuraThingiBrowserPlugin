@@ -5,6 +5,7 @@ ComboBox
 {
     textRole: "label"
     model: ThingiService.drivers
+    currentIndex: ThingiService.getDriverIndex(ThingiService.activeDriver)
     onActivated: {
         ThingiService.setActiveDriver(model[currentIndex].key)
         Analytics.trackEvent("driver_selected", "button_clicked")

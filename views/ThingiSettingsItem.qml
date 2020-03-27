@@ -9,9 +9,11 @@ RowLayout
 {
     id: thingiSettingsItem
 
+    property var type: ""
     property var key: ""
     property var label: ""
     property var value: ""
+    property var options: []
 
     Label
     {
@@ -25,6 +27,7 @@ RowLayout
     {
         id: inputField
         text: thingiSettingsItem.value
+        visible: thingiSettingsItem.type == "text"
         Layout.fillWidth: true
         selectByMouse: true
         onEditingFinished: {
@@ -32,10 +35,23 @@ RowLayout
         }
     }
 
+    ComboBox
+    {
+        id: inputMenu
+        visible: thingiSettingsItem.type == "combobox"
+        Layout.fillWidth: true
+        textRole: "label"
+        currentIndex: ThingiService.getDriverIndex(thingiSettingsItem.value)
+        model: thingiSettingsItem.options
+        onActivated: {
+            ThingiService.saveSetting(thingiSettingsItem.key, model[currentIndex].key)
+        }
+    }
+
     Binding
     {
         target: thingiSettingsItem
         property: "value"
-        value: inputField.text
+        value: thingiSettingsItem.type == "combobox" ? inputMenu.model[inputMenu.currentIndex].key : inputField.text
     }
 }
