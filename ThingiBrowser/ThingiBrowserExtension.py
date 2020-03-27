@@ -1,7 +1,7 @@
 # Copyright (c) 2020 Chris ter Beke.
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
 import os
-from typing import Optional
+from typing import Optional, Callable
 
 from PyQt5.QtCore import QObject
 from PyQt5.QtGui import QWindow
@@ -42,6 +42,8 @@ class ThingiBrowserExtension(Extension):
         """
         if not self._main_dialog:
             self._main_dialog = self._createComponent("Thingiverse.qml")
+            if self._main_dialog:
+                self._main_dialog.closing.connect(self._service.resetActiveDriver)
         if self._main_dialog and isinstance(self._main_dialog, QWindow):
             self._main_dialog.show()
             self._service.updateSupportedFileTypes()

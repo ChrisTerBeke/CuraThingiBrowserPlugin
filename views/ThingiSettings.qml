@@ -38,9 +38,11 @@ Window
             model: ThingiService.getSettings
             ThingiSettingsItem
             {
+                type: modelData.type
                 key: modelData.key
                 label: modelData.label
                 value: modelData.value
+                options: modelData.options
             }
         }
 

@@ -15,6 +15,7 @@ from .api.AbstractApiClient import AbstractApiClient
 from .api.JsonObject import Thing, ThingFile, Collection, ApiError
 from .drivers.thingiverse.ThingiverseApiClient import ThingiverseApiClient
 from .drivers.myminifactory.MyMiniFactoryApiClient import MyMiniFactoryApiClient
+from .Settings import Settings
 
 if TYPE_CHECKING:
     from .ThingiBrowserExtension import ThingiBrowserExtension
@@ -68,13 +69,21 @@ class ThingiBrowserService(QObject):
         self._thing_files = []  # type: List[ThingFile]
         self._is_downloading = False  # type: bool
 
+        PreferencesHelper.initSetting(Settings.DEFAULT_API_CLIENT, "thingiverse");
+
         # Drivers for the services we can interact with.
         self._drivers = {
             "thingiverse": ThingiverseApiClient(),
             "myminifactory": MyMiniFactoryApiClient(),
         }  # type: Dict[str, AbstractApiClient]
-        self._active_driver_name = None  # type: Optional[str]
+        self._active_driver_name = PreferencesHelper.getSettingValue(Settings.DEFAULT_API_CLIENT) # type: str
         self.activeDriverChanged.connect(self._onDriverChanged)
+
+    def resetActiveDriver(self) -> None:
+        """
+        Reset the active driver to the one selected as deafult
+        """
+        self.setActiveDriver(PreferencesHelper.getSettingValue(Settings.DEFAULT_API_CLIENT))
 
     def updateSupportedFileTypes(self) -> None:
         """
@@ -115,15 +124,31 @@ class ThingiBrowserService(QObject):
         self._extension.showSettingsWindow()
 
     @pyqtProperty("QVariantList", constant=True)
-    def drivers(self) -> List[Dict[str, Any]]:
+    def drivers(self) -> List[Dict[str, str]]:
         """
         Get the available drivers for selecting in the UI.
         :return: The drivers.
         """
-        return [
-            {"key": "thingiverse", "label": "Thingiverse"},
-            {"key": "myminifactory", "label": "MyMiniFactory"}
-        ]
+        return PreferencesHelper.getSettingOptions(Settings.DEFAULT_API_CLIENT)
+
+    @pyqtSlot(str, result=int, name="getDriverIndex")
+    def getDriverIndex(self, key: str) -> int:
+        """
+        Get the index of a driver by value
+        :return: The driver index
+        """
+        for i, driver in enumerate(self.drivers):
+            if driver['key'] == key:
+                return i
+        return -1
+
+    @pyqtProperty(str, notify=activeDriverChanged)
+    def activeDriver(self) -> str:
+        """
+        Return the index of the active driver
+        :return: The active driver index
+        """
+        return self._active_driver_name
 
     @pyqtSlot(str, name="setActiveDriver")
     def setActiveDriver(self, driver: str) -> None:

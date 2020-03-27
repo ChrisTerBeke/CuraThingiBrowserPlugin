@@ -32,6 +32,7 @@ class Settings:
     PREFERENCE_KEY_BASE = "thingibrowser"
     THINGIVERSE_USER_NAME_PREFERENCES_KEY = "user_name"
     MYMINIFACTORY_USER_NAME_PREFERENCES_KEY = "myminifactory_user_name"
+    DEFAULT_API_CLIENT = "default_api_client"
 
     # Google Analytics API options
     ANALYTICS_ID = "UA-16646729-7"

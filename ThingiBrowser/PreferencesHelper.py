@@ -1,6 +1,6 @@
 # Copyright (c) 2020 Chris ter Beke.
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
-from typing import Optional, Dict, List
+from typing import Union, Optional, Dict, List, Any
 
 from cura.CuraApplication import CuraApplication  # type: ignore
 
@@ -23,7 +23,7 @@ class PreferencesHelper:
         return preferences.getValue(preference_key)
 
     @classmethod
-    def getAllSettings(cls) -> List[Dict[str, str]]:
+    def getAllSettings(cls) -> List[Dict[str, Union[str, List[Dict[str, str]]]]]:
         """
         Get all settings as key:value dict.
         # FIXME: convert to QtListModel.
@@ -31,14 +31,23 @@ class PreferencesHelper:
         """
         return [
             {
+                "type": "text",
                 "key": Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY,
                 "value": cls.getSettingValue(Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY),
                 "label": "Thingiverse username"
             },
             {
+                "type": "text",
                 "key": Settings.MYMINIFACTORY_USER_NAME_PREFERENCES_KEY,
                 "value": cls.getSettingValue(Settings.MYMINIFACTORY_USER_NAME_PREFERENCES_KEY),
                 "label": "MyMiniFactory username"
+            },
+            {
+                "type": "combobox",
+                "key": Settings.DEFAULT_API_CLIENT,
+                "value": cls.getSettingValue(Settings.DEFAULT_API_CLIENT),
+                "label": "Default API service",
+                "options": cls.getSettingOptions(Settings.DEFAULT_API_CLIENT)
             }
         ]
 
@@ -61,3 +70,24 @@ class PreferencesHelper:
         """
         preference_key = "{}/{}".format(Settings.PREFERENCE_KEY_BASE, setting_name)
         return CuraApplication.getInstance().getPreferences().getValue(preference_key)
+
+    @classmethod
+    def getSettingOptions(cls, setting_name: str) -> List[Dict[str, str]]:
+        """
+        Get any selection option for a particular preference
+        :param setting_name: The name of the setting to get the options for.
+        :return: The options for the setting.
+        """
+        options = {
+            Settings.DEFAULT_API_CLIENT: [
+                {
+                    "key": "thingiverse",
+                    "label": "Thingiverse"
+                },
+                {
+                    "key": "myminifactory",
+                    "label": "MyMiniFactory"
+                }
+            ]
+        }
+        return options[setting_name] if setting_name in options else []
