@@ -7,7 +7,6 @@ from PyQt5.QtCore import QObject
 from PyQt5.QtGui import QWindow
 
 from UM.Extension import Extension  # type: ignore
-from UM.PluginRegistry import PluginRegistry  # type: ignore
 from cura.CuraApplication import CuraApplication  # type: ignore
 
 from .Settings import Settings
@@ -63,7 +62,7 @@ class ThingiBrowserExtension(Extension):
         :return: The QML dialog object.
         """
         # Find the QML file in the plugin sources.
-        plugin_path = PluginRegistry.getInstance().getPluginPath(self.getPluginId())
+        plugin_path = CuraApplication.getInstance().getPluginRegistry().getPluginPath(self.getPluginId())
         if not plugin_path:
             return None
         path = os.path.join(plugin_path, "views", qml_file_path)

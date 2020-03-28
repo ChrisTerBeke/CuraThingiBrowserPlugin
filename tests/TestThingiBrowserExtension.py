@@ -9,6 +9,9 @@ from surrogate import surrogate
 
 class ExtensionMock(MagicMock):
 
+    def getPluginId(self) -> str:
+        return "ThingiBrowser"
+
     def setMenuName(self, name: str) -> None:
         pass
 
@@ -21,7 +24,6 @@ class TestThingiBrowserExtension:
     @pytest.fixture
     @surrogate("cura.CuraApplication.CuraApplication")
     @surrogate("UM.Extension.Extension")
-    @surrogate("UM.PluginRegistry.PluginRegistry")
     @surrogate("UM.Logger.Logger")
     def make_plugin(self, application):
         with patch("cura.CuraApplication.CuraApplication", application):
@@ -34,3 +36,12 @@ class TestThingiBrowserExtension:
             plugin = make_plugin()
             mocked_values["setMenuName"].assert_called_with("ThingiBrowser")
             mocked_values["addMenuItem"].assert_called_with("Open", plugin.showMainWindow)
+
+    def test_extension_opens_main_window(self, make_plugin, application):
+        plugin = make_plugin()
+        plugin.showMainWindow()
+        application.getPluginRegistry.return_value.getPluginPath.assert_called_with(plugin.getPluginId())
+        application.createQmlComponent.assert_called_with("the/path/views/Thingiverse.qml", {
+            "ThingiService": plugin._service,
+            "Analytics": plugin._analytics
+        })
