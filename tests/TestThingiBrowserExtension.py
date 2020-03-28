@@ -38,10 +38,28 @@ class TestThingiBrowserExtension:
             mocked_values["addMenuItem"].assert_called_with("Open", plugin.showMainWindow)
 
     def test_extension_opens_main_window(self, make_plugin, application):
+        application.reset_mock()
         plugin = make_plugin()
         plugin.showMainWindow()
         application.getPluginRegistry.return_value.getPluginPath.assert_called_with(plugin.getPluginId())
         application.createQmlComponent.assert_called_with("the/path/views/Thingiverse.qml", {
+            "ThingiService": plugin._service,
+            "Analytics": plugin._analytics
+        })
+
+    def test_extension_opens_main_window_twice_only_constructs_window_once(self, make_plugin, application):
+        application.reset_mock()
+        plugin = make_plugin()
+        plugin.showMainWindow()
+        plugin.showMainWindow()
+        assert len(application.createQmlComponent.mock_calls) == 1
+
+    def test_extension_opens_settings_window(self, make_plugin, application):
+        application.reset_mock()
+        plugin = make_plugin()
+        plugin.showSettingsWindow()
+        application.getPluginRegistry.return_value.getPluginPath.assert_called_with(plugin.getPluginId())
+        application.createQmlComponent.assert_called_with("the/path/views/ThingiSettings.qml", {
             "ThingiService": plugin._service,
             "Analytics": plugin._analytics
         })
