@@ -1,8 +1,9 @@
 # Copyright (c) 2020 Chris ter Beke.
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
+import os
 import pathlib
 import tempfile
-from typing import List, Optional, TYPE_CHECKING, Dict, Any, Union, cast
+from typing import List, Optional, TYPE_CHECKING, Dict, Any, cast
 
 from PyQt5.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot, QUrl  # type: ignore
 from PyQt5.QtWidgets import QMessageBox
@@ -393,14 +394,17 @@ class ThingiBrowserService(QObject):
 
     def _onDownloadFinished(self, file_bytes: bytes, file_name: str) -> None:
         """
-        Callback to receive the file on.
+        Callback to receive the downloaded file on and import it onto the build plate.
+        Note that we do not use any context clauses here. Even though that would be cleaner,
+        CuraApplication.getInstance() switches contexts and makes temporary dirs and files be removed by their context.
         :param file_bytes: The file as bytes.
         :param file_name: The file name.
         """
-        file = tempfile.NamedTemporaryFile(suffix=file_name, delete=False)
-        file.write(file_bytes)
-        file.close()
-        CuraApplication.getInstance().readLocalFile(QUrl().fromLocalFile(file.name))
+        file_path = os.path.join(tempfile.mkdtemp(), file_name)
+        tmp_file = open(file_path, "wb")
+        tmp_file.write(file_bytes)
+        tmp_file.close()
+        CuraApplication.getInstance().readLocalFile(QUrl().fromLocalFile(tmp_file.name))
         self._is_downloading = False
         self.downloadingStateChanged.emit()
 
