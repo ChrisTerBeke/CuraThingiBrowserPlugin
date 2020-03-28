@@ -1,3 +1,4 @@
 mypy
 PyQt5-stubs
 pytest
+surrogate

@@ -2,6 +2,7 @@
 *.pyc
 *.qmlc
 .mypy_cache/*
+.cache/*
 
 # Folder view configuration files
 .DS_Store
