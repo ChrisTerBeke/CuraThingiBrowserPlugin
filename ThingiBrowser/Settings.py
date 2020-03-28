@@ -1,5 +1,5 @@
 # Copyright (c) 2020 Chris ter Beke.
-# Thingiverse plugin is released under the terms of the LGPLv3 or higher.
+# ThingiBrowser plugin is released under the terms of the LGPLv3 or higher.
 import json
 import os
 
@@ -11,8 +11,8 @@ class Settings:
 
     # The plugin version
     with open(PLUGIN_JSON_PATH, "r") as file:
-        VERSION = json.load(file).get("version", "1.0.0")
-    
+        VERSION = json.load(file).get("version", "0.0.0")
+
     # Plugin name displayed in several location.
     DISPLAY_NAME = "ThingiBrowser"
 
