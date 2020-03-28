@@ -1,18 +1,25 @@
 # Copyright (c) 2020 Chris ter Beke.
-# Thingiverse plugin is released under the terms of the LGPLv3 or higher.
-from unittest.mock import patch, MagicMock
+# ThingiBrowser plugin is released under the terms of the LGPLv3 or higher.
+from unittest.mock import patch
 
-from ThingiBrowser.PreferencesHelper import PreferencesHelper
+import pytest
+
+from surrogate import surrogate
 
 
 class TestPreferencesHelper:
 
-    def test_initSetting_returns_default_value(self, application):
-        with patch("cura.CuraApplication.CuraApplication.getInstance", MagicMock(return_value=application)):
-            default_value = PreferencesHelper.initSetting("test_setting", "default")
+    @pytest.fixture
+    @surrogate("cura.CuraApplication.CuraApplication")
+    def preferences_helper(self, application):
+        with patch("cura.CuraApplication.CuraApplication", application):
+            from ..ThingiBrowser.PreferencesHelper import PreferencesHelper
+            return PreferencesHelper
+
+    def test_initSetting_returns_default_value(self, preferences_helper):
+        default_value = preferences_helper.initSetting("test_setting", "default")
         assert default_value == "default"
 
-    def test_initSetting_returns_stored_value(self, application):
-        with patch("cura.CuraApplication.CuraApplication.getInstance", MagicMock(return_value=application)):
-            stored_value = PreferencesHelper.initSetting("test_setting_stored", "default")
+    def test_initSetting_returns_stored_value(self, preferences_helper):
+        stored_value = preferences_helper.initSetting("test_setting_stored", "default")
         assert stored_value == "stored"
