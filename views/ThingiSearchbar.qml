@@ -5,6 +5,9 @@ import UM 1.1 as UM
 
 RowLayout
 {
+    height: 40
+    spacing: 0
+
     TextField
     {
         id: thingSearchField
@@ -20,7 +23,6 @@ RowLayout
     Button
     {
         text: "Search"
-        Layout.alignment: Qt.AlignLeft
         onClicked: {
             ThingiService.search(thingSearchField.text)
             Analytics.trackEvent("search_field", "button_clicked")
