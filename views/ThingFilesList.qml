@@ -3,63 +3,27 @@
 import QtQuick 2.7
 import QtQuick.Controls 2.2
 import QtQuick.Layouts 1.3
-import UM 1.1 as UM
 
-ListView
+ScrollView
 {
-    id: thingFilesList
-    height: childrenRect.height
+    property alias model: thingFilesList.model
     width: parent.width
-    interactive: false  // disable scrolling in this list
-    spacing: 10
-    delegate: Item
-    {
-        width: parent.width
-        height: visible ? childrenRect.height : 0
+    clip: true
 
-        RowLayout
+    ListView
+    {
+        id: thingFilesList
+        width: parent.width
+        spacing: 20
+        delegate: Item
         {
             width: parent.width
+            height: childrenRect.height
 
-            // thumbnail
-            Image
+            ThingFilesListItem
             {
-                Layout.leftMargin: 20
-                source: modelData.thumbnail ? modelData.thumbnail : ""
-                sourceSize.width: 75 // 75 is the thumbnail size
-                sourceSize.height: 75
-            }
-
-             // file name
-            Label
-            {
-                text: modelData.name
-                color: UM.Theme.getColor("text")
-                font: UM.Theme.getFont("large")
-                elide: Text.ElideRight
-                renderType: Text.NativeRendering
-                Layout.fillWidth: true
-                Layout.leftMargin: 20
-            }
-
-            // download button
-            Button
-            {
-                text: "Add to build plate"
-                visible: !ThingiService.isDownloading
-                Layout.rightMargin: 20
-                onClicked: {
-                    ThingiService.downloadThingFile(modelData.id, modelData.name)
-                    Analytics.trackEvent("add_to_build_plate", "button_clicked")
-                }
-            }
-
-            // loading spinner
-            AnimatedImage
-            {
-                visible: ThingiService.isDownloading
-                source: "images/loading.gif"
-                Layout.rightMargin: 20
+                width: parent.width
+                thingFile: modelData
             }
         }
     }
