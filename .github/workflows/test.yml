@@ -12,6 +12,6 @@ jobs:
       - name: Install Dependencies
         run: pip install -r requirements-testing.txt
       - name: Run PyTest
-        run: ./test.sh
+        run: pytest
       - name: Run MyPy
         run: mypy ThingiBrowser
