@@ -50,7 +50,6 @@ class PreferencesHelper:
         :param value: The new value of the setting.
         """
         preference_key = "{}/{}".format(Settings.PREFERENCE_KEY_BASE, setting_name)
-        CuraApplication.getInstance().getPreferences().setValue(preference_key, setting_name)
         CuraApplication.getInstance().getPreferences().setValue(preference_key, value)
 
     @classmethod
