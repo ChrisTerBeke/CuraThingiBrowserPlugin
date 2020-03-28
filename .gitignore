@@ -2,6 +2,7 @@
 *.pyc
 *.qmlc
 .mypy_cache/*
+.cache/*
 
 # Folder view configuration files
 .DS_Store
@@ -18,3 +19,6 @@ Thumbs.db
 # IDE project files
 .idea
 .vscode/*
+
+# Test files
+.coverage

@@ -1,6 +1,5 @@
 # Copyright (c) 2020 Chris ter Beke.
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
-from .ThingiBrowser.ThingiBrowserExtension import ThingiBrowserExtension
 
 
 def getMetaData():
@@ -16,6 +15,7 @@ def register(*_args, **_kwargs):
     Main function called when Cura boots and want to load the plugin.
     :return: A dict containing the extension instance.
     """
+    from .ThingiBrowser.ThingiBrowserExtension import ThingiBrowserExtension
     return {
         "extension": ThingiBrowserExtension()
     }

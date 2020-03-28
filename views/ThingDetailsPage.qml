@@ -36,8 +36,11 @@ ColumnLayout
         font: UM.Theme.getFont("large")
         color: UM.Theme.getColor("text")
         renderType: Text.NativeRendering
+        wrapMode: Label.WordWrap
+        Layout.fillWidth: true
         Layout.leftMargin: 20
         Layout.bottomMargin: 10
+        Layout.rightMargin: 20
     }
 
     // link to web page
@@ -45,6 +48,7 @@ ColumnLayout
     {
         text: thing && thing.url ? thing.url : ""
         url: thing && thing.url ? thing.url : ""
+        elide: Text.ElideRight
         Layout.leftMargin: 20
         Layout.bottomMargin: 20
     }
@@ -59,9 +63,12 @@ ColumnLayout
         renderType: Text.NativeRendering
         wrapMode: Label.WordWrap
         Layout.fillWidth: true
+        Layout.fillHeight: true
         Layout.leftMargin: 20
         Layout.bottomMargin: 20
         Layout.rightMargin: 20
+        clip: true
+        elide: Text.ElideRight
     }
 
     ThingFilesList

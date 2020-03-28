@@ -178,7 +178,7 @@ class ThingiBrowserService(QObject):
         Get a list of found things. Updated when performing a search.
         :return: The things.
         """
-        return [thing.__dict__ for thing in self._things]
+        return [thing.toStruct() for thing in self._things]
 
     @pyqtProperty(bool, notify=isFromCollectionChanged)
     def isFromCollection(self) -> bool:
@@ -202,7 +202,7 @@ class ThingiBrowserService(QObject):
         Get the current active thing details.
         :return: The thing.
         """
-        return self._thing_details.__dict__ if self._thing_details else None
+        return self._thing_details.toStruct() if self._thing_details else None
 
     @pyqtProperty("QVariantList", notify=activeThingFilesChanged)
     def activeThingFiles(self) -> List[Dict[str, Any]]:
@@ -210,7 +210,7 @@ class ThingiBrowserService(QObject):
         Get the current active thing files.
         :return: The thing files.
         """
-        return [files.__dict__ for files in self._thing_files]
+        return [files.toStruct() for files in self._thing_files]
 
     @pyqtProperty(bool, notify=activeThingChanged)
     def hasActiveThing(self) -> bool:
@@ -480,7 +480,7 @@ class ThingiBrowserService(QObject):
         mb.setWindowTitle("Oh no!")
         error_message = error.error or str(error) if error else "Unknown"
         mb.setText("The API returned an error: {}.".format(error_message))
-        mb.setDetailedText(str(error.__dict__) if error else "")
+        mb.setDetailedText(str(error.toStruct()) if error else "")
         mb.exec()
 
     def _checkUserNameConfigured(self) -> bool:
