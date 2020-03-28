@@ -28,6 +28,7 @@ ColumnLayout
         }
     }
 
+    // name
     Label
     {
         id: thingTitle
@@ -48,47 +49,44 @@ ColumnLayout
         Layout.bottomMargin: 20
     }
 
-    ScrollView
+    // description
+    Label
     {
-        id: scroller
-        width: detailsPage.width
-        clip: true
-        Layout.fillHeight: true
+        id: thingDescription
+        text: thing && thing.description ? thing.description : ""
+        font: UM.Theme.getFont("medium")
+        color: UM.Theme.getColor("text")
+        renderType: Text.NativeRendering
+        wrapMode: Label.WordWrap
+        Layout.fillWidth: true
+        Layout.leftMargin: 20
         Layout.bottomMargin: 20
+        Layout.rightMargin: 20
+    }
 
-        Column
-        {
-            Label
-            {
-                id: thingDescription
-                text: thing && thing.description ? thing.description : ""
-                font: UM.Theme.getFont("medium")
-                color: UM.Theme.getColor("text")
-                renderType: Text.NativeRendering
-                wrapMode: Label.WordWrap
-                width: detailsPage.width
-                leftPadding: 20
-                bottomPadding: 20
-            }
+    ThingFilesList
+    {
+        id: thingFilesList
+        model: thingFiles
+        visible: thingFiles.length > 0
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+        Layout.leftMargin: 20
+        Layout.rightMargin: 20
+        Layout.bottomMargin: 20
+    }
 
-            ThingFilesList
-            {
-                id: thingFilesList
-                model: thingFiles
-            }
-
-            Label
-            {
-                id: thingFilesListEmpty
-                text: "There are no files in this Thing that can be imported in Cura."
-                visible: thingFiles.length === 0
-                font: UM.Theme.getFont("medium")
-                color: UM.Theme.getColor("text_inactive")
-                renderType: Text.NativeRendering
-                wrapMode: Label.WordWrap
-                width: detailsPage.width
-                leftPadding: 20
-            }
-        }
+    Label
+    {
+        id: thingFilesListEmpty
+        text: "There are no files in this Thing that can be imported in Cura."
+        visible: !thingFilesList.visible
+        font: UM.Theme.getFont("medium")
+        color: UM.Theme.getColor("text_inactive")
+        renderType: Text.NativeRendering
+        wrapMode: Label.WordWrap
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+        Layout.leftMargin: 20
     }
 }

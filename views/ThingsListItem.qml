@@ -1,3 +1,5 @@
+// Copyright (c) 2020 Chris ter Beke.
+// Thingiverse plugin is released under the terms of the LGPLv3 or higher.
 import QtQuick 2.7
 import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.3
@@ -6,7 +8,6 @@ import UM 1.1 as UM
 
 Item
 {
-    id: thingTile
     width: parent.width
     height: dataRow.height
     property var thing: null
@@ -14,21 +15,25 @@ Item
     RowLayout
     {
         id: dataRow
-        spacing: UM.Theme.getSize("wide_margin").width
+        spacing: 10
         width: parent.width
 
-        // thumbnail
+        // thumbnail (forced to 75x75)
         Image
         {
+            Layout.preferredWidth: 75
+            Layout.preferredHeight: 75
             Layout.leftMargin: 20
+            fillMode: Image.PreserveAspectCrop
+            clip: true
             source: thing.thumbnail
-            sourceSize.width: 75 // 75 is the thumbnail size
             sourceSize.height: 75
         }
 
         ColumnLayout
         {
             Layout.fillWidth: true
+            Layout.maximumWidth: parent.width * 0.7
 
             // thing title
             Label
@@ -48,6 +53,7 @@ Item
                 url: thing.url
                 visible: thing.url
                 elide: Text.ElideRight
+                Layout.fillWidth: true
             }
         }
 
