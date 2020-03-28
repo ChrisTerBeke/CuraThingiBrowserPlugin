@@ -23,3 +23,18 @@ class TestPreferencesHelper:
     def test_initSetting_returns_stored_value(self, preferences_helper):
         stored_value = preferences_helper.initSetting("test_setting_stored", "default")
         assert stored_value == "stored"
+
+    def test_getSettingValue_returns_stored_value(self, preferences_helper):
+        stored_value = preferences_helper.getSettingValue("test_setting_stored")
+        assert stored_value == "stored"
+
+    def test_setSetting_stores_new_value(self, preferences_helper, preferences):
+        preferences_helper.setSetting("test_setting_stored", "new_stored_value")
+        preferences.setValue.assert_called_with("thingibrowser/test_setting_stored", "new_stored_value")
+
+    def test_getAllSettings_returns_all_settings(self, preferences_helper):
+        all_settings = preferences_helper.getAllSettings()
+        assert all_settings == [
+            {"key": "user_name", "value": None, "label": "Thingiverse username"},
+            {"key": "myminifactory_user_name", "value": None, "label": "MyMiniFactory username"}
+        ]

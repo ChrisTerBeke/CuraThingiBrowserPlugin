@@ -17,19 +17,20 @@ def mock_preferences_get_value(key: str) -> str:
         return "stored"
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def preferences():
     """
     Fake preferences that mocks Cura's Preferences.
     :return: A MagicMock compatible with Cura's Preferences class.
     """
     preferences = MagicMock()
-    preferences.addPreference.return_value = None
-    preferences.getValue.side_effect = mock_preferences_get_value
+    preferences.addPreference = MagicMock(return_value=None)
+    preferences.getValue = mock_preferences_get_value
+    preferences.setValue = MagicMock(return_value=None)
     return preferences
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def application(preferences):
     """
     Fake application that mocks Cura's CuraApplication.
@@ -37,6 +38,6 @@ def application(preferences):
     :return: A MagicMock compatible with Cura's CuraApplication class.
     """
     app = MagicMock()
-    app.getPreferences.return_value = preferences
-    app.getInstance.return_value = app
+    app.getPreferences = MagicMock(return_value=preferences)
+    app.getInstance = MagicMock(return_value=app)
     return app
