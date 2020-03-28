@@ -19,3 +19,6 @@ Thumbs.db
 # IDE project files
 .idea
 .vscode/*
+
+# Test files
+.coverage

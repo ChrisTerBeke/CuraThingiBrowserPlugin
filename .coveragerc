@@ -1,6 +1,0 @@
-[run]
-data_file=.coverage
-omit=tests/*
-
-[html]
-directory=htmlcov
