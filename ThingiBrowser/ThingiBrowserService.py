@@ -10,8 +10,6 @@ from PyQt5.QtWidgets import QMessageBox
 
 from cura.CuraApplication import CuraApplication  # type: ignore
 
-from UM.Logger import Logger
-
 from .PreferencesHelper import PreferencesHelper
 from .api.AbstractApiClient import AbstractApiClient
 from .api.JsonObject import Thing, ThingFile, Collection, ApiError
@@ -77,7 +75,6 @@ class ThingiBrowserService(QObject):
             "myminifactory": MyMiniFactoryApiClient(),
         }  # type: Dict[str, AbstractApiClient]
         self._active_driver_name = PreferencesHelper.initSetting(Settings.DEFAULT_API_CLIENT, "thingiverse")  # type: str
-        Logger.log('i', 'Active Driver set: {}'.format(self._active_driver_name))
         self.activeDriverChanged.connect(self._onDriverChanged)
 
     def resetActiveDriver(self) -> None:
@@ -114,7 +111,6 @@ class ThingiBrowserService(QObject):
         :param setting_name: The name of the setting.
         :param value: The new value.
         """
-        Logger.log('i', 'Setting {}: {}'.format(setting_name, value))
         PreferencesHelper.setSetting(setting_name, value)
         self.settingChanged.emit(setting_name, value)
 

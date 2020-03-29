@@ -35,6 +35,7 @@ class TestPreferencesHelper:
     def test_getAllSettings_returns_all_settings(self, preferences_helper):
         all_settings = preferences_helper.getAllSettings()
         assert all_settings == [
-            {"key": "user_name", "value": None, "label": "Thingiverse username"},
-            {"key": "myminifactory_user_name", "value": None, "label": "MyMiniFactory username"}
+            {"type": "text", "key": "user_name", "value": None, "label": "Thingiverse username"},
+            {"type": "text", "key": "myminifactory_user_name", "value": None, "label": "MyMiniFactory username"},
+            {"type": "combobox", "key": "default_api_client", "value": None, "label": "Default repository service", "options": [{"key": "thingiverse", "label": "Thingiverse"}, {"key": "myminifactory", "label": "MyMiniFactory"}]}
         ]
