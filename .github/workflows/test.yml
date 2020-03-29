@@ -1,5 +1,5 @@
 name: Test
-on: push
+on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -10,7 +10,8 @@ jobs:
         with:
           python-version: 3.7
       - name: Install Dependencies
-        run: |
-          pip install -r requirements-testing.txt
+        run: pip install -r requirements-testing.txt
+      - name: Run PyTest
+        run: pytest
       - name: Run MyPy
         run: mypy ThingiBrowser

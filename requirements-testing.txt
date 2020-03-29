@@ -1,2 +1,7 @@
 mypy
 PyQt5-stubs
+pytest
+coverage
+pytest-cov
+surrogate
+requests

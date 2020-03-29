@@ -1,8 +1,9 @@
 # Copyright (c) 2020 Chris ter Beke.
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
+import os
 import pathlib
 import tempfile
-from typing import List, Optional, TYPE_CHECKING, Dict, Any, Union, cast
+from typing import List, Optional, TYPE_CHECKING, Dict, Any, cast
 
 from PyQt5.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot, QUrl  # type: ignore
 from PyQt5.QtWidgets import QMessageBox
@@ -168,7 +169,7 @@ class ThingiBrowserService(QObject):
         Get a list of found things. Updated when performing a search.
         :return: The things.
         """
-        return [thing.__dict__ for thing in self._things]
+        return [thing.toStruct() for thing in self._things]
 
     @pyqtProperty(bool, notify=isFromCollectionChanged)
     def isFromCollection(self) -> bool:
@@ -192,7 +193,7 @@ class ThingiBrowserService(QObject):
         Get the current active thing details.
         :return: The thing.
         """
-        return self._thing_details.__dict__ if self._thing_details else None
+        return self._thing_details.toStruct() if self._thing_details else None
 
     @pyqtProperty("QVariantList", notify=activeThingFilesChanged)
     def activeThingFiles(self) -> List[Dict[str, Any]]:
@@ -200,7 +201,7 @@ class ThingiBrowserService(QObject):
         Get the current active thing files.
         :return: The thing files.
         """
-        return [files.__dict__ for files in self._thing_files]
+        return [files.toStruct() for files in self._thing_files]
 
     @pyqtProperty(bool, notify=activeThingChanged)
     def hasActiveThing(self) -> bool:
@@ -409,14 +410,17 @@ class ThingiBrowserService(QObject):
 
     def _onDownloadFinished(self, file_bytes: bytes, file_name: str) -> None:
         """
-        Callback to receive the file on.
+        Callback to receive the downloaded file on and import it onto the build plate.
+        Note that we do not use any context clauses here. Even though that would be cleaner,
+        CuraApplication.getInstance() switches contexts and makes temporary dirs and files be removed by their context.
         :param file_bytes: The file as bytes.
         :param file_name: The file name.
         """
-        file = tempfile.NamedTemporaryFile(suffix=file_name, delete=False)
-        file.write(file_bytes)
-        file.close()
-        CuraApplication.getInstance().readLocalFile(QUrl().fromLocalFile(file.name))
+        file_path = os.path.join(tempfile.mkdtemp(), file_name)
+        tmp_file = open(file_path, "wb")
+        tmp_file.write(file_bytes)
+        tmp_file.close()
+        CuraApplication.getInstance().readLocalFile(QUrl().fromLocalFile(tmp_file.name))
         self._is_downloading = False
         self.downloadingStateChanged.emit()
 
@@ -467,7 +471,7 @@ class ThingiBrowserService(QObject):
         mb.setWindowTitle("Oh no!")
         error_message = error.error or str(error) if error else "Unknown"
         mb.setText("The API returned an error: {}.".format(error_message))
-        mb.setDetailedText(str(error.__dict__) if error else "")
+        mb.setDetailedText(str(error.toStruct()) if error else "")
         mb.exec()
 
     def _checkUserNameConfigured(self) -> bool:
