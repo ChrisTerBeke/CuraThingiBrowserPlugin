@@ -4,7 +4,7 @@ import os
 from typing import Optional, Callable
 
 from PyQt5.QtCore import QObject
-from PyQt5.QtQuick import QQuickWindow
+from PyQt5.QtQuick import QQuickWindow #  type: ignore
 
 from UM.Extension import Extension  # type: ignore
 from cura.CuraApplication import CuraApplication  # type: ignore
