@@ -35,16 +35,17 @@ RowLayout
         }
     }
 
-    ComboBox
+    EnhancedComboBox
     {
         id: inputMenu
         visible: thingiSettingsItem.type == "combobox"
         Layout.fillWidth: true
         textRole: "label"
-        currentIndex: ThingiService.getDriverIndex(thingiSettingsItem.value)
+        valueRole: "key"
+        currentIndex: indexOfValue(thingiSettingsItem.value)
         model: thingiSettingsItem.options
         onActivated: {
-            ThingiService.saveSetting(thingiSettingsItem.key, model[currentIndex].key)
+            ThingiService.saveSetting(thingiSettingsItem.key, currentValue)
         }
     }
 
@@ -52,6 +53,15 @@ RowLayout
     {
         target: thingiSettingsItem
         property: "value"
-        value: thingiSettingsItem.type == "combobox" ? inputMenu.model[inputMenu.currentIndex].key : inputField.text
+        when: thingiSettingsItem.type == "text"
+        value: inputField.text
+    }
+
+    Binding
+    {
+        target: thingiSettingsItem
+        property: "value"
+        when: thingiSettingsItem.type == "combobox"
+        value: inputMenu.currentIndex < 0 ? '' : inputMenu.mode[inputMenu.currentIndex][inputMenu.valueRole]
     }
 }

@@ -9,6 +9,8 @@ from PyQt5.QtWidgets import QMessageBox
 
 from cura.CuraApplication import CuraApplication  # type: ignore
 
+from UM.Logger import Logger
+
 from .PreferencesHelper import PreferencesHelper
 from .api.AbstractApiClient import AbstractApiClient
 from .api.JsonObject import Thing, ThingFile, Collection, ApiError
@@ -68,14 +70,13 @@ class ThingiBrowserService(QObject):
         self._thing_files = []  # type: List[ThingFile]
         self._is_downloading = False  # type: bool
 
-        PreferencesHelper.initSetting(Settings.DEFAULT_API_CLIENT, "thingiverse");
-
         # Drivers for the services we can interact with.
         self._drivers = {
             "thingiverse": ThingiverseApiClient(),
             "myminifactory": MyMiniFactoryApiClient(),
         }  # type: Dict[str, AbstractApiClient]
-        self._active_driver_name = PreferencesHelper.getSettingValue(Settings.DEFAULT_API_CLIENT) # type: str
+        self._active_driver_name = PreferencesHelper.initSetting(Settings.DEFAULT_API_CLIENT, "thingiverse")  # type: str
+        Logger.log('i', 'Active Driver set: {}'.format(self._active_driver_name))
         self.activeDriverChanged.connect(self._onDriverChanged)
 
     def resetActiveDriver(self) -> None:
@@ -112,6 +113,7 @@ class ThingiBrowserService(QObject):
         :param setting_name: The name of the setting.
         :param value: The new value.
         """
+        Logger.log('i', 'Setting {}: {}'.format(setting_name, value))
         PreferencesHelper.setSetting(setting_name, value)
         self.settingChanged.emit(setting_name, value)
 
@@ -128,24 +130,13 @@ class ThingiBrowserService(QObject):
         Get the available drivers for selecting in the UI.
         :return: The drivers.
         """
-        return PreferencesHelper.getSettingOptions(Settings.DEFAULT_API_CLIENT)
-
-    @pyqtSlot(str, result=int, name="getDriverIndex")
-    def getDriverIndex(self, key: str) -> int:
-        """
-        Get the index of a driver by value
-        :return: The driver index
-        """
-        for i, driver in enumerate(self.drivers):
-            if driver['key'] == key:
-                return i
-        return -1
+        return Settings.DRIVERS
 
     @pyqtProperty(str, notify=activeDriverChanged)
     def activeDriver(self) -> str:
         """
-        Return the index of the active driver
-        :return: The active driver index
+        Return the key of the active driver
+        :return: The active driver key
         """
         return self._active_driver_name
 

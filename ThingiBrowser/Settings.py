@@ -22,6 +22,17 @@ class Settings:
     # Generic API settings
     PER_PAGE = 20
 
+    DRIVERS = [
+        {
+            "key": "thingiverse",
+            "label": "Thingiverse"
+        },
+        {
+            "key": "myminifactory",
+            "label": "MyMiniFactory"
+        }
+    ]
+
     # Thingiverse API options
     THINGIVERSE_API_TOKEN = "d1057e7ec3da66ac1b81f8632606ca0a"
 

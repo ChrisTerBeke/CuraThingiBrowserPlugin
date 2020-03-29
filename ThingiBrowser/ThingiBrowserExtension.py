@@ -30,7 +30,7 @@ class ThingiBrowserExtension(Extension):
         self._analytics = Analytics()  # type: Analytics
 
         # The UI objects.
-        self._main_dialog = None  # type: Optional[QObject]
+        self._main_dialog = None  # type: Optional[QWindow]
         self._settings_dialog = None  # type: Optional[QObject]
 
         # Configure the 'extension' menu.
@@ -43,12 +43,19 @@ class ThingiBrowserExtension(Extension):
         """
         if not self._main_dialog:
             self._main_dialog = self._createComponent("Thingiverse.qml")
-            if self._main_dialog:
-                self._main_dialog.closing.connect(self._service.resetActiveDriver)
         if self._main_dialog and isinstance(self._main_dialog, QWindow):
+            self._main_dialog.closing.connect(self._onClosingMainWindow)
             self._main_dialog.show()
             self._service.updateSupportedFileTypes()
             self._service.runDefaultQuery()
+
+    def _onClosingMainWindow(self) -> None:
+        """
+        Actions to run when main window is closing
+        """
+        if self._settings_dialog:
+            self._settings_dialog.close()
+        self._service.resetActiveDriver()
 
     def showSettingsWindow(self) -> None:
         """
