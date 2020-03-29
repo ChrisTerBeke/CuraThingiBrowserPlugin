@@ -30,7 +30,7 @@ class ThingiBrowserExtension(Extension):
 
         # The UI objects.
         self._main_dialog = None  # type: Optional[QWindow]
-        self._settings_dialog = None  # type: Optional[QObject]
+        self._settings_dialog = None  # type: Optional[QWindow]
 
         # Configure the 'extension' menu.
         self.setMenuName(Settings.DISPLAY_NAME)
@@ -65,7 +65,7 @@ class ThingiBrowserExtension(Extension):
         if self._settings_dialog and isinstance(self._settings_dialog, QWindow):
             self._settings_dialog.show()
 
-    def _createComponent(self, qml_file_path: str) -> Optional[QObject]:
+    def _createComponent(self, qml_file_path: str) -> Optional[QWindow]:
         """
         Create a dialog window
         :return: The QML dialog object.
