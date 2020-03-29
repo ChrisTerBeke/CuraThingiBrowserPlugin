@@ -4,7 +4,7 @@ import os
 from typing import Optional, Callable
 
 from PyQt5.QtCore import QObject
-from PyQt5.QtGui import QWindow
+from PyQt5.QtQuick import QQuickWindow
 
 from UM.Extension import Extension  # type: ignore
 from cura.CuraApplication import CuraApplication  # type: ignore
@@ -29,8 +29,8 @@ class ThingiBrowserExtension(Extension):
         self._analytics = Analytics()  # type: Analytics
 
         # The UI objects.
-        self._main_dialog = None  # type: Optional[QWindow]
-        self._settings_dialog = None  # type: Optional[QWindow]
+        self._main_dialog = None  # type: Optional[QQuickWindow]
+        self._settings_dialog = None  # type: Optional[QQuickWindow]
 
         # Configure the 'extension' menu.
         self.setMenuName(Settings.DISPLAY_NAME)
@@ -42,7 +42,7 @@ class ThingiBrowserExtension(Extension):
         """
         if not self._main_dialog:
             self._main_dialog = self._createComponent("Thingiverse.qml")
-        if self._main_dialog and isinstance(self._main_dialog, QWindow):
+        if self._main_dialog and isinstance(self._main_dialog, QQuickWindow):
             self._main_dialog.closing.connect(self._onClosingMainWindow)
             self._main_dialog.show()
             self._service.updateSupportedFileTypes()
@@ -62,10 +62,10 @@ class ThingiBrowserExtension(Extension):
         """
         if not self._settings_dialog:
             self._settings_dialog = self._createComponent("ThingiSettings.qml")
-        if self._settings_dialog and isinstance(self._settings_dialog, QWindow):
+        if self._settings_dialog and isinstance(self._settings_dialog, QQuickWindow):
             self._settings_dialog.show()
 
-    def _createComponent(self, qml_file_path: str) -> Optional[QWindow]:
+    def _createComponent(self, qml_file_path: str) -> Optional[QQuickWindow]:
         """
         Create a dialog window
         :return: The QML dialog object.
