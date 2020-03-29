@@ -1,13 +1,14 @@
 import QtQuick 2.0
 import QtQuick.Controls 2.3
 
-ComboBox
+EnhancedComboBox
 {
     textRole: "label"
+    valueRole: "key"
+    currentIndex: indexOfValue(ThingiService.activeDriver)
     model: ThingiService.drivers
-    currentIndex: ThingiService.getDriverIndex(ThingiService.activeDriver)
     onActivated: {
-        ThingiService.setActiveDriver(model[currentIndex].key)
+        ThingiService.setActiveDriver(currentValue)
         Analytics.trackEvent("driver_selected", "button_clicked")
     }
 }

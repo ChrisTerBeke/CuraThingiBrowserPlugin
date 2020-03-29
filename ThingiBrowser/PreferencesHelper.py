@@ -23,7 +23,7 @@ class PreferencesHelper:
         return preferences.getValue(preference_key)
 
     @classmethod
-    def getAllSettings(cls) -> List[Dict[str, Union[str, List[Dict[str, str]]]]]:
+    def getAllSettings(cls) -> List[Dict[str, Any]]:
         """
         Get all settings as key:value dict.
         # FIXME: convert to QtListModel.
@@ -46,8 +46,8 @@ class PreferencesHelper:
                 "type": "combobox",
                 "key": Settings.DEFAULT_API_CLIENT,
                 "value": cls.getSettingValue(Settings.DEFAULT_API_CLIENT),
-                "label": "Default API service",
-                "options": cls.getSettingOptions(Settings.DEFAULT_API_CLIENT)
+                "label": "Default repository service",
+                "options": Settings.DRIVERS
             }
         ]
 
@@ -70,24 +70,3 @@ class PreferencesHelper:
         """
         preference_key = "{}/{}".format(Settings.PREFERENCE_KEY_BASE, setting_name)
         return CuraApplication.getInstance().getPreferences().getValue(preference_key)
-
-    @classmethod
-    def getSettingOptions(cls, setting_name: str) -> List[Dict[str, str]]:
-        """
-        Get any selection option for a particular preference
-        :param setting_name: The name of the setting to get the options for.
-        :return: The options for the setting.
-        """
-        options = {
-            Settings.DEFAULT_API_CLIENT: [
-                {
-                    "key": "thingiverse",
-                    "label": "Thingiverse"
-                },
-                {
-                    "key": "myminifactory",
-                    "label": "MyMiniFactory"
-                }
-            ]
-        }
-        return options[setting_name] if setting_name in options else []
