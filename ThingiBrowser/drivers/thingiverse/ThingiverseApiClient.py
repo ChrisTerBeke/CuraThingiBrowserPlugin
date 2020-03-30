@@ -84,7 +84,7 @@ class ThingiverseApiClient(AbstractApiClient):
             "id": item.get("id"),
             "thumbnail": item.get("thumbnail"),
             "name": item.get("thing", {}).get("name") if item.get("thing") else item.get("name"),
-            "url": item.get("public_url"),
+            "url": item.get("public_url") or item.get("url"),
             "description": item.get("description_html") or item.get("description")
         }) for item in response]
 

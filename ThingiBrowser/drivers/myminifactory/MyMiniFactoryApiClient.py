@@ -83,8 +83,8 @@ class MyMiniFactoryApiClient(AbstractApiClient):
             return status_code, None
         return status_code, [Collection({
             "id": item.get("id"),
-            "thumbnail":
-                item.get("cover_object", {}).get("images", []).get(0).get("thumbnail", {}).get("url") if item.get("cover_object") else None,
+            "thumbnail": item.get("cover_object", {}).get("images", []).get(0).get("thumbnail", {}).get("url")
+            if item.get("cover_object") else None,
             "name": item.get("name"),
             "url": item.get("url"),
             "description": item.get("description")

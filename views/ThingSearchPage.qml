@@ -16,6 +16,7 @@ ColumnLayout
         Layout.bottomMargin: 10
         onClicked: {
             ThingiService.getCollections()
+            Analytics.trackEvent("back_to_collections", "button_clicked")
         }
     }
 
@@ -45,10 +46,10 @@ ColumnLayout
             }
         }
 
+        // FIXME: hide when reaching last page of results
         Button
         {
             text: "Next page"
-            visible: true // TODO: hide when no more results
             onClicked: {
                 ThingiService.nextPage()
                 Analytics.trackEvent("next_page", "button_clicked")
@@ -59,6 +60,7 @@ ColumnLayout
         {
             text: "Page " + ThingiService.currentPage
             font: UM.Theme.getFont("medium")
+            color: UM.Theme.getColor("text")
             renderType: Text.NativeRendering
         }
 
