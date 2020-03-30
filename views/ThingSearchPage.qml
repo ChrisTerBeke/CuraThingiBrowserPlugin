@@ -10,10 +10,9 @@ ColumnLayout
     Button
     {
         text: "Back to collections"
-        visible: ThingiService.isFromCollection === true && ThingiService.isQuerying === false
+        visible: ThingiService.isFromCollection === true
         Layout.leftMargin: 20
         Layout.topMargin: 10
-        Layout.bottomMargin: 10
         onClicked: {
             ThingiService.getCollections()
             Analytics.trackEvent("back_to_collections", "button_clicked")

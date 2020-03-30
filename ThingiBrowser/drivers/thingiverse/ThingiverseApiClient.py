@@ -66,7 +66,7 @@ class ThingiverseApiClient(AbstractApiClient):
             "thumbnail": item.get("thumbnail"),
             "name": item.get("name"),
             "description": item.get("description"),
-            "url": None  # collections have no public URL
+            "url": item.get("creator", {}).get("public_url")
         }) for item in response]
 
     def getThings(self, query: str, page: int, on_finished: Callable[[List[Thing]], Any],
