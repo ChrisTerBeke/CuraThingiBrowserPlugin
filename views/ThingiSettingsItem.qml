@@ -62,6 +62,6 @@ RowLayout
         target: thingiSettingsItem
         property: "value"
         when: thingiSettingsItem.type == "combobox"
-        value: inputMenu.currentIndex < 0 ? '' : inputMenu.model[inputMenu.currentIndex][inputMenu.valueRole]
+        value: inputMenu.currentIndex < 0 ? "" : inputMenu.model[inputMenu.currentIndex][inputMenu.valueRole]
     }
 }

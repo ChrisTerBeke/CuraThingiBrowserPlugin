@@ -23,6 +23,6 @@ ComboBox
     Binding {
         target: comboBox
         property: "currentValue"
-        value: currentIndex < 0 ? '' : model[currentIndex][valueRole]
+        value: currentIndex < 0 ? "" : model[currentIndex][valueRole]
     }
 }
