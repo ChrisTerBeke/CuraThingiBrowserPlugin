@@ -1,5 +1,6 @@
 mypy
-PyQt5-stubs
+PyQt5==5.10
+# PyQt5-stubs
 pytest
 coverage
 pytest-cov
