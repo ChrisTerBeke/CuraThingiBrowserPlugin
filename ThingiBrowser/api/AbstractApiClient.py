@@ -172,7 +172,7 @@ class AbstractApiClient(ABC):
             if not status_code or status_code >= 400 or not response:
                 Logger.log("w", "API returned with status{} and body {}".format(status_code, response))
                 if on_failed:
-                    error_response = ApiError(**response.__dict__)
+                    error_response = ApiError(**response.__dict__) if hasattr(response, '__dict__') else None
                     return on_failed(error_response)
             on_finished(response)
             reply.deleteLater()
