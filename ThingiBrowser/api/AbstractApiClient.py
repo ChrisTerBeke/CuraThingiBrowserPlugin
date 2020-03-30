@@ -173,7 +173,7 @@ class AbstractApiClient(ABC):
             status_code, response = parser(reply) if parser else ApiHelper.parseReplyAsJson(reply)
             if not status_code or status_code >= 400 or not response:
                 self._logger.warning("API returned with status {} and body {}".format(status_code, response))
-                if on_failed:
+                if on_failed and isinstance(response, dict):
                     error_response = ApiError(response)
                     return on_failed(error_response)
             on_finished(response)
