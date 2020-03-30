@@ -2,17 +2,17 @@ import QtQuick 2.2
 import QtQuick.Controls 2.0
 import QtQuick.Layouts 1.3
 
-ComboBox {
-
+ComboBox
+{
     id: comboBox
-    
+
     property string currentValue
-    property string valueRole: 'value'
+    property string valueRole: "value"
 
     function indexOfValue(value) {
         if (model !== undefined) {
             for(var idx in model) {
-                if (model[idx][valueRole] == value) {
+                if (model[idx][valueRole] === value) {
                     return idx
                 }
             }
@@ -25,5 +25,4 @@ ComboBox {
         property: "currentValue"
         value: currentIndex < 0 ? '' : model[currentIndex][valueRole]
     }
-
 }

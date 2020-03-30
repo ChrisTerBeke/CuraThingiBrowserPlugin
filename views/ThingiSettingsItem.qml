@@ -18,7 +18,7 @@ RowLayout
     Label
     {
         text: thingiSettingsItem.label
-        font: UM.Theme.getFont("normal")
+        font: UM.Theme.getFont("default")
         color: UM.Theme.getColor("text")
         renderType: Text.NativeRendering
     }
@@ -42,7 +42,7 @@ RowLayout
         Layout.fillWidth: true
         textRole: "label"
         valueRole: "key"
-        currentIndex: indexOfValue(thingiSettingsItem.value)
+        currentIndex: inputMenu.indexOfValue(thingiSettingsItem.value)
         model: thingiSettingsItem.options
         onActivated: {
             ThingiService.saveSetting(thingiSettingsItem.key, currentValue)
@@ -62,6 +62,6 @@ RowLayout
         target: thingiSettingsItem
         property: "value"
         when: thingiSettingsItem.type == "combobox"
-        value: inputMenu.currentIndex < 0 ? '' : inputMenu.mode[inputMenu.currentIndex][inputMenu.valueRole]
+        value: inputMenu.currentIndex < 0 ? '' : inputMenu.model[inputMenu.currentIndex][inputMenu.valueRole]
     }
 }
