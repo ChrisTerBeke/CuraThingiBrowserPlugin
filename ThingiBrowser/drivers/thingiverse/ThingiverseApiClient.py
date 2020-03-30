@@ -51,7 +51,7 @@ class ThingiverseApiClient(AbstractApiClient):
         return "newest"
 
     def getCollections(self, on_finished: Callable[[List[Collection]], Any],
-                       on_failed: Optional[Callable[[Optional[ApiError]], Any]]) -> None:
+                       on_failed: Optional[Callable[[Optional[ApiError]], Any]] = None) -> None:
         url = "{}/users/{}/collections".format(self._root_url, self.user_id)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed, parser=self._parseGetCollections)
