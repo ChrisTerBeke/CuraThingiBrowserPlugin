@@ -8,6 +8,9 @@ from .Settings import Settings
 
 
 class PreferencesHelper:
+    """
+    Assorted helper functions around Cura's Preferences class.
+    """
 
     @classmethod
     def initSetting(cls, setting_name: str, default_value: Optional[str] = "") -> str:
