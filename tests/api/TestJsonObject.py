@@ -8,7 +8,6 @@ class TestJsonObject:
     def test_JsonObject_consumes_dict(self):
         json_object = JsonObject({"key": "value"})
         assert json_object.type == "JsonObject"
-        assert json_object.key == "value"
         assert json_object.toStruct() == {"key": "value", "type": "JsonObject"}
 
     def test_ApiError(self):
