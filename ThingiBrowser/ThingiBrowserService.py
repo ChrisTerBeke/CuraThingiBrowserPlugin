@@ -74,14 +74,15 @@ class ThingiBrowserService(QObject):
             "thingiverse": ThingiverseApiClient(),
             "myminifactory": MyMiniFactoryApiClient(),
         }  # type: Dict[str, AbstractApiClient]
-        self._active_driver_name = PreferencesHelper.initSetting(Settings.DEFAULT_API_CLIENT, "thingiverse")  # type: str
+        self._active_driver_name = PreferencesHelper.initSetting(Settings.DEFAULT_API_CLIENT_PREFERENCES_KEY,
+                                                                 "thingiverse")  # type: str
         self.activeDriverChanged.connect(self._onDriverChanged)
 
     def resetActiveDriver(self) -> None:
         """
         Reset the active driver to the one selected as deafult
         """
-        self.setActiveDriver(PreferencesHelper.getSettingValue(Settings.DEFAULT_API_CLIENT))
+        self.setActiveDriver(PreferencesHelper.getSettingValue(Settings.DEFAULT_API_CLIENT_PREFERENCES_KEY))
 
     def updateSupportedFileTypes(self) -> None:
         """

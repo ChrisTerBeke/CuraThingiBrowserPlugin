@@ -1,10 +1,10 @@
 # Copyright (c) 2020 Chris ter Beke.
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
 import os
-from typing import Optional, Callable
+from typing import Optional
 
 from PyQt5.QtCore import QObject
-from PyQt5.QtQuick import QQuickWindow #  type: ignore
+from PyQt5.QtQuick import QQuickWindow  # type: ignore
 
 from UM.Extension import Extension  # type: ignore
 from cura.CuraApplication import CuraApplication  # type: ignore
@@ -65,7 +65,7 @@ class ThingiBrowserExtension(Extension):
         if self._settings_dialog and isinstance(self._settings_dialog, QQuickWindow):
             self._settings_dialog.show()
 
-    def _createComponent(self, qml_file_path: str) -> Optional[QQuickWindow]:
+    def _createComponent(self, qml_file_path: str) -> Optional[QObject]:
         """
         Create a dialog window
         :return: The QML dialog object.

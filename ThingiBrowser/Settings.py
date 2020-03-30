@@ -23,14 +23,8 @@ class Settings:
     PER_PAGE = 20
 
     DRIVERS = [
-        {
-            "key": "thingiverse",
-            "label": "Thingiverse"
-        },
-        {
-            "key": "myminifactory",
-            "label": "MyMiniFactory"
-        }
+        {"key": "thingiverse", "label": "Thingiverse"},
+        {"key": "myminifactory", "label": "MyMiniFactory"}
     ]
 
     # Thingiverse API options
@@ -43,7 +37,7 @@ class Settings:
     PREFERENCE_KEY_BASE = "thingibrowser"
     THINGIVERSE_USER_NAME_PREFERENCES_KEY = "user_name"
     MYMINIFACTORY_USER_NAME_PREFERENCES_KEY = "myminifactory_user_name"
-    DEFAULT_API_CLIENT = "default_api_client"
+    DEFAULT_API_CLIENT_PREFERENCES_KEY = "default_api_client"
 
     # Google Analytics API options
     ANALYTICS_ID = "UA-16646729-7"

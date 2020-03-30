@@ -1,6 +1,6 @@
 # Copyright (c) 2020 Chris ter Beke.
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
-from typing import Union, Optional, Dict, List, Any
+from typing import Optional, Dict, List, Any
 
 from cura.CuraApplication import CuraApplication  # type: ignore
 
@@ -26,7 +26,6 @@ class PreferencesHelper:
     def getAllSettings(cls) -> List[Dict[str, Any]]:
         """
         Get all settings as key:value dict.
-        # FIXME: convert to QtListModel.
         :return: The settings dict.
         """
         return [
@@ -44,8 +43,8 @@ class PreferencesHelper:
             },
             {
                 "type": "combobox",
-                "key": Settings.DEFAULT_API_CLIENT,
-                "value": cls.getSettingValue(Settings.DEFAULT_API_CLIENT),
+                "key": Settings.DEFAULT_API_CLIENT_PREFERENCES_KEY,
+                "value": cls.getSettingValue(Settings.DEFAULT_API_CLIENT_PREFERENCES_KEY),
                 "label": "Default repository service",
                 "options": Settings.DRIVERS
             }

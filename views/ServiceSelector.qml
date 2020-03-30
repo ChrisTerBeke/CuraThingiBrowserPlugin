@@ -3,9 +3,10 @@ import QtQuick.Controls 2.3
 
 EnhancedComboBox
 {
+    id: serviceSelector
     textRole: "label"
     valueRole: "key"
-    currentIndex: indexOfValue(ThingiService.activeDriver)
+    currentIndex: serviceSelector.indexOfValue(ThingiService.activeDriver)
     model: ThingiService.drivers
     onActivated: {
         ThingiService.setActiveDriver(currentValue)
