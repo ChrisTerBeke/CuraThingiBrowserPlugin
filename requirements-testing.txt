@@ -4,3 +4,4 @@ pytest
 coverage
 pytest-cov
 surrogate
+requests
