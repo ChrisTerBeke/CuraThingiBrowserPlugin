@@ -7,6 +7,8 @@ from abc import ABC, abstractmethod
 from PyQt5.QtCore import QUrl
 from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
 
+from UM.Logger import Logger  # type: ignore
+
 from .ApiHelper import ApiHelper
 from .JsonObject import Thing, ThingFile, Collection, ApiError
 
@@ -19,9 +21,6 @@ class AbstractApiClient(ABC):
 
     # Prevent auto-removing running callbacks by the Python garbage collector.
     _anti_gc_callbacks = []  # type: List[Callable[[], None]]
-
-    # Re-usable logger.
-    _logger = logging.getLogger("ThingiBrowser")
 
     @property
     @abstractmethod
@@ -172,7 +171,7 @@ class AbstractApiClient(ABC):
             self._anti_gc_callbacks.remove(parse)
             status_code, response = parser(reply) if parser else ApiHelper.parseReplyAsJson(reply)
             if not status_code or status_code >= 400 or not response:
-                self._logger.warning("API returned with status {} and body {}".format(status_code, response))
+                Logger.warning("API returned with status {} and body {}".format(status_code, response))
                 if on_failed and isinstance(response, dict):
                     error_response = ApiError(response)
                     return on_failed(error_response)
