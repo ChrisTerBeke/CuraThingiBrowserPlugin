@@ -38,30 +38,27 @@ class TestThingiBrowserExtension:
             mocked_values["setMenuName"].assert_called_with("ThingiBrowser")
             mocked_values["addMenuItem"].assert_called_with("Open", plugin.showMainWindow)
 
-    def test_extension_opens_main_window(self, make_plugin, application, qtbot):
+    def test_extension_opens_main_window(self, make_plugin, application):
         application.reset_mock()
         plugin = make_plugin()
         plugin.showMainWindow()
-        qtbot.waitExposed(plugin._main_dialog)
         application.getPluginRegistry.return_value.getPluginPath.assert_called_with(plugin.getPluginId())
         application.createQmlComponent.assert_called_with("the/path{0}views{0}Thingiverse.qml".format(os.path.sep), {
             "ThingiService": plugin._service,
             "Analytics": plugin._analytics
         })
 
-    def test_extension_opens_main_window_twice_only_constructs_window_once(self, make_plugin, application, qtbot):
+    def test_extension_opens_main_window_twice_only_constructs_window_once(self, make_plugin, application):
         application.reset_mock()
         plugin = make_plugin()
         plugin.showMainWindow()
         plugin.showMainWindow()
-        qtbot.waitExposed(plugin._main_dialog)
         assert len(application.createQmlComponent.mock_calls) == 1
 
-    def test_extension_opens_settings_window(self, make_plugin, application, qtbot):
+    def test_extension_opens_settings_window(self, make_plugin, application):
         application.reset_mock()
         plugin = make_plugin()
         plugin.showSettingsWindow()
-        qtbot.waitExposed(plugin._settings_dialog)
         application.getPluginRegistry.return_value.getPluginPath.assert_called_with(plugin.getPluginId())
         application.createQmlComponent.assert_called_with("the/path{0}views{0}ThingiSettings.qml".format(os.path.sep), {
             "ThingiService": plugin._service,
