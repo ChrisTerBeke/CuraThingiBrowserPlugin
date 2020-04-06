@@ -10,6 +10,10 @@ Alternatively you can download the `.curapackage` file from one of the GitHub re
 ## Usage
 Once installed in Cura, you can find this plugin under the `Extensions` menu in the top menu bar.
 
+## Statistics
+The ThingiBrowser plugin uses Google Analytics for anonymous usage statistics.
+A public real-time report can be found at [datastudio.google.com](https://datastudio.google.com/s/gcA3nY2Wus8).
+
 ## Publications
 * [marketplace.ultimaker.com](https://marketplace.ultimaker.com/app/cura/plugins/ChrisTerBekeAuthor/ThingiBrowser)
 * [community.ultimaker.com](https://community.ultimaker.com/topic/26910-cura-plugin-thingiverse)
