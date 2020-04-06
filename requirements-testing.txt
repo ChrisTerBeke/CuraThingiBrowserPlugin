@@ -1,4 +1,5 @@
 mypy
+PyQt5
 PyQt5-stubs
 pytest
 coverage
