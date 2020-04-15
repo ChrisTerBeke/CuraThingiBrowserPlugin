@@ -80,7 +80,7 @@ class ThingiBrowserService(QObject):
 
     def resetActiveDriver(self) -> None:
         """
-        Reset the active driver to the one selected as deafult
+        Reset the active driver to the one selected as default.
         """
         self.setActiveDriver(PreferencesHelper.getSettingValue(Settings.DEFAULT_API_CLIENT_PREFERENCES_KEY))
 
