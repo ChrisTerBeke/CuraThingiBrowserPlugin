@@ -174,8 +174,9 @@ class AbstractApiClient(ABC):
                 Logger.warning("API returned with status {} and body {}".format(status_code, response))
                 if on_failed and isinstance(response, dict):
                     error_response = ApiError(response)
-                    return on_failed(error_response)
-            on_finished(response)
+                    on_failed(error_response)
+            else:
+                on_finished(response)
             reply.deleteLater()
 
         self._anti_gc_callbacks.append(parse)
