@@ -1,5 +1,6 @@
 # Copyright (c) 2020 Chris ter Beke.
 # ThingiBrowser plugin is released under the terms of the LGPLv3 or higher.
+import os
 from unittest.mock import MagicMock
 
 import pytest
@@ -37,7 +38,7 @@ def plugin_registry():
     :return: A MagicMock compatible with Cura's PluginRegistry class.
     """
     plugin_registry = MagicMock()
-    plugin_registry.getPluginPath = MagicMock(return_value="the/path")
+    plugin_registry.getPluginPath = MagicMock(return_value="the{0}path".format(os.path.sep))
     return plugin_registry
 
 
