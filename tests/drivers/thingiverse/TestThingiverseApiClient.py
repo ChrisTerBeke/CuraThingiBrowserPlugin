@@ -1,6 +1,6 @@
 # Copyright (c) 2020 Chris ter Beke.
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 import pytest
 from surrogate import surrogate

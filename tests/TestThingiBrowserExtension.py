@@ -43,7 +43,7 @@ class TestThingiBrowserExtension:
         plugin = make_plugin()
         plugin.showMainWindow()
         application.getPluginRegistry.return_value.getPluginPath.assert_called_with(plugin.getPluginId())
-        application.createQmlComponent.assert_called_with("the/path{0}views{0}Thingiverse.qml".format(os.path.sep), {
+        application.createQmlComponent.assert_called_with("the{0}path{0}views{0}Thingiverse.qml".format(os.path.sep), {
             "ThingiService": plugin._service,
             "Analytics": plugin._analytics
         })
@@ -59,8 +59,9 @@ class TestThingiBrowserExtension:
         application.reset_mock()
         plugin = make_plugin()
         plugin.showSettingsWindow()
+        separator = os.path.sep
         application.getPluginRegistry.return_value.getPluginPath.assert_called_with(plugin.getPluginId())
-        application.createQmlComponent.assert_called_with("the/path{0}views{0}ThingiSettings.qml".format(os.path.sep), {
+        application.createQmlComponent.assert_called_with("the{0}path{0}views{0}ThingiSettings.qml".format(separator), {
             "ThingiService": plugin._service,
             "Analytics": plugin._analytics
         })
