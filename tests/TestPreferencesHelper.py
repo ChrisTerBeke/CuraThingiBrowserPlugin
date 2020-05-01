@@ -33,5 +33,5 @@ class TestPreferencesHelper:
         preferences.setValue.assert_called_with("thingibrowser/test_setting_stored", "new_stored_value")
 
     def test_getAllSettings_returns_all_settings(self, preferences_helper):
-        all_settings = preferences_helper.getAllSettings()
-        assert len(all_settings) == 3
+        all_settings = preferences_helper.getAllSettings(drivers={}, views={})
+        assert len(all_settings) == 4
