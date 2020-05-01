@@ -20,10 +20,6 @@ class MyMiniFactoryApiClient(AbstractApiClient):
         PreferencesHelper.initSetting(Settings.MYMINIFACTORY_USER_NAME_PREFERENCES_KEY, "")
 
     @property
-    def available_views(self) -> List[str]:
-        return ["userLikes", "userCollections", "userThings", "popular", "featured", "newest"]
-
-    @property
     def user_id(self) -> str:
         return PreferencesHelper.getSettingValue(Settings.MYMINIFACTORY_USER_NAME_PREFERENCES_KEY)
 

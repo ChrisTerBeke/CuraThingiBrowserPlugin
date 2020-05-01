@@ -3,7 +3,7 @@
 import os
 import pathlib
 import tempfile
-from typing import List, Optional, TYPE_CHECKING, Dict, Any, cast
+from typing import List, Optional, TYPE_CHECKING, Dict, Any, cast, Callable, Union
 
 from PyQt5.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot, QUrl  # type: ignore
 from PyQt5.QtWidgets import QMessageBox
@@ -50,6 +50,9 @@ class ThingiBrowserService(QObject):
     # Signal triggered when the active API driver is changed.
     activeDriverChanged = pyqtSignal()
 
+    # Signal triggered when the active view is changed.
+    activeViewChanged = pyqtSignal()
+
     def __init__(self, extension: "ThingiBrowserExtension", parent=None):
         super().__init__(parent)
         self._extension = extension  # type: ThingiBrowserExtension
@@ -71,12 +74,26 @@ class ThingiBrowserService(QObject):
 
         # Drivers for the services we can interact with.
         self._drivers = {
-            "thingiverse": ThingiverseApiClient(),
-            "myminifactory": MyMiniFactoryApiClient(),
-        }  # type: Dict[str, AbstractApiClient]
+            "thingiverse": {"label": "Thingiverse", "driver": ThingiverseApiClient()},
+            "myminifactory": {"label": "MyMiniFactory", "driver": MyMiniFactoryApiClient()},
+        }  # type: Dict[str, Dict[str, Union[str, AbstractApiClient]]]
         self._active_driver_name = PreferencesHelper.initSetting(Settings.DEFAULT_API_CLIENT_PREFERENCES_KEY,
                                                                  "thingiverse")  # type: str
         self.activeDriverChanged.connect(self._onDriverChanged)
+
+        # Views
+        self._views = {
+            "popular": {"label": "Popular", "query": self.getPopular},
+            "featured": {"label": "Featured", "query": self.getFeatured},
+            "newest": {"label": "Newest", "query": self.getNewest},
+            "userLikes": {"label": "My Likes", "query": self.getLiked},
+            "userCollections": {"label": "My Collections", "query": self.getCollections},
+            "userThings": {"label": "My Things", "query": self.getMyThings},
+            "userMakes": {"label": "My Makes", "query": self.getMakes},
+        }  # type: Dict[str, Dict[str, Union[str, Callable]]]
+        self._active_view_name = PreferencesHelper.initSetting(Settings.DEFAULT_VIEW_PREFERENCES_KEY,
+                                                               "popular")  # type: str
+        self.activeViewChanged.connect(self._onViewChanged)
 
     def resetActiveDriver(self) -> None:
         """
@@ -93,9 +110,9 @@ class ThingiBrowserService(QObject):
 
     def runDefaultQuery(self) -> None:
         """
-        Run the default query that searches for items with the keyword 'ultimaker'.
+        Run the default view query.
         """
-        self.search("ultimaker")
+        self.setActiveView(self._active_view_name, force=True)
 
     @pyqtProperty(list, notify=settingChanged)
     def getSettings(self) -> List[Dict[str, Any]]:
@@ -103,7 +120,7 @@ class ThingiBrowserService(QObject):
         Get all the available settings so the UI can display them.
         :return: The settings.
         """
-        return PreferencesHelper.getAllSettings()
+        return PreferencesHelper.getAllSettings(drivers=self.drivers, views=self.views)
 
     @pyqtSlot(str, str, name="saveSetting")
     def setSetting(self, setting_name: str, value: str) -> None:
@@ -128,7 +145,7 @@ class ThingiBrowserService(QObject):
         Get the available drivers for selecting in the UI.
         :return: The drivers.
         """
-        return Settings.DRIVERS
+        return [{"key": key, "label": value["label"]} for key, value in self._drivers.items()]
 
     @pyqtProperty(str, notify=activeDriverChanged)
     def activeDriver(self) -> str:
@@ -152,13 +169,37 @@ class ThingiBrowserService(QObject):
         self._active_driver_name = driver
         self.activeDriverChanged.emit()
 
-    @pyqtProperty(list, notify=activeDriverChanged)
-    def availableViews(self) -> List[str]:
+    @pyqtProperty("QVariantList", constant=True)
+    def views(self) -> List[Dict[str, str]]:
         """
-        Get any disabled views for the current API driver.
-        :return: List of views that should be visible.
+        Get the available views for selecting in the UI.
+        :return: The views.
         """
-        return self._getActiveDriver().available_views
+        return [{"key": key, "label": value["label"]} for key, value in self._views.items()]
+
+    @pyqtProperty(str, notify=activeViewChanged)
+    def activeView(self):
+        """
+        Return the key of the active view.
+        :return: The active view key.
+        """
+        return self._active_view_name
+
+    @pyqtSlot(str, name="setActiveView")
+    @pyqtSlot(str, bool, name="setActiveView")
+    def setActiveView(self, view: str, force: bool = False) -> None:
+        """
+        Set the active view.
+        Checks if the selected view is actually available.
+        :param view: The name of the view to activate.
+        :param force: Force re-loading the view. Used to re-load the current view after selecting a new driver.
+        """
+        if view == self._active_view_name and not force:
+            return
+        if view not in self._views:
+            return
+        self._active_view_name = view
+        self.activeViewChanged.emit()
 
     @pyqtProperty("QVariantList", notify=thingsChanged)
     def things(self) -> List[Dict[str, Any]]:
@@ -457,6 +498,14 @@ class ThingiBrowserService(QObject):
         """
         self.runDefaultQuery()
 
+    def _onViewChanged(self) -> None:
+        """
+        Execute correct query when the active view changes.
+        """
+        if self._active_view_name not in self._views:
+            return
+        self._views[self._active_view_name]["query"]()
+
     def _onRequestFailed(self, error: Optional[ApiError] = None) -> None:
         """
         Callback for when a request failed.
@@ -490,4 +539,4 @@ class ThingiBrowserService(QObject):
         """
         if not self._active_driver_name:
             self._active_driver_name = list(self._drivers.keys())[0]
-        return self._drivers[self._active_driver_name]
+        return self._drivers[self._active_driver_name]["driver"]

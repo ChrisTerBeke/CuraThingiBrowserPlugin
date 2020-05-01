@@ -26,9 +26,11 @@ class PreferencesHelper:
         return preferences.getValue(preference_key)
 
     @classmethod
-    def getAllSettings(cls) -> List[Dict[str, Any]]:
+    def getAllSettings(cls, drivers: Dict[str, str], views: Dict[str, str]) -> List[Dict[str, Any]]:
         """
         Get all settings as key:value dict.
+        :param drivers: The available drivers.
+        :param views: The available views.
         :return: The settings dict.
         """
         return [
@@ -49,7 +51,14 @@ class PreferencesHelper:
                 "key": Settings.DEFAULT_API_CLIENT_PREFERENCES_KEY,
                 "value": cls.getSettingValue(Settings.DEFAULT_API_CLIENT_PREFERENCES_KEY),
                 "label": "Default repository service",
-                "options": Settings.DRIVERS
+                "options": drivers
+            },
+            {
+                "type": "combobox",
+                "key": Settings.DEFAULT_VIEW_PREFERENCES_KEY,
+                "value": cls.getSettingValue(Settings.DEFAULT_VIEW_PREFERENCES_KEY),
+                "label": "Default view",
+                "options": views
             }
         ]
 

@@ -24,7 +24,9 @@ ColumnLayout
         visible: !ThingiService.hasActiveThing
         Layout.fillHeight: true
         onVisibleChanged: {
-            Analytics.trackScreen("search")
+            if (visible) {
+                Analytics.trackScreen("search")
+            }
         }
     }
 
@@ -37,7 +39,9 @@ ColumnLayout
         visible: ThingiService.hasActiveThing && ThingiService.activeThing
         Layout.fillHeight: true
         onVisibleChanged: {
-            Analytics.trackScreen("details")
+            if (visible) {
+                Analytics.trackScreen("details")
+            }
         }
     }
 }

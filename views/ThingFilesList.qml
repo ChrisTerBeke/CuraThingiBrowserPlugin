@@ -8,6 +8,7 @@ ScrollView
 {
     property alias model: thingFilesList.model
     width: parent.width
+    contentWidth: width
     clip: true
 
     ListView

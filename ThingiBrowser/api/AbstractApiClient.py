@@ -24,15 +24,6 @@ class AbstractApiClient(ABC):
 
     @property
     @abstractmethod
-    def available_views(self) -> List[str]:
-        """
-        Get the available UI views for this provider.
-        :return: A list of views to show when this provider is active.
-        """
-        raise NotImplementedError("available_views must be implemented")
-
-    @property
-    @abstractmethod
     def user_id(self) -> str:
         """
         Get the configured user ID for this provider.
