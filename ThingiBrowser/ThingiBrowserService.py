@@ -3,7 +3,7 @@
 import os
 import pathlib
 import tempfile
-from typing import List, Optional, TYPE_CHECKING, Dict, Any, cast, Callable, Union
+from typing import List, Optional, TYPE_CHECKING, Dict, Any, cast
 
 from PyQt5.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot, QUrl  # type: ignore
 from PyQt5.QtWidgets import QMessageBox
@@ -15,6 +15,8 @@ from .api.AbstractApiClient import AbstractApiClient
 from .api.JsonObject import Thing, ThingFile, Collection, ApiError
 from .drivers.thingiverse.ThingiverseApiClient import ThingiverseApiClient
 from .drivers.myminifactory.MyMiniFactoryApiClient import MyMiniFactoryApiClient
+from .models.DriverOption import DriverOption
+from .models.ViewOption import ViewOption
 from .Settings import Settings
 
 if TYPE_CHECKING:
@@ -74,23 +76,23 @@ class ThingiBrowserService(QObject):
 
         # Drivers for the services we can interact with.
         self._drivers = {
-            "thingiverse": {"label": "Thingiverse", "driver": ThingiverseApiClient()},
-            "myminifactory": {"label": "MyMiniFactory", "driver": MyMiniFactoryApiClient()},
-        }  # type: Dict[str, Dict[str, Union[str, AbstractApiClient]]]
+            "thingiverse": DriverOption(label="Thingiverse", driver=ThingiverseApiClient()),
+            "myminifactory": DriverOption(label="MyMiniFactory", driver=MyMiniFactoryApiClient()),
+        }  # type: Dict[str, DriverOption]
         self._active_driver_name = PreferencesHelper.initSetting(Settings.DEFAULT_API_CLIENT_PREFERENCES_KEY,
                                                                  "thingiverse")  # type: str
         self.activeDriverChanged.connect(self._onDriverChanged)
 
         # Views
         self._views = {
-            "popular": {"label": "Popular", "query": self.getPopular},
-            "featured": {"label": "Featured", "query": self.getFeatured},
-            "newest": {"label": "Newest", "query": self.getNewest},
-            "userLikes": {"label": "My Likes", "query": self.getLiked},
-            "userCollections": {"label": "My Collections", "query": self.getCollections},
-            "userThings": {"label": "My Things", "query": self.getMyThings},
-            "userMakes": {"label": "My Makes", "query": self.getMakes},
-        }  # type: Dict[str, Dict[str, Union[str, Callable]]]
+            "popular": ViewOption(label="Popular", query=self.getPopular),
+            "featured": ViewOption(label="Featured", query=self.getFeatured),
+            "newest": ViewOption(label="Newest", query=self.getNewest),
+            "userLikes": ViewOption(label="My Likes", query=self.getLiked),
+            "userCollections": ViewOption(label="My Collections", query=self.getCollections),
+            "userThings": ViewOption(label="My Things", query=self.getMyThings),
+            "userMakes": ViewOption(label="My Makes", query=self.getMakes),
+        }  # type: Dict[str, ViewOption]
         self._active_view_name = PreferencesHelper.initSetting(Settings.DEFAULT_VIEW_PREFERENCES_KEY,
                                                                "popular")  # type: str
         self.activeViewChanged.connect(self._onViewChanged)
@@ -145,7 +147,7 @@ class ThingiBrowserService(QObject):
         Get the available drivers for selecting in the UI.
         :return: The drivers.
         """
-        return [{"key": key, "label": value["label"]} for key, value in self._drivers.items()]
+        return [{"key": key, "label": driver_option.label} for key, driver_option in self._drivers.items()]
 
     @pyqtProperty(str, notify=activeDriverChanged)
     def activeDriver(self) -> str:
@@ -175,7 +177,7 @@ class ThingiBrowserService(QObject):
         Get the available views for selecting in the UI.
         :return: The views.
         """
-        return [{"key": key, "label": value["label"]} for key, value in self._views.items()]
+        return [{"key": key, "label": view_option.label} for key, view_option in self._views.items()]
 
     @pyqtProperty(str, notify=activeViewChanged)
     def activeView(self):
@@ -504,7 +506,7 @@ class ThingiBrowserService(QObject):
         """
         if self._active_view_name not in self._views:
             return
-        self._views[self._active_view_name]["query"]()
+        self._views[self._active_view_name].query()
 
     def _onRequestFailed(self, error: Optional[ApiError] = None) -> None:
         """
@@ -539,4 +541,4 @@ class ThingiBrowserService(QObject):
         """
         if not self._active_driver_name:
             self._active_driver_name = list(self._drivers.keys())[0]
-        return self._drivers[self._active_driver_name]["driver"]
+        return self._drivers[self._active_driver_name].driver
