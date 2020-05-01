@@ -5,11 +5,11 @@ EnhancedComboBox
 {
     id: serviceSelector
     textRole: "label"
-    valueRole: "key"
+    customValueRole: "key"
     currentIndex: serviceSelector.indexOfValue(ThingiService.activeDriver)
     model: ThingiService.drivers
     onActivated: {
-        ThingiService.setActiveDriver(currentValue)
-        Analytics.trackEvent("driver_selected", "button_clicked")
+        ThingiService.setActiveDriver(customCurrentValue)
+        Analytics.trackEvent("driver_selected_" + customCurrentValue, "combobox_option_selected")
     }
 }

@@ -19,10 +19,6 @@ class ThingiverseApiClient(AbstractApiClient):
         PreferencesHelper.initSetting(Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY, "")
 
     @property
-    def available_views(self) -> List[str]:
-        return ["userLikes", "userCollections", "userThings", "userMakes", "popular", "featured", "newest"]
-
-    @property
     def user_id(self):
         return PreferencesHelper.getSettingValue(Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY)
 

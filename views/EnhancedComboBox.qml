@@ -6,23 +6,23 @@ ComboBox
 {
     id: comboBox
 
-    property string currentValue
-    property string valueRole: "value"
+    property string customCurrentValue
+    property string customValueRole: "value"
 
     function indexOfValue(value) {
-        if (model !== undefined) {
-            for(var idx in model) {
-                if (model[idx][valueRole] === value) {
-                    return idx
-                }
+        if (model == undefined) {
+            return -1
+        }
+        for (var idx in model) {
+            if (model[idx][customValueRole] === value) {
+                return idx
             }
         }
-        return -1
     }
 
     Binding {
         target: comboBox
-        property: "currentValue"
-        value: currentIndex < 0 ? "" : model[currentIndex][valueRole]
+        property: "customCurrentValue"
+        value: currentIndex < 0 ? "" : model[currentIndex][customValueRole]
     }
 }

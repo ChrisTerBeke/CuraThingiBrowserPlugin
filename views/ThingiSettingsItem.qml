@@ -41,11 +41,11 @@ RowLayout
         visible: thingiSettingsItem.type == "combobox"
         Layout.fillWidth: true
         textRole: "label"
-        valueRole: "key"
-        currentIndex: inputMenu.indexOfValue(thingiSettingsItem.value)
+        customValueRole: "key"
+        currentIndex: indexOfValue(thingiSettingsItem.value)
         model: thingiSettingsItem.options
         onActivated: {
-            ThingiService.saveSetting(thingiSettingsItem.key, currentValue)
+            ThingiService.saveSetting(thingiSettingsItem.key, customCurrentValue)
         }
     }
 
@@ -62,6 +62,6 @@ RowLayout
         target: thingiSettingsItem
         property: "value"
         when: thingiSettingsItem.type == "combobox"
-        value: inputMenu.currentIndex < 0 ? "" : inputMenu.model[inputMenu.currentIndex][inputMenu.valueRole]
+        value: inputMenu.currentIndex < 0 ? "" : inputMenu.model[inputMenu.currentIndex][inputMenu.customValueRole]
     }
 }
