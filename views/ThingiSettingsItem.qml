@@ -8,6 +8,7 @@ import UM 1.1 as UM
 RowLayout
 {
     id: thingiSettingsItem
+    width: parent.width
 
     property var type: ""
     property var key: ""
