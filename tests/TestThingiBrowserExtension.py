@@ -36,7 +36,8 @@ class TestThingiBrowserExtension:
         with patch.multiple(ExtensionMock, setMenuName=DEFAULT, addMenuItem=DEFAULT) as mocked_values:
             plugin = make_plugin()
             mocked_values["setMenuName"].assert_called_with("ThingiBrowser")
-            mocked_values["addMenuItem"].assert_called_with("Open", plugin.showMainWindow)
+            mocked_values["addMenuItem"].assert_called_with("Browse", plugin.showMainWindow)
+            mocked_values["addMenuItem"].assert_called_with("Settings", plugin.showSettingsWindow)
 
     def test_extension_opens_main_window(self, make_plugin, application):
         application.reset_mock()
