@@ -1,11 +1,14 @@
 # Copyright (c) 2020 Chris ter Beke.
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
-from ..api.AbstractApiClient import AbstractApiClient
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..api.AbstractApiClient import AbstractApiClient
 
 
 class DriverOption:
 
-    def __init__(self, label: str, driver: AbstractApiClient) -> None:
+    def __init__(self, label: str, driver: "AbstractApiClient") -> None:
         self._label = label
         self._driver = driver
 
@@ -14,5 +17,5 @@ class DriverOption:
         return self._label
 
     @property
-    def driver(self) -> AbstractApiClient:
+    def driver(self) -> "AbstractApiClient":
         return self._driver
