@@ -34,7 +34,8 @@ class ThingiBrowserExtension(Extension):
 
         # Configure the 'extension' menu.
         self.setMenuName(Settings.DISPLAY_NAME)
-        self.addMenuItem(Settings.MENU_TEXT, self.showMainWindow)
+        self.addMenuItem("Browse", self.showMainWindow)
+        self.addMenuItem("Settings", self.showSettingsWindow)
 
     def showMainWindow(self) -> None:
         """

@@ -16,9 +16,6 @@ class Settings:
     # Plugin name displayed in several location.
     DISPLAY_NAME = "ThingiBrowser"
 
-    # Text shown in Cura's extension menu.
-    MENU_TEXT = "Open"
-
     # Generic API settings
     PER_PAGE = 20
 

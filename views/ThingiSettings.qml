@@ -13,10 +13,12 @@ Window
     id: thingiSettingsWindow
 
     // window configuration
-    title: "ThingiBrower - Settings"
     color: UM.Theme.getColor("viewport_background")
-    width: 500
-    height: 300
+    minimumWidth: 500
+    minimumHeight: 300
+    width: minimumWidth
+    height: minimumHeight
+    title: "ThingiBrower - Settings"
 
     // area to provide un-focus option for input fields
     MouseArea
