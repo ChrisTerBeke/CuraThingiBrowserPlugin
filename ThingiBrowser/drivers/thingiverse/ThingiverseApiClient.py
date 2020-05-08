@@ -26,7 +26,7 @@ class ThingiverseApiClient(AbstractApiClient):
         return "collections/{}/things".format(collection_id)
 
     def getThingsBySearchQuery(self, search_terms: str) -> str:
-        return "search/{}/?sort=relevent".format(search_terms)
+        return "search/{}".format(search_terms)
 
     def getThingsLikedByUserQuery(self) -> str:
         return "users/{}/likes".format(self.user_id)
@@ -74,6 +74,9 @@ class ThingiverseApiClient(AbstractApiClient):
     @staticmethod
     def _parseGetThings(reply: QNetworkReply) -> Tuple[int, Optional[List[Thing]]]:
         status_code, response = ApiHelper.parseReplyAsJson(reply)
+        if "hits" in response:
+            # Thingiverse decided to change their API response for /search and put the actual results in a 'hits' field
+            response = response["hits"]
         if not response or not isinstance(response, list):
             return status_code, None
         return status_code, [Thing({
