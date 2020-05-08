@@ -74,7 +74,7 @@ class ThingiverseApiClient(AbstractApiClient):
     @staticmethod
     def _parseGetThings(reply: QNetworkReply) -> Tuple[int, Optional[List[Thing]]]:
         status_code, response = ApiHelper.parseReplyAsJson(reply)
-        if "hits" in response:
+        if isinstance(response, dict) and "hits" in response:
             # Thingiverse decided to change their API response for /search and put the actual results in a 'hits' field
             response = response["hits"]
         if not response or not isinstance(response, list):
