@@ -24,7 +24,7 @@ class TestThingiverseApiClient:
 
     def test_getThingsBySearchQuery(self, api_client):
         query = api_client.getThingsBySearchQuery("cube")
-        assert query == "search/cube/?sort=relevent"
+        assert query == "search/cube"
 
     def test_getThingsLikedByUserQuery(self, api_client):
         query = api_client.getThingsLikedByUserQuery()
