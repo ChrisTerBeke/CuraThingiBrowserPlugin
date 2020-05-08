@@ -1,6 +1,6 @@
 # Copyright (c) 2020 Chris ter Beke.
 # ThingiBrowser plugin is released under the terms of the LGPLv3 or higher.
-from unittest.mock import patch, MagicMock, DEFAULT
+from unittest.mock import patch, MagicMock, DEFAULT, call
 from typing import Callable
 
 import os
@@ -36,7 +36,10 @@ class TestThingiBrowserExtension:
         with patch.multiple(ExtensionMock, setMenuName=DEFAULT, addMenuItem=DEFAULT) as mocked_values:
             plugin = make_plugin()
             mocked_values["setMenuName"].assert_called_with("ThingiBrowser")
-            mocked_values["addMenuItem"].assert_called_with("Open", plugin.showMainWindow)
+            mocked_values["addMenuItem"].assert_has_calls([
+                call("Browse", plugin.showMainWindow),
+                call("Settings", plugin.showSettingsWindow)
+            ])
 
     def test_extension_opens_main_window(self, make_plugin, application):
         application.reset_mock()
