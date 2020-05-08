@@ -8,6 +8,7 @@ import UM 1.1 as UM
 RowLayout
 {
     id: thingiSettingsItem
+    width: parent.width
 
     property var type: ""
     property var key: ""
@@ -21,6 +22,7 @@ RowLayout
         font: UM.Theme.getFont("default")
         color: UM.Theme.getColor("text")
         renderType: Text.NativeRendering
+        Layout.preferredWidth: parent.width / 2 // causes both the label and input to be the same width
     }
 
     TextField
