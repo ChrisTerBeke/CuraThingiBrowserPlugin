@@ -19,6 +19,18 @@ ColumnLayout
         }
     }
 
+    Label
+    {
+        text: "No results found. Please try another category or search term."
+        visible: ThingiService.things.length == 0 && ThingiService.isQuerying == false
+        font: UM.Theme.getFont("default")
+        renderType: Text.NativeRendering
+        horizontalAlignment: Text.AlignHCenter
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+        Layout.topMargin: 20
+    }
+
     ThingsList
     {
         id: thingsList
@@ -38,17 +50,18 @@ ColumnLayout
         Button
         {
             text: "Previous page"
-            visible: ThingiService.currentPage > 1
+            visible: ThingiService.currentPage > 1 && ThingiService.things.length > 0
             onClicked: {
                 ThingiService.previousPage()
                 Analytics.trackEvent("previous_page", "button_clicked")
             }
         }
 
-        // FIXME: hide when reaching last page of results
+        // FIXME: hide when reaching last page of results (can be done now that we have 'total' in Thingiverse api)
         Button
         {
             text: "Next page"
+            visible: ThingiService.things.length > 0
             onClicked: {
                 ThingiService.nextPage()
                 Analytics.trackEvent("next_page", "button_clicked")
@@ -58,6 +71,7 @@ ColumnLayout
         Label
         {
             text: "Page " + ThingiService.currentPage
+            visible: ThingiService.things.length > 0
             font: UM.Theme.getFont("medium")
             color: UM.Theme.getColor("text")
             renderType: Text.NativeRendering
