@@ -2,6 +2,6 @@
   "name": "ThingiBrowser",
   "description": "Discover and import 3D files directly from popular online repositories.",
   "author": "Chris ter Beke",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "supported_sdk_versions": ["6.0.0", "6.1.0", "6.2.0", "6.3.0", "7.0.0", "7.1.0", "7.2.0"]
 }
