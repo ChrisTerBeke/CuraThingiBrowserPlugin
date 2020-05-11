@@ -161,7 +161,7 @@ class AbstractApiClient(ABC):
         def parse() -> None:
             self._anti_gc_callbacks.remove(parse)
             status_code, response = parser(reply) if parser else ApiHelper.parseReplyAsJson(reply)
-            if not status_code or status_code >= 400 or not response:
+            if not status_code or status_code >= 400 or response is None:
                 Logger.warning("API returned with status {} and body {}".format(status_code, response))
                 if on_failed and isinstance(response, dict):
                     error_response = ApiError(response)

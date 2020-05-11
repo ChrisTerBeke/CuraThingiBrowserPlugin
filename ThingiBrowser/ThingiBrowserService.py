@@ -514,6 +514,7 @@ class ThingiBrowserService(QObject):
         :param error: An optional error object that was returned by the Thingiverse API.
         """
         self._is_querying = False
+        self.queryingStateChanged.emit()
         mb = QMessageBox()
         mb.setIcon(QMessageBox.Critical)
         mb.setWindowTitle("Oh no!")

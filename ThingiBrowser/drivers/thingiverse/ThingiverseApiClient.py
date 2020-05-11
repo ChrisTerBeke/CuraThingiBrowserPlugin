@@ -78,7 +78,8 @@ class ThingiverseApiClient(AbstractApiClient):
             # Thingiverse decided to change their API response for /search and put the actual results in a 'hits' field
             response = response["hits"]
         if not response or not isinstance(response, list):
-            return status_code, None
+            # Thingiverse returns 'None' in the 'hits' field when there are no results instead of an empty list
+            return status_code, []
         return status_code, [Thing({
             "id": item.get("id"),
             "thumbnail": item.get("thumbnail"),
