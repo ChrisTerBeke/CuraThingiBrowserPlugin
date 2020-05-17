@@ -4,6 +4,8 @@ Search and import 3D files from popular online repositories directly in Cura.
 
 *This plugin is not affiliated with Thingiverse or MyMiniFactory.*
 
+> Warning! The Thingiverse API is very unstable and can cause the plugin to not function properly. For best results use the MyMiniFactory repository option.
+
 ## Installation
 
 You can install this plugin in the Ultimaker Cura (4.0 or higher) Marketplace.
