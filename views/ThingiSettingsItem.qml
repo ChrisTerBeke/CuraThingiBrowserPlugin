@@ -52,32 +52,26 @@ RowLayout
         }
     }
 
-    Item
+    Button 
     {
-        id: callToActionButton
-        visible: thingiSettingsItem.type == "cta_button"
+        id: callToActionButtonRevoke
+        visible: thingiSettingsItem.type == "cta_button" && thingiSettingsItem.value != ""
         Layout.fillWidth: true
-
-        Button 
-        {
-            id: callToActionButtonRevoke
-            visible: thingiSettingsItem.value !== ""
-            Layout.fillWidth: true
-            text: "Sign Out"
-            onClicked: {
-                ThingiService.saveSetting(thingiSettingsItem.key, "")
-            }
+        text: "Sign Out"
+        onClicked: {
+            ThingiService.saveSetting(thingiSettingsItem.key, "")
+            thingiSettingsItem.value = ""
         }
+    }
 
-        Button 
-        {
-            id: callToActionButtonAuthenticate
-            visible: thingiSettingsItem.value === ""
-            Layout.fillWidth: true
-            text: "Sign In"
-            onClicked: {
-                ThingiService.authenticateDriver(thingiSettingsItem.driver)
-            }
+    Button 
+    {
+        id: callToActionButtonAuthenticate
+        visible: thingiSettingsItem.type == "cta_button" && thingiSettingsItem.value == ""
+        Layout.fillWidth: true
+        text: "Sign In"
+        onClicked: {
+            ThingiService.authenticateDriver(thingiSettingsItem.driver)
         }
     }
 
