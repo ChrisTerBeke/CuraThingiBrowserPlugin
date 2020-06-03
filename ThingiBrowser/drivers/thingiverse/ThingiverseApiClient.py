@@ -3,12 +3,16 @@
 from typing import List, Callable, Any, Optional, Tuple
 
 from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
+from PyQt5.QtCore import QUrl
+from PyQt5.QtGui import QDesktopServices
+from urllib.parse import urlencode
 
 from ...Settings import Settings
 from ...PreferencesHelper import PreferencesHelper
 from ...api.AbstractApiClient import AbstractApiClient
 from ...api.ApiHelper import ApiHelper
 from ...api.JsonObject import ApiError, Thing, ThingFile, Collection
+from ...api.LocalAuthServer import LocalAuthService
 
 
 class ThingiverseApiClient(AbstractApiClient):
@@ -22,6 +26,19 @@ class ThingiverseApiClient(AbstractApiClient):
     def user_id(self):
         return PreferencesHelper.getSettingValue(Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY)
 
+    def authenticate(self) -> None:
+        url="{}?{}".format("https://www.thingiverse.com/login/oauth/authorize", urlencode({
+            "client_id": Settings.THINGIVERSE_CLIENT_ID,
+            "response_type": "token",
+            "state": "10938209fjwf290fi"
+        }))
+
+        auth_service = LocalAuthService(Settings.THINGIVERSE_API_TOKEN_KEY, 55444)
+        auth_service.listen()
+        
+        # Open the authorization page in a new browser window.
+        QDesktopServices.openUrl(QUrl(url))
+
     def getThingsFromCollectionQuery(self, collection_id: str) -> str:
         return "collections/{}/things".format(collection_id)
 
@@ -29,13 +46,13 @@ class ThingiverseApiClient(AbstractApiClient):
         return "search/{}".format(search_terms)
 
     def getThingsLikedByUserQuery(self) -> str:
-        return "users/{}/likes".format(self.user_id)
+        return "users/me/likes"
 
     def getThingsByUserQuery(self) -> str:
-        return "users/{}/things".format(self.user_id)
+        return "users/me/things"
 
     def getThingsMadeByUserQuery(self) -> str:
-        return "users/{}/copies".format(self.user_id)
+        return "users/me/copies"
 
     def getPopularThingsQuery(self) -> str:
         return "popular"
@@ -48,7 +65,7 @@ class ThingiverseApiClient(AbstractApiClient):
 
     def getCollections(self, on_finished: Callable[[List[Collection]], Any],
                        on_failed: Optional[Callable[[Optional[ApiError]], Any]] = None) -> None:
-        url = "{}/users/{}/collections".format(self._root_url, self.user_id)
+        url = "{}/users/me/collections".format(self._root_url)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed, parser=self._parseGetCollections)
 
@@ -135,4 +152,5 @@ class ThingiverseApiClient(AbstractApiClient):
         return "https://api.thingiverse.com"
 
     def _setAuth(self, request: QNetworkRequest) -> None:
-        request.setRawHeader(b"Authorization", "Bearer {}".format(Settings.THINGIVERSE_API_TOKEN).encode())
+        token = PreferencesHelper.getSettingValue(Settings.THINGIVERSE_API_TOKEN_KEY)
+        request.setRawHeader(b"Authorization", "Bearer {}".format(token).encode())
