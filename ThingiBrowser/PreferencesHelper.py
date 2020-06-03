@@ -35,10 +35,11 @@ class PreferencesHelper:
         """
         return [
             {
-                "type": "text",
-                "key": Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY,
-                "value": cls.getSettingValue(Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY),
-                "label": "Thingiverse username"
+                "type": "cta_button",
+                "key": Settings.THINGIVERSE_API_TOKEN_KEY,
+                "value": cls.getSettingValue(Settings.THINGIVERSE_API_TOKEN_KEY),
+                "label": "Thingiverse Account",
+                "driver": "thingiverse"
             },
             {
                 "type": "text",

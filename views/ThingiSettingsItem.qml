@@ -15,6 +15,7 @@ RowLayout
     property var label: ""
     property var value: ""
     property var options: []
+    property var driver: ""
 
     Label
     {
@@ -48,6 +49,35 @@ RowLayout
         model: thingiSettingsItem.options
         onActivated: {
             ThingiService.saveSetting(thingiSettingsItem.key, customCurrentValue)
+        }
+    }
+
+    Item
+    {
+        id: callToActionButton
+        visible: thingiSettingsItem.type == "cta_button"
+        Layout.fillWidth: true
+
+        Button 
+        {
+            id: callToActionButtonRevoke
+            visible: thingiSettingsItem.value !== ""
+            Layout.fillWidth: true
+            text: "Sign Out"
+            onClicked: {
+                ThingiService.saveSetting(thingiSettingsItem.key, "")
+            }
+        }
+
+        Button 
+        {
+            id: callToActionButtonAuthenticate
+            visible: thingiSettingsItem.value === ""
+            Layout.fillWidth: true
+            text: "Sign In"
+            onClicked: {
+                ThingiService.authenticateDriver(thingiSettingsItem.driver)
+            }
         }
     }
 

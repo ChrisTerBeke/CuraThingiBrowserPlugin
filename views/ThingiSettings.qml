@@ -45,6 +45,7 @@ Window
                 label: modelData.label
                 value: modelData.value
                 options: modelData.options
+                driver: modelData.driver
             }
         }
 

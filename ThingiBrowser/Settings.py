@@ -20,6 +20,8 @@ class Settings:
     PER_PAGE = 20
 
     # Thingiverse API options
+    THINGIVERSE_CLIENT_ID = "0ea6d714d64fa4797e07"
+    THINGIVERSE_API_TOKEN_KEY = "thingiverse_access_token"
     THINGIVERSE_API_TOKEN = "d1057e7ec3da66ac1b81f8632606ca0a"
 
     # MyMiniFactory API options

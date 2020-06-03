@@ -23,6 +23,9 @@ class MyMiniFactoryApiClient(AbstractApiClient):
     def user_id(self) -> str:
         return PreferencesHelper.getSettingValue(Settings.MYMINIFACTORY_USER_NAME_PREFERENCES_KEY)
 
+    def authenticate(self) -> None:
+        raise NotImplementedError("authenticate must be implemented")
+
     def getThingsFromCollectionQuery(self, collection_id: str) -> str:
         return "collections/{}".format(collection_id)
 

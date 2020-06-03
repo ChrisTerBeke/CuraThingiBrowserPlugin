@@ -32,6 +32,14 @@ class AbstractApiClient(ABC):
         raise NotImplementedError("user_id must be implemented")
 
     @abstractmethod
+    def authenticate(self) -> None:
+        """
+        Trigger authentication measures to store user token/authorization
+        :return: None
+        """
+        raise NotImplementedError("authenticate must be implemented")
+
+    @abstractmethod
     def getThingsFromCollectionQuery(self, collection_id: str) -> str:
         raise NotImplementedError("getThingsFromCollectionQuery must be implemented")
 

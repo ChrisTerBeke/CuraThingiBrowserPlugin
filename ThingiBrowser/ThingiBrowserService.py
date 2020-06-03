@@ -171,6 +171,16 @@ class ThingiBrowserService(QObject):
         self._active_driver_name = driver
         self.activeDriverChanged.emit()
 
+    @pyqtSlot(str, name="authenticateDriver")
+    def authenticateDriver(self, driver: str) -> None:
+        """
+        Start the authentication procedure for a given driver
+        :param driver: The name of the driver to authenticate
+        """
+        if driver not in self._drivers:
+            return
+        self._drivers[driver].driver.authenticate()
+
     @pyqtProperty("QVariantList", constant=True)
     def views(self) -> List[Dict[str, str]]:
         """
