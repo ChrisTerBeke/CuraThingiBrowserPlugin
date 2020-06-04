@@ -73,7 +73,7 @@ class AbstractApiClient(ABC):
 
     @abstractmethod
     def getCollections(self, on_finished: Callable[[List[Collection]], Any],
-                       on_failed: Optional[Callable[[Optional[ApiError]], Any]]) -> None:
+                       on_failed: Optional[Callable[[Optional[ApiError],Optional[int]], Any]]) -> None:
         """
         Get user's collections.
         :param on_finished: Callback with user's collections.
@@ -83,7 +83,7 @@ class AbstractApiClient(ABC):
 
     @abstractmethod
     def getThing(self, thing_id: int, on_finished: Callable[[Thing], Any],
-                 on_failed: Optional[Callable[[Optional[ApiError]], Any]] = None) -> None:
+                 on_failed: Optional[Callable[[Optional[ApiError],Optional[int]], Any]] = None) -> None:
         """
         Get a single thing by ID.
         :param thing_id: The thing ID.
@@ -94,7 +94,7 @@ class AbstractApiClient(ABC):
 
     @abstractmethod
     def getThingFiles(self, thing_id: int, on_finished: Callable[[List[ThingFile]], Any],
-                      on_failed: Optional[Callable[[Optional[ApiError]], Any]] = None) -> None:
+                      on_failed: Optional[Callable[[Optional[ApiError],Optional[int]], Any]] = None) -> None:
         """
         Get a thing's files by ID.
         :param thing_id: The thing ID.
@@ -115,7 +115,7 @@ class AbstractApiClient(ABC):
 
     @abstractmethod
     def getThings(self, query: str, page: int, on_finished: Callable[[List[Thing]], Any],
-                  on_failed: Optional[Callable[[Optional[ApiError]], Any]] = None) -> None:
+                  on_failed: Optional[Callable[[Optional[ApiError],Optional[int]], Any]] = None) -> None:
         """
         Get things by query.
         :param query: The things to get.
