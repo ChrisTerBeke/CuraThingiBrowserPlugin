@@ -96,6 +96,13 @@ class ThingiBrowserService(QObject):
         self._active_view_name = PreferencesHelper.initSetting(Settings.DEFAULT_VIEW_PREFERENCES_KEY,
                                                                "popular")  # type: str
         self.activeViewChanged.connect(self._onViewChanged)
+        
+        for setting in self.getSettings:
+            PreferencesHelper.addSettingChangedCallback(setting, self._onPreferenceChanged)
+
+    def _onPreferenceChanged(self, name: str):
+        value=PreferencesHelper.getSettingValue(name)
+        self.settingChanged.emit(name, value)
 
     def resetActiveDriver(self) -> None:
         """
