@@ -22,15 +22,6 @@ class AbstractApiClient(ABC):
     # Prevent auto-removing running callbacks by the Python garbage collector.
     _anti_gc_callbacks = []  # type: List[Callable[[], None]]
 
-    @property
-    @abstractmethod
-    def user_id(self) -> str:
-        """
-        Get the configured user ID for this provider.
-        :return: The user ID.
-        """
-        raise NotImplementedError("user_id must be implemented")
-
     @abstractmethod
     def authenticate(self) -> None:
         """
