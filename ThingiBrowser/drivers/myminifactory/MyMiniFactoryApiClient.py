@@ -6,7 +6,7 @@ from PyQt5.QtCore import QUrl
 from PyQt5.QtGui import QDesktopServices
 from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
 
-from UM.Logger import Logger
+from UM.Logger import Logger  # type: ignore
 
 from ...Settings import Settings
 from ...PreferencesHelper import PreferencesHelper
