@@ -4,6 +4,7 @@ from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qs, urlparse
 from typing import Dict, Any, Optional, Callable
 
+import os
 import threading
 
 
@@ -20,33 +21,41 @@ class ImplicitAuthRequestHandler(BaseHTTPRequestHandler):
         if parsed_url.path == '/callback':
             self.send_response(200)
             self.send_header("Content Type", "text/html")
+            self.end_headers()
+            self._callback(query)
         else:
-            self.send_response(401)
-        self.end_headers()
+            Logger.log('i', 'Request received: {}'.format(parsed_url.path))
+            try:
+                self.send_response(200)
+                self.send_header("Content Type", "application/octect")
+                self.end_headers()
+                doc = open("{}/../static{}".format(self._get_relative_path(), parsed_url.path), "rb")
+                self.wfile.write(doc.read())
+            except FileNotFoundError:
+                self.send_response(401)
+        return
 
-        self.wfile.write(bytes("<html><body>", "utf-8"))
-        
-        if query:
-            self._callback_success(query)
-        else:
+    def _callback(self, query):
+        if not query:
             self._callback_transform_fragment()
-
-        self.wfile.write(bytes("</body></html>", "utf-8"))
-        #self.server.shutdown()
+            return
+        
+        self._callback_success(query)
 
     def _callback_transform_fragment(self):
-        self.wfile.write(bytes("<script type='text/javascript'>window.location.href = window.location.href.substring(0,window.location.href.indexOf('#'))+'?'+window.location.hash.substring(1);</script>", "utf-8"))
+        doc = open("{}/../static/AuthenticationRedirect.html".format(self._get_relative_path()), "rb")
+        self.wfile.write(doc.read())
 
     def _callback_success(self, query: Dict):
-        self.wfile.write(bytes("<h2>Authentication Received!</h2>", "utf-8"))
-        self.wfile.write(bytes("<p>You can close this tab now and return to ThingiBrowser on Cura.</p>", "utf-8"))
+        doc = open("{}/../static/AuthenticationReceived.html".format(self._get_relative_path()), "rb")
+        self.wfile.write(doc.read())
         token = ImplicitAuthRequestHandler.get_param(query, 'access_token')
-        if token:
-            self.wfile.write(bytes("<p>Token received: {}".format(token), "utf-8"))
-
-            if self.token_received_callback is not None:
-                self.token_received_callback(token)
+        if token and self.token_received_callback is not None:
+            self.token_received_callback(token)
 
     @staticmethod
     def get_param(query: Dict, key: str, default: Optional[Any] = None) -> Any:
         return query.get(key, [default])[0]
+
+    def _get_relative_path(self):
+        return os.path.dirname(__file__)
