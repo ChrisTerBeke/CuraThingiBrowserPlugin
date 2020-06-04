@@ -4,7 +4,7 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from typing import Type, Callable, Any, Dict, Optional
 from ..PreferencesHelper import PreferencesHelper
 import threading
-from UM.Logger import Logger
+from UM.Logger import Logger  # type: ignore
 
 
 class LocalAuthServer(HTTPServer):
