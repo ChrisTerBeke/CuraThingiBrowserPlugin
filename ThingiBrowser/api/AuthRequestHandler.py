@@ -10,6 +10,8 @@ import threading
 
 class ImplicitAuthRequestHandler(BaseHTTPRequestHandler):
 
+    token_received_callback = None
+
     def do_HEAD(self):
         self.do_GET()
 
