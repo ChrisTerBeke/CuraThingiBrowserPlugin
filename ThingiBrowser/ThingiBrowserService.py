@@ -101,6 +101,10 @@ class ThingiBrowserService(QObject):
             PreferencesHelper.addSettingChangedCallback(setting, self._onPreferenceChanged)
 
     def _onPreferenceChanged(self, name: str):
+        """
+        Callback triggered when a setting from the settings window is changed
+        :param : Name of the parameter changed
+        """
         value=PreferencesHelper.getSettingValue(name)
         self.settingChanged.emit(name, value)
 
@@ -533,15 +537,16 @@ class ThingiBrowserService(QObject):
         self._is_querying = False
         self.queryingStateChanged.emit()
         mb = QMessageBox()
-        mb.setIcon(QMessageBox.Critical)
 
         if status_code == 401 or (self.activeDriver == "thingiverse" and status_code == 502):
+            mb.setIcon(QMessageBox.Information)
             key = Settings.THINGIVERSE_API_TOKEN_KEY if self.activeDriver == "thingiverse" else Settings.MYMINIFACTORY_API_TOKEN_KEY
             PreferencesHelper.setSetting(key, '')
             self._extension.showSettingsWindow()
             mb.setWindowTitle("Authentication Required")
             mb.setText("{} indicated that authentication failed. Please click the \"Sign In\" button on the system you were attempting to query and try again.".format(self._drivers[self.activeDriver].label))
         else:
+            mb.setIcon(QMessageBox.Critical)
             mb.setWindowTitle("Oh no!")
             error_message = error.error or str(error) if error else "Unknown"
             mb.setText("The API returned an error: {}.".format(error_message))
