@@ -124,6 +124,14 @@ class ThingiBrowserService(QObject):
         """
         return PreferencesHelper.getAllSettings(drivers=self.drivers, views=self.views)
 
+    @pyqtSlot(str, str, name="getSetting")
+    def getSetting(self, key: str) -> Any:
+        """
+        Get setting value
+        :return: The setting
+        """
+        return str(PreferencesHelper.getSettingValue(key))
+
     @pyqtSlot(str, str, name="saveSetting")
     def setSetting(self, setting_name: str, value: str) -> None:
         """
@@ -518,7 +526,7 @@ class ThingiBrowserService(QObject):
             return
         self._views[self._active_view_name].query()
 
-    def _onRequestFailed(self, error: Optional[ApiError] = None) -> None:
+    def _onRequestFailed(self, error: Optional[ApiError] = None, status_code: Optional[int] = None) -> None:
         """
         Callback for when a request failed.
         :param error: An optional error object that was returned by the Thingiverse API.
@@ -527,10 +535,18 @@ class ThingiBrowserService(QObject):
         self.queryingStateChanged.emit()
         mb = QMessageBox()
         mb.setIcon(QMessageBox.Critical)
-        mb.setWindowTitle("Oh no!")
-        error_message = error.error or str(error) if error else "Unknown"
-        mb.setText("The API returned an error: {}.".format(error_message))
-        mb.setDetailedText(str(error.toStruct()) if error else "")
+
+        if status_code == 401 or (self.activeDriver == "thingiverse" and status_code == 502):
+            key = Settings.THINGIVERSE_API_TOKEN_KEY if self.activeDriver == "thingiverse" else Settings.MYMINIFACTORY_API_TOKEN_KEY
+            PreferencesHelper.setSetting(key, '')
+            self._extension.showSettingsWindow()
+            mb.setWindowTitle("Authentication Required")
+            mb.setText("{} indicated that authentication failed. Please click the \"Sign In\" button on the system you were attempting to query and try again.".format(self._drivers[self.activeDriver].label))
+        else:
+            mb.setWindowTitle("Oh no!")
+            error_message = error.error or str(error) if error else "Unknown"
+            mb.setText("The API returned an error: {}.".format(error_message))
+            mb.setDetailedText(str(error.toStruct()) if error else "")
         mb.exec()
 
     def _checkUserNameConfigured(self) -> bool:

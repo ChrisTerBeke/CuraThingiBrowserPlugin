@@ -42,10 +42,11 @@ class PreferencesHelper:
                 "driver": "thingiverse"
             },
             {
-                "type": "text",
-                "key": Settings.MYMINIFACTORY_USER_NAME_PREFERENCES_KEY,
-                "value": cls.getSettingValue(Settings.MYMINIFACTORY_USER_NAME_PREFERENCES_KEY),
-                "label": "MyMiniFactory username"
+                "type": "cta_button",
+                "key": Settings.MYMINIFACTORY_API_TOKEN_KEY,
+                "value": cls.getSettingValue(Settings.MYMINIFACTORY_API_TOKEN_KEY),
+                "label": "MyMiniFactory Account",
+                "driver": "myminifactory"
             },
             {
                 "type": "combobox",

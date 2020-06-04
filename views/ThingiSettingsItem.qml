@@ -90,4 +90,20 @@ RowLayout
         when: thingiSettingsItem.type == "combobox"
         value: inputMenu.currentIndex < 0 ? "" : inputMenu.model[inputMenu.currentIndex][inputMenu.customValueRole]
     }
+
+    Binding
+    {
+        target: callToActionButtonRevoke
+        property: "visible"
+        when: thingiSettingsItem.type == "cta_button"
+        value: ThingiService.getSetting(thingiSettingsItem.key) != ""
+    }
+
+    Binding
+    {
+        target: callToActionButtonAuthenticate
+        property: "visible"
+        when: thingiSettingsItem.type == "cta_button"
+        value: ThingiService.getSetting(thingiSettingsItem.key) == ""
+    }
 }
