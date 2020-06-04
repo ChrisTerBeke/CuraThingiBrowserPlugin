@@ -18,7 +18,7 @@ class LocalAuthService():
 
     def __init__(self, preference_key: str, port: int = 8080, handler: Type["BaseHTTPRequestHandler"] = ImplicitAuthRequestHandler, token_received_callback: Optional[Callable[[str],Any]] = None):
         self._server = LocalAuthServer(("0.0.0.0", port), handler)
-        PreferencesHelper.initSetting(preference_key, None)
+        PreferencesHelper.initSetting(preference_key, '')
         self._preference_key = preference_key
         self._token_received_callback = token_received_callback
         self._server.setTokenReceivedCallback(self._onTokenReceived)

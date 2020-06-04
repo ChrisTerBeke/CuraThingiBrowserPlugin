@@ -298,8 +298,6 @@ class ThingiBrowserService(QObject):
         """
         Get the current user's liked things.
         """
-        if not self._checkUserNameConfigured():
-            return
         query = self._getActiveDriver().getThingsLikedByUserQuery()
         self._executeQuery(query)
 
@@ -308,8 +306,6 @@ class ThingiBrowserService(QObject):
         """
         Get the current user's published Things.
         """
-        if not self._checkUserNameConfigured():
-            return
         query = self._getActiveDriver().getThingsByUserQuery()
         self._executeQuery(query)
 
@@ -318,8 +314,6 @@ class ThingiBrowserService(QObject):
         """
         Get the current user's made Things.
         """
-        if not self._checkUserNameConfigured():
-            return
         query = self._getActiveDriver().getThingsMadeByUserQuery()
         self._executeQuery(query)
 
@@ -355,8 +349,6 @@ class ThingiBrowserService(QObject):
         """
         Get the current user's collections.
         """
-        if not self._checkUserNameConfigured():
-            return
         self._prepQuery("user_collections", is_from_collection=False)
         self._getActiveDriver().getCollections(on_finished=self._onCollectionsFinished, on_failed=self._onRequestFailed)
 
@@ -555,17 +547,6 @@ class ThingiBrowserService(QObject):
             mb.setText("The API returned an error: {}.".format(error_message))
             mb.setDetailedText(str(error.toStruct()) if error else "")
         mb.exec()
-
-    def _checkUserNameConfigured(self) -> bool:
-        """
-        Checks if the username setting was configured and open the settings window if it was not.
-        :return: True if the username was already configured, False otherwise.
-        """
-        user_id = self._getActiveDriver().user_id
-        if not user_id or user_id == "":
-            self.openSettings()
-            return False
-        return True
 
     def _getActiveDriver(self) -> AbstractApiClient:
         """
