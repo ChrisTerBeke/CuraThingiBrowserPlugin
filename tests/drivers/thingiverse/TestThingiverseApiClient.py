@@ -20,7 +20,7 @@ class TestThingiverseApiClient:
 
     def test_getThingsFromCollectionQuery(self, api_client):
         query = api_client.getThingsFromCollectionQuery("my-collection")
-        assert query == "collections/me/things"
+        assert query == "collections/my-collection/things"
 
     def test_getThingsBySearchQuery(self, api_client):
         query = api_client.getThingsBySearchQuery("cube")
