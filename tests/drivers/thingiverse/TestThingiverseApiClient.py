@@ -20,7 +20,7 @@ class TestThingiverseApiClient:
 
     def test_getThingsFromCollectionQuery(self, api_client):
         query = api_client.getThingsFromCollectionQuery("my-collection")
-        assert query == "collections/my-collection/things"
+        assert query == "collections/me/things"
 
     def test_getThingsBySearchQuery(self, api_client):
         query = api_client.getThingsBySearchQuery("cube")
@@ -28,15 +28,15 @@ class TestThingiverseApiClient:
 
     def test_getThingsLikedByUserQuery(self, api_client):
         query = api_client.getThingsLikedByUserQuery()
-        assert query == "users/None/likes"
+        assert query == "users/me/likes"
 
     def test_getThingsByUserQuery(self, api_client):
         query = api_client.getThingsByUserQuery()
-        assert query == "users/None/things"
+        assert query == "users/me/things"
 
     def test_getThingsMadeByUserQuery(self, api_client):
         query = api_client.getThingsMadeByUserQuery()
-        assert query == "users/None/copies"
+        assert query == "users/me/copies"
 
     def test_getPopularThingsQuery(self, api_client):
         query = api_client.getPopularThingsQuery()
