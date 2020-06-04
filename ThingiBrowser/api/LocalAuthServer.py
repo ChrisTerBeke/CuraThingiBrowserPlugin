@@ -14,16 +14,22 @@ class LocalAuthServer(HTTPServer):
 
 class LocalAuthService():
 
-    def __init__(self, preference_key: str, port: int = 8080, handler: Type["BaseHTTPRequestHandler"] = ImplicitAuthRequestHandler):
+    _token_received_callback = None  # type: Optional[Callable[[str],Any]]
+
+    def __init__(self, preference_key: str, port: int = 8080, handler: Type["BaseHTTPRequestHandler"] = ImplicitAuthRequestHandler, token_received_callback: Optional[Callable[[str],Any]] = None):
         self._server = LocalAuthServer(("0.0.0.0", port), handler)
         PreferencesHelper.initSetting(preference_key, None)
         self._preference_key = preference_key
+        self._token_received_callback = token_received_callback
         self._server.setTokenReceivedCallback(self._onTokenReceived)
         self._server_thread = threading.Thread(None, self._server.serve_forever, daemon = True)
 
     def _onTokenReceived(self, token: str):
         Logger.log('i', "Token stored: {}".format(token))
         PreferencesHelper.setSetting(self._preference_key, token)
+
+        if self._token_received_callback:
+            self._token_received_callback(token)
 
     def listen(self):
         # Start the server on a new thread.

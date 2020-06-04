@@ -156,7 +156,7 @@ class AbstractApiClient(ABC):
 
     def _addCallback(self, reply: QNetworkReply,
                      on_finished: Callable[[Any], Any],
-                     on_failed: Optional[Callable[[Optional[ApiError]], Any]] = None,
+                     on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]] = None,
                      parser: Optional[Callable[[QNetworkReply], Tuple[int, Any]]] = None) -> None:
         """
         Creates a callback function so that it includes the parsing of the response into the correct model.
@@ -171,9 +171,11 @@ class AbstractApiClient(ABC):
             status_code, response = parser(reply) if parser else ApiHelper.parseReplyAsJson(reply)
             if not status_code or status_code >= 400 or response is None:
                 Logger.warning("API returned with status {} and body {}".format(status_code, response))
-                if on_failed and isinstance(response, dict):
-                    error_response = ApiError(response)
-                    on_failed(error_response)
+                if on_failed:
+                    error_response = None
+                    if isinstance(response, dict):
+                        error_response = ApiError(response)
+                    on_failed(error_response, status_code)
             else:
                 on_finished(response)
             reply.deleteLater()
