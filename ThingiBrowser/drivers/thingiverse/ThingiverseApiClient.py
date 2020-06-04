@@ -18,14 +18,6 @@ from ...api.LocalAuthServer import LocalAuthService
 class ThingiverseApiClient(AbstractApiClient):
     """ Client for interacting with the Thingiverse API. """
 
-    def __init__(self):
-        super().__init__()
-        PreferencesHelper.initSetting(Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY, "")
-
-    @property
-    def user_id(self):
-        return PreferencesHelper.getSettingValue(Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY)
-
     def authenticate(self) -> None:
         url="{}?{}".format("https://www.thingiverse.com/login/oauth/authorize", urlencode({
             "client_id": Settings.THINGIVERSE_CLIENT_ID,
@@ -64,7 +56,7 @@ class ThingiverseApiClient(AbstractApiClient):
         return "newest"
 
     def getCollections(self, on_finished: Callable[[List[Collection]], Any],
-                       on_failed: Optional[Callable[[Optional[ApiError]], Any]] = None) -> None:
+                       on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]] = None) -> None:
         url = "{}/users/me/collections".format(self._root_url)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed, parser=self._parseGetCollections)
@@ -83,7 +75,7 @@ class ThingiverseApiClient(AbstractApiClient):
         }) for item in response]
 
     def getThings(self, query: str, page: int, on_finished: Callable[[List[Thing]], Any],
-                  on_failed: Optional[Callable[[Optional[ApiError]], Any]] = None) -> None:
+                  on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]] = None) -> None:
         url = "{}/{}?per_page={}&page={}".format(self._root_url, query, Settings.PER_PAGE, page)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed, parser=self._parseGetThings)
@@ -106,7 +98,7 @@ class ThingiverseApiClient(AbstractApiClient):
         }) for item in response]
 
     def getThing(self, thing_id: int, on_finished: Callable[[Thing], Any],
-                 on_failed: Optional[Callable[[Optional[ApiError]], Any]] = None) -> None:
+                 on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]] = None) -> None:
         url = "{}/things/{}".format(self._root_url, thing_id)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed, parser=self._parseGetThing)
@@ -125,7 +117,7 @@ class ThingiverseApiClient(AbstractApiClient):
         })
 
     def getThingFiles(self, thing_id: int, on_finished: Callable[[List[ThingFile]], Any],
-                      on_failed: Optional[Callable[[Optional[ApiError]], Any]] = None) -> None:
+                      on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]] = None) -> None:
         url = "{}/things/{}/files".format(self._root_url, thing_id)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed, parser=self._parseGetThingFiles)

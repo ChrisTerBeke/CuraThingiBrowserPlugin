@@ -50,7 +50,7 @@ class MyMiniFactoryApiClient(AbstractApiClient):
     def _onGetUser(self, user: Dict):
         PreferencesHelper.setSetting(Settings.MYMINIFACTORY_USER_NAME_PREFERENCES_KEY, str(user.get('username')))
 
-    def _onGetUserFailed(self, error: Optional[ApiError] = None) -> None:
+    def _onGetUserFailed(self, error: Optional[ApiError] = None, status_code: Optional[int] = None) -> None:
         """
         Callback for when a request failed.
         :param error: An optional error object that was returned by the Thingiverse API.
@@ -82,7 +82,7 @@ class MyMiniFactoryApiClient(AbstractApiClient):
         return "search?q={}".format(search_terms)
 
     def getThing(self, thing_id: int, on_finished: Callable[[Thing], Any],
-                 on_failed: Optional[Callable[[Optional[ApiError]], Any]] = None) -> None:
+                 on_failed: Optional[Callable[[Optional[ApiError],Optional[int]], Any]] = None) -> None:
         url = "{}/objects/{}".format(self._root_url, thing_id)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed, parser=self._parseGetThing)
@@ -101,7 +101,7 @@ class MyMiniFactoryApiClient(AbstractApiClient):
         })
 
     def getCollections(self, on_finished: Callable[[List[Collection]], Any],
-                       on_failed: Optional[Callable[[Optional[ApiError]], Any]]) -> None:
+                       on_failed: Optional[Callable[[Optional[ApiError],Optional[int]], Any]]) -> None:
         url = "{}/users/{}/collections".format(self._root_url, self.user_id)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed, parser=self._parseGetCollections)
@@ -122,7 +122,7 @@ class MyMiniFactoryApiClient(AbstractApiClient):
         }) for item in items]
 
     def getThingFiles(self, thing_id: int, on_finished: Callable[[List[ThingFile]], Any],
-                      on_failed: Optional[Callable[[Optional[ApiError]], Any]] = None) -> None:
+                      on_failed: Optional[Callable[[Optional[ApiError],Optional[int]], Any]] = None) -> None:
         url = "{}/objects/{}".format(self._root_url, thing_id)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed, parser=self._parseGetThingFiles)
@@ -142,7 +142,7 @@ class MyMiniFactoryApiClient(AbstractApiClient):
         }) for item in items]
 
     def getThings(self, query: str, page: int, on_finished: Callable[[List[Thing]], Any],
-                  on_failed: Optional[Callable[[Optional[ApiError]], Any]] = None) -> None:
+                  on_failed: Optional[Callable[[Optional[ApiError],Optional[int]], Any]] = None) -> None:
         operator = "&" if query.find("?") > 0 else "?"
         url = "{}/{}{}per_page={}&page={}".format(self._root_url, query, operator, Settings.PER_PAGE, page)
         reply = self._manager.get(self._createEmptyRequest(url))
