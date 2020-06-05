@@ -19,8 +19,11 @@ class MyMiniFactoryApiClient(AbstractApiClient):
     """ Client for interacting with the MyMiniFactory API. """
 
     def __init__(self) -> None:
-        self._user_data: Optional[UserData] = None
-        PreferencesHelper.initSetting(Settings.MYMINIFACTORY_API_TOKEN_KEY)
+        self._username: Optional[str] = None
+        access_token = PreferencesHelper.initSetting(Settings.MYMINIFACTORY_API_TOKEN_KEY)
+        if access_token and access_token != "":
+            # Get the username if we already have a token stored.
+            self._getUserData()
         super().__init__()
 
     def authenticate(self) -> None:
@@ -56,19 +59,19 @@ class MyMiniFactoryApiClient(AbstractApiClient):
         return status_code, UserData({"username": data.get("username", "")})
 
     def _onGetUserData(self, user: UserData) -> None:
-        self._user_data = user
+        self._username = user.username
 
     def getThingsFromCollectionQuery(self, collection_id: str) -> str:
         return "collections/{}".format(collection_id)
 
     def getThingsLikedByUserQuery(self) -> str:
-        return "users/{}/objects_liked".format(self._user_data.username)
+        return "users/{}/objects_liked".format(self._username)
 
     def getThingsByUserQuery(self) -> str:
-        return "users/{}/objects".format(self._user_data.username)
+        return "users/{}/objects".format(self._username)
 
     def getThingsMadeByUserQuery(self) -> str:
-        return "users/{}/objects".format(self._user_data.username)
+        return "users/{}/objects".format(self._username)
 
     def getPopularThingsQuery(self) -> str:
         return "search?sort=popularity"
@@ -103,7 +106,7 @@ class MyMiniFactoryApiClient(AbstractApiClient):
 
     def getCollections(self, on_finished: Callable[[List[Collection]], Any],
                        on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]]) -> None:
-        url = "{}/users/{}/collections".format(self._root_url, self._user_data.username)
+        url = "{}/users/{}/collections".format(self._root_url, self._username)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed, parser=self._parseGetCollections)
 
