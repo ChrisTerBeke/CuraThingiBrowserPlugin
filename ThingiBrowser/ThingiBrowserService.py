@@ -1,4 +1,4 @@
-# Copyright (c) 2020 Chris ter Beke.
+# Copyright (c) 2020.
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
 import os
 import pathlib
@@ -35,7 +35,7 @@ class ThingiBrowserService(QObject):
     isFromCollectionChanged = pyqtSignal()
 
     # Signal triggered the value of a setting changed.
-    settingChanged = pyqtSignal(str, str)
+    settingChanged = pyqtSignal()
 
     # Signal triggered when the querying state changed.
     queryingStateChanged = pyqtSignal()
@@ -96,17 +96,15 @@ class ThingiBrowserService(QObject):
         self._active_view_name = PreferencesHelper.initSetting(Settings.DEFAULT_VIEW_PREFERENCES_KEY,
                                                                "popular")  # type: str
         self.activeViewChanged.connect(self._onViewChanged)
-        
-        for setting in self.getSettings:
-            PreferencesHelper.addSettingChangedCallback(setting, self._onPreferenceChanged)
 
-    def _onPreferenceChanged(self, name: str):
+        # Settings
+        PreferencesHelper.addSettingChangedCallback(self._onSettingChanged)
+
+    def _onSettingChanged(self, _: str) -> None:
         """
         Callback triggered when a setting from the settings window is changed
-        :param : Name of the parameter changed
         """
-        value=PreferencesHelper.getSettingValue(name)
-        self.settingChanged.emit(name, value)
+        self.settingChanged.emit()
 
     def resetActiveDriver(self) -> None:
         """
@@ -135,14 +133,6 @@ class ThingiBrowserService(QObject):
         """
         return PreferencesHelper.getAllSettings(drivers=self.drivers, views=self.views)
 
-    @pyqtSlot(str, str, name="getSetting")
-    def getSetting(self, key: str) -> Any:
-        """
-        Get setting value
-        :return: The setting
-        """
-        return str(PreferencesHelper.getSettingValue(key))
-
     @pyqtSlot(str, str, name="saveSetting")
     def setSetting(self, setting_name: str, value: str) -> None:
         """
@@ -151,7 +141,6 @@ class ThingiBrowserService(QObject):
         :param value: The new value.
         """
         PreferencesHelper.setSetting(setting_name, value)
-        self.settingChanged.emit(setting_name, value)
 
     @pyqtSlot(name="openSettings")
     def openSettings(self) -> None:
@@ -194,11 +183,21 @@ class ThingiBrowserService(QObject):
     def authenticateDriver(self, driver: str) -> None:
         """
         Start the authentication procedure for a given driver
-        :param driver: The name of the driver to authenticate
+        :param driver: The name of the driver to authenticate.
         """
         if driver not in self._drivers:
             return
         self._drivers[driver].driver.authenticate()
+
+    @pyqtSlot(str, name="clearAuthenticationForDriver")
+    def clearAuthenticationForDriver(self, driver: str) -> None:
+        """
+        Remove the stored authentication token for a given driver.
+        :param driver: The name of the driver to clear authentication for.
+        """
+        if driver not in self._drivers:
+            return
+        self._drivers[driver].driver.clearAuthentication()
 
     @pyqtProperty("QVariantList", constant=True)
     def views(self) -> List[Dict[str, str]]:
@@ -533,6 +532,7 @@ class ThingiBrowserService(QObject):
         """
         Callback for when a request failed.
         :param error: An optional error object that was returned by the Thingiverse API.
+        TODO: cleanup
         """
         self._is_querying = False
         self.queryingStateChanged.emit()
