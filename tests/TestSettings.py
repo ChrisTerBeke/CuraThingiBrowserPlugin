@@ -1,4 +1,4 @@
-# Copyright (c) 2020 Chris ter Beke.
+# Copyright (c) 2020.
 # ThingiBrowser plugin is released under the terms of the LGPLv3 or higher.
 from ..ThingiBrowser.Settings import Settings
 

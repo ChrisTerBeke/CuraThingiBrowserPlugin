@@ -1,4 +1,4 @@
-# Copyright (c) 2020 Chris ter Beke.
+# Copyright (c) 2020.
 # ThingiBrowser plugin is released under the terms of the LGPLv3 or higher.
 from typing import Dict, Any
 
@@ -57,4 +57,11 @@ class ThingFile(JsonObject):
         self.thumbnail = None
         self.name = None
         self.url = None
+        super().__init__(_dict)
+
+
+class UserData(JsonObject):
+    """ Class representing user data. """
+    def __init__(self, _dict: Dict[str, Any]):
+        self.username = None
         super().__init__(_dict)

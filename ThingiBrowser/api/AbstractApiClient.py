@@ -1,6 +1,5 @@
-# Copyright (c) 2020 Chris ter Beke.
+# Copyright (c) 2020.
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
-import logging
 from typing import List, Callable, Any, Tuple, Optional
 from abc import ABC, abstractmethod
 
@@ -25,41 +24,80 @@ class AbstractApiClient(ABC):
     @abstractmethod
     def authenticate(self) -> None:
         """
-        Trigger authentication measures to store user token/authorization
-        :return: None
+        Trigger authentication flow to store user token/authorization
         """
         raise NotImplementedError("authenticate must be implemented")
 
     @abstractmethod
+    def clearAuthentication(self) -> None:
+        """
+        Clear the authentication state for this driver.
+        """
+        raise NotImplementedError("clearAuthentication must be implemented")
+
+    @abstractmethod
     def getThingsFromCollectionQuery(self, collection_id: str) -> str:
+        """
+        Get the query that returns all things in a certain collection.
+        :param collection_id: The ID of the collection.
+        :return: The query.
+        """
         raise NotImplementedError("getThingsFromCollectionQuery must be implemented")
 
     @abstractmethod
     def getThingsLikedByUserQuery(self) -> str:
+        """
+        Get the query that return all things liked by the currently authenticated user.
+        :return: The query.
+        """
         raise NotImplementedError("getThingsLikedByUserQuery must be implemented")
 
     @abstractmethod
     def getThingsByUserQuery(self) -> str:
+        """
+        Get the query that return all things uploaded by the currently authenticated user.
+        :return: The query.
+        """
         raise NotImplementedError("getThingsByUserQuery must be implemented")
 
     @abstractmethod
     def getThingsMadeByUserQuery(self) -> str:
+        """
+        Get the query that return all things made by the currently authenticated user.
+        :return: The query.
+        """
         raise NotImplementedError("getThingsMadeByUserQuery must be implemented")
 
     @abstractmethod
     def getPopularThingsQuery(self) -> str:
+        """
+        Get the query that return all popular things.
+        :return: The query.
+        """
         raise NotImplementedError("getPopularThingsQuery must be implemented")
 
     @abstractmethod
     def getFeaturedThingsQuery(self) -> str:
+        """
+        Get the query that return all featured things.
+        :return: The query.
+        """
         raise NotImplementedError("getFeaturedThingsQuery must be implemented")
 
     @abstractmethod
     def getNewestThingsQuery(self) -> str:
+        """
+        Get the query that return all newest things.
+        :return: The query.
+        """
         raise NotImplementedError("getNewestThingsQuery must be implemented")
 
     @abstractmethod
     def getThingsBySearchQuery(self, search_terms: str) -> str:
+        """
+        Get the query that return all things that match the given search terms.
+        :return: The query.
+        """
         raise NotImplementedError("getThingsBySearchQuery must be implemented")
 
     @abstractmethod
@@ -130,7 +168,7 @@ class AbstractApiClient(ABC):
         """
         Get the API authentication method for this provider.
         """
-        raise NotImplementedError("_auth must be implemented")
+        raise NotImplementedError("_setAuth must be implemented")
 
     def _createEmptyRequest(self, url: str, content_type: str = "application/json") -> QNetworkRequest:
         """

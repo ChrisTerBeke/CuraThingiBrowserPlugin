@@ -1,4 +1,4 @@
-# Copyright (c) 2020 Chris ter Beke.
+# Copyright (c) 2020.
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
 from typing import List, Callable, Any, Optional, Tuple
 
@@ -12,24 +12,34 @@ from ...PreferencesHelper import PreferencesHelper
 from ...api.AbstractApiClient import AbstractApiClient
 from ...api.ApiHelper import ApiHelper
 from ...api.JsonObject import ApiError, Thing, ThingFile, Collection
-from ...api.LocalAuthServer import LocalAuthService
+from ...api.LocalAuthService import LocalAuthService
 
 
 class ThingiverseApiClient(AbstractApiClient):
     """ Client for interacting with the Thingiverse API. """
 
-    def authenticate(self) -> None:
-        url="{}?{}".format("https://www.thingiverse.com/login/oauth/authorize", urlencode({
-            "client_id": Settings.THINGIVERSE_CLIENT_ID,
-            "response_type": "token",
-            "state": "10938209fjwf290fi"
-        }))
+    def __init__(self) -> None:
+        PreferencesHelper.initSetting(Settings.THINGIVERSE_API_TOKEN_KEY)
+        super().__init__()
 
-        auth_service = LocalAuthService(Settings.THINGIVERSE_API_TOKEN_KEY, 55444)
+    def authenticate(self) -> None:
+        url = "{}?{}".format("https://www.thingiverse.com/login/oauth/authorize", urlencode({
+            "client_id": Settings.THINGIVERSE_CLIENT_ID,
+            "response_type": "token"
+        }))
+        auth_service = LocalAuthService(self._onTokenReceived)
         auth_service.listen()
-        
-        # Open the authorization page in a new browser window.
         QDesktopServices.openUrl(QUrl(url))
+
+    def clearAuthentication(self) -> None:
+        PreferencesHelper.setSetting(Settings.THINGIVERSE_API_TOKEN_KEY, "")
+
+    @staticmethod
+    def _onTokenReceived(token: Optional[str] = None) -> None:
+        if not token:
+            # TODO: handle error
+            return
+        PreferencesHelper.setSetting(Settings.THINGIVERSE_API_TOKEN_KEY, token)
 
     def getThingsFromCollectionQuery(self, collection_id: str) -> str:
         return "collections/{}/things".format(collection_id)

@@ -1,73 +1,74 @@
-# Copyright (c) 2020 Chris ter Beke.
+# Copyright (c) 2020.
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
-from typing import List, Callable, Any, Optional, Tuple, Dict
+from typing import List, Callable, Any, Optional, Tuple
+from urllib.parse import urlencode
 
 from PyQt5.QtCore import QUrl
 from PyQt5.QtGui import QDesktopServices
 from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
 
-from UM.Logger import Logger  # type: ignore
-
 from ...Settings import Settings
 from ...PreferencesHelper import PreferencesHelper
 from ...api.ApiHelper import ApiHelper
 from ...api.AbstractApiClient import AbstractApiClient
-from ...api.JsonObject import ApiError, Collection, Thing, ThingFile
-from ...api.LocalAuthServer import LocalAuthService
-from urllib.parse import urlencode
+from ...api.JsonObject import ApiError, Collection, Thing, ThingFile, UserData
+from ...api.LocalAuthService import LocalAuthService
 
 
 class MyMiniFactoryApiClient(AbstractApiClient):
     """ Client for interacting with the MyMiniFactory API. """
 
     def __init__(self) -> None:
+        self._user_data: Optional[UserData] = None
+        PreferencesHelper.initSetting(Settings.MYMINIFACTORY_API_TOKEN_KEY)
         super().__init__()
-        PreferencesHelper.initSetting(Settings.MYMINIFACTORY_USER_NAME_PREFERENCES_KEY, "")
-
-    @property
-    def user_id(self) -> str:
-        return PreferencesHelper.getSettingValue(Settings.MYMINIFACTORY_USER_NAME_PREFERENCES_KEY)
 
     def authenticate(self) -> None:
-        url="{}?{}".format("https://auth.myminifactory.com/web/authorize", urlencode({
+        url = "{}?{}".format("https://auth.myminifactory.com/web/authorize", urlencode({
             "client_id": Settings.MYMINIFACTORY_CLIENT_ID,
             "redirect_uri": "http://localhost:55444/callback",
-            "response_type": "token",
-            "state": "10938209fjwf290fi"
+            "response_type": "token"
         }))
-
-        auth_service = LocalAuthService(Settings.MYMINIFACTORY_API_TOKEN_KEY, 55444, token_received_callback=self._onTokenReceived)
+        auth_service = LocalAuthService(self._onTokenReceived)
         auth_service.listen()
-        
-        # Open the authorization page in a new browser window.
         QDesktopServices.openUrl(QUrl(url))
 
-    def _onTokenReceived(self, token: str):
+    def clearAuthentication(self) -> None:
+        PreferencesHelper.setSetting(Settings.MYMINIFACTORY_API_TOKEN_KEY, "")
+
+    def _onTokenReceived(self, token: Optional[str] = None) -> None:
+        if not token:
+            return
+        PreferencesHelper.setSetting(Settings.MYMINIFACTORY_API_TOKEN_KEY, token)
+        self._getUserData()
+
+    def _getUserData(self) -> None:
         url = "{}/user".format(self._root_url)
         reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, self._onGetUser, self._onGetUserFailed, parser=ApiHelper.parseReplyAsJson)
+        self._addCallback(reply, self._onGetUserData, parser=self._parseGetUserData)
+        # TODO: handle error response
 
-    def _onGetUser(self, user: Dict):
-        PreferencesHelper.setSetting(Settings.MYMINIFACTORY_USER_NAME_PREFERENCES_KEY, str(user.get('username')))
+    @staticmethod
+    def _parseGetUserData(reply: QNetworkReply) -> Tuple[int, Optional[UserData]]:
+        status_code, data = ApiHelper.parseReplyAsJson(reply)
+        if not data or not isinstance(data, dict):
+            return status_code, None
+        return status_code, UserData({"username": data.get("username", "")})
 
-    def _onGetUserFailed(self, error: Optional[ApiError] = None, status_code: Optional[int] = None) -> None:
-        """
-        Callback for when a request failed.
-        :param error: An optional error object that was returned by the Thingiverse API.
-        """
-        Logger.log('e', "Failed to get user after authentication completed")
+    def _onGetUserData(self, user: UserData) -> None:
+        self._user_data = user
 
     def getThingsFromCollectionQuery(self, collection_id: str) -> str:
         return "collections/{}".format(collection_id)
 
     def getThingsLikedByUserQuery(self) -> str:
-        return "users/{}/objects_liked".format(self.user_id)
+        return "users/{}/objects_liked".format(self._user_data.username)
 
     def getThingsByUserQuery(self) -> str:
-        return "users/{}/objects".format(self.user_id)
+        return "users/{}/objects".format(self._user_data.username)
 
     def getThingsMadeByUserQuery(self) -> str:
-        return "users/{}/objects".format(self.user_id)
+        return "users/{}/objects".format(self._user_data.username)
 
     def getPopularThingsQuery(self) -> str:
         return "search?sort=popularity"
@@ -82,7 +83,7 @@ class MyMiniFactoryApiClient(AbstractApiClient):
         return "search?q={}".format(search_terms)
 
     def getThing(self, thing_id: int, on_finished: Callable[[Thing], Any],
-                 on_failed: Optional[Callable[[Optional[ApiError],Optional[int]], Any]] = None) -> None:
+                 on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]] = None) -> None:
         url = "{}/objects/{}".format(self._root_url, thing_id)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed, parser=self._parseGetThing)
@@ -101,8 +102,8 @@ class MyMiniFactoryApiClient(AbstractApiClient):
         })
 
     def getCollections(self, on_finished: Callable[[List[Collection]], Any],
-                       on_failed: Optional[Callable[[Optional[ApiError],Optional[int]], Any]]) -> None:
-        url = "{}/users/{}/collections".format(self._root_url, self.user_id)
+                       on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]]) -> None:
+        url = "{}/users/{}/collections".format(self._root_url, self._user_data.username)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed, parser=self._parseGetCollections)
 
@@ -122,7 +123,7 @@ class MyMiniFactoryApiClient(AbstractApiClient):
         }) for item in items]
 
     def getThingFiles(self, thing_id: int, on_finished: Callable[[List[ThingFile]], Any],
-                      on_failed: Optional[Callable[[Optional[ApiError],Optional[int]], Any]] = None) -> None:
+                      on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]] = None) -> None:
         url = "{}/objects/{}".format(self._root_url, thing_id)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed, parser=self._parseGetThingFiles)
@@ -142,7 +143,7 @@ class MyMiniFactoryApiClient(AbstractApiClient):
         }) for item in items]
 
     def getThings(self, query: str, page: int, on_finished: Callable[[List[Thing]], Any],
-                  on_failed: Optional[Callable[[Optional[ApiError],Optional[int]], Any]] = None) -> None:
+                  on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]] = None) -> None:
         operator = "&" if query.find("?") > 0 else "?"
         url = "{}/{}{}per_page={}&page={}".format(self._root_url, query, operator, Settings.PER_PAGE, page)
         reply = self._manager.get(self._createEmptyRequest(url))
@@ -173,5 +174,4 @@ class MyMiniFactoryApiClient(AbstractApiClient):
 
     def _setAuth(self, request: QNetworkRequest) -> None:
         token = PreferencesHelper.getSettingValue(Settings.MYMINIFACTORY_API_TOKEN_KEY)
-        Logger.log('i', "Authorization: Bearer {}".format(token).encode())
         request.setRawHeader(b"Authorization", "Bearer {}".format(token).encode())

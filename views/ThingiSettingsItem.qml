@@ -1,4 +1,4 @@
-// Copyright (c) 2020 Chris ter Beke.
+// Copyright (c) 2020.
 // Thingiverse plugin is released under the terms of the LGPLv3 or higher.
 import QtQuick 2.2
 import QtQuick.Controls 2.0
@@ -52,19 +52,7 @@ RowLayout
         }
     }
 
-    Button 
-    {
-        id: callToActionButtonRevoke
-        visible: thingiSettingsItem.type == "cta_button" && thingiSettingsItem.value != ""
-        Layout.fillWidth: true
-        text: "Sign Out"
-        onClicked: {
-            ThingiService.saveSetting(thingiSettingsItem.key, "")
-            thingiSettingsItem.value = ""
-        }
-    }
-
-    Button 
+    Button
     {
         id: callToActionButtonAuthenticate
         visible: thingiSettingsItem.type == "cta_button" && thingiSettingsItem.value == ""
@@ -72,6 +60,17 @@ RowLayout
         text: "Sign In"
         onClicked: {
             ThingiService.authenticateDriver(thingiSettingsItem.driver)
+        }
+    }
+
+    Button
+    {
+        id: callToActionButtonRevoke
+        visible: thingiSettingsItem.type == "cta_button" && thingiSettingsItem.value !== ""
+        Layout.fillWidth: true
+        text: "Sign Out"
+        onClicked: {
+            ThingiService.clearAuthenticationForDriver(thingiSettingsItem.driver)
         }
     }
 
@@ -96,7 +95,7 @@ RowLayout
         target: callToActionButtonRevoke
         property: "visible"
         when: thingiSettingsItem.type == "cta_button"
-        value: ThingiService.getSetting(thingiSettingsItem.key) != ""
+        value: thingiSettingsItem.value !== ""
     }
 
     Binding
@@ -104,6 +103,6 @@ RowLayout
         target: callToActionButtonAuthenticate
         property: "visible"
         when: thingiSettingsItem.type == "cta_button"
-        value: ThingiService.getSetting(thingiSettingsItem.key) == ""
+        value: thingiSettingsItem.value == ""
     }
 }

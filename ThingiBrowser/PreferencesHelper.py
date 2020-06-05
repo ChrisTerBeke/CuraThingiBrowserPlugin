@@ -1,4 +1,4 @@
-# Copyright (c) 2020 Chris ter Beke.
+# Copyright (c) 2020.
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
 from typing import Optional, Dict, List, Any, Callable
 
@@ -85,10 +85,9 @@ class PreferencesHelper:
         return CuraApplication.getInstance().getPreferences().getValue(preference_key)
 
     @classmethod
-    def addSettingChangedCallback(cls, setting_name, callback: Callable[[str],Any]):
+    def addSettingChangedCallback(cls, callback: Callable[[str], None]) -> None:
         """
-        Add a callback on for the change of a preference value
-        :param setting_name: The name of the setting to use callback on
-        :param callback: The callback function to run when setting is changed. Setting name and new value will be provided.
+        Add a callback on for the change of a preference value.
+        :param callback: The callback function to run when setting is changed.
         """
         CuraApplication.getInstance().getPreferences().preferenceChanged.connect(callback)
