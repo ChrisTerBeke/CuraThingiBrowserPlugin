@@ -5,6 +5,8 @@ from unittest.mock import patch
 import pytest
 from surrogate import surrogate
 
+from ....ThingiBrowser.api.JsonObject import UserData
+
 API_CALL_TIMEOUT = 10000
 
 
@@ -14,11 +16,8 @@ class TestMyMiniFactoryApiClient:
     @surrogate("cura.CuraApplication.CuraApplication")
     def api_client(self, application):
         with patch("cura.CuraApplication.CuraApplication", application):
-            from ....ThingiBrowser.api.JsonObject import UserData
             from ....ThingiBrowser.drivers.myminifactory.MyMiniFactoryApiClient import MyMiniFactoryApiClient
-            client = MyMiniFactoryApiClient()
-            client._onGetUserData(UserData({"username": "herpaderp"}))
-            return client
+            return MyMiniFactoryApiClient()
 
     def test_getThingsFromCollectionQuery(self, api_client):
         query = api_client.getThingsFromCollectionQuery("my-collection")
@@ -29,16 +28,23 @@ class TestMyMiniFactoryApiClient:
         assert query == "search?q=cube"
 
     def test_getThingsLikedByUserQuery(self, api_client):
+        api_client._onGetUserData(UserData({"username": "herpaderp"}))
         query = api_client.getThingsLikedByUserQuery()
         assert query == "users/herpaderp/objects_liked"
 
     def test_getThingsByUserQuery(self, api_client):
+        api_client._onGetUserData(UserData({"username": "herpaderp"}))
         query = api_client.getThingsByUserQuery()
         assert query == "users/herpaderp/objects"
 
     def test_getThingsMadeByUserQuery(self, api_client):
+        api_client._onGetUserData(UserData({"username": "herpaderp"}))
         query = api_client.getThingsMadeByUserQuery()
         assert query == "users/herpaderp/objects"
+
+    def test_getThingsMadeByUserQuery_not_authenticated(self, api_client):
+        query = api_client.getThingsMadeByUserQuery()
+        assert query == "users/None/objects"
 
     def test_getPopularThingsQuery(self, api_client):
         query = api_client.getPopularThingsQuery()
