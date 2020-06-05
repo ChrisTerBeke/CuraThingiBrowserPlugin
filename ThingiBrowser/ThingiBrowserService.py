@@ -531,26 +531,39 @@ class ThingiBrowserService(QObject):
     def _onRequestFailed(self, error: Optional[ApiError] = None, status_code: Optional[int] = None) -> None:
         """
         Callback for when a request failed.
-        :param error: An optional error object that was returned by the Thingiverse API.
-        TODO: cleanup
+        :param error: An optional error object that was returned by the API.
         """
         self._is_querying = False
         self.queryingStateChanged.emit()
-        mb = QMessageBox()
-
-        if status_code == 401 or (self.activeDriver == "thingiverse" and status_code == 502):
-            mb.setIcon(QMessageBox.Information)
-            key = Settings.THINGIVERSE_API_TOKEN_KEY if self.activeDriver == "thingiverse" else Settings.MYMINIFACTORY_API_TOKEN_KEY
-            PreferencesHelper.setSetting(key, '')
-            self._extension.showSettingsWindow()
-            mb.setWindowTitle("Authentication Required")
-            mb.setText("{} indicated that authentication failed. Please click the \"Sign In\" button on the system you were attempting to query and try again.".format(self._drivers[self.activeDriver].label))
+        if status_code in [401, 502]:  # Thingiverse uses 502 for certain authentication errors
+            self._showAuthenticationError()
         else:
-            mb.setIcon(QMessageBox.Critical)
-            mb.setWindowTitle("Oh no!")
-            error_message = error.error or str(error) if error else "Unknown"
-            mb.setText("The API returned an error: {}.".format(error_message))
-            mb.setDetailedText(str(error.toStruct()) if error else "")
+            self._showApiResponseError(error)
+
+    def _showAuthenticationError(self) -> None:
+        """
+        Show a popup indicating that the user needs to sign in to call the API.
+        """
+        self._extension.showSettingsWindow()
+        mb = QMessageBox()
+        mb.setIcon(QMessageBox.Information)
+        mb.setWindowTitle("Authentication Required")
+        mb.setText("{} indicated that you need to sign in. Please click the \"Sign In\" button for the service you "
+                   "were using and try again.".format(self._drivers[self.activeDriver].label))
+        mb.exec()
+
+    @staticmethod
+    def _showApiResponseError(error: Optional[ApiError] = None) -> None:
+        """
+        Show a popup with the API error that was received.
+        :param error: The API error.
+        """
+        mb = QMessageBox()
+        mb.setIcon(QMessageBox.Critical)
+        mb.setWindowTitle("Oh no!")
+        error_message = error.error or str(error) if error else "Unknown"
+        mb.setText("The API returned an error: {}.".format(error_message))
+        mb.setDetailedText(str(error.toStruct()) if error else "")
         mb.exec()
 
     def _getActiveDriver(self) -> AbstractApiClient:
