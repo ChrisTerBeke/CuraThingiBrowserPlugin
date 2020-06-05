@@ -13,8 +13,8 @@ class LocalAuthService:
     """
     def __init__(self, token_callback: Optional[Callable[[Optional[str]], Any]] = None):
         self._token_callback = token_callback
+        ImplicitAuthRequestHandler.setTokenCallback(self._onTokenReceived)
         self._server = HTTPServer(("0.0.0.0", 55444), ImplicitAuthRequestHandler)
-        self._server.RequestHandlerClass.setTokenCallback(self._onTokenReceived)
         self._server_thread = threading.Thread(None, self._server.serve_forever, daemon=True)
 
     def _onTokenReceived(self, token: Optional[str] = None) -> None:
