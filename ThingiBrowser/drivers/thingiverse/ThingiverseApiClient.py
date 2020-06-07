@@ -34,12 +34,12 @@ class ThingiverseApiClient(AbstractApiClient):
     def clearAuthentication(self) -> None:
         PreferencesHelper.setSetting(Settings.THINGIVERSE_API_TOKEN_KEY, "")
 
-    @staticmethod
-    def _onTokenReceived(token: Optional[str] = None) -> None:
+    def _onTokenReceived(self, token: Optional[str] = None) -> None:
         if not token:
             # TODO: handle error
             return
         PreferencesHelper.setSetting(Settings.THINGIVERSE_API_TOKEN_KEY, token)
+        self._is_authenticated = True
 
     def getThingsFromCollectionQuery(self, collection_id: str) -> str:
         return "collections/{}/things".format(collection_id)
@@ -155,4 +155,7 @@ class ThingiverseApiClient(AbstractApiClient):
 
     def _setAuth(self, request: QNetworkRequest) -> None:
         token = PreferencesHelper.getSettingValue(Settings.THINGIVERSE_API_TOKEN_KEY)
+        if not token or token == "":
+            # If the user was not signed in we use a default token for the public endpoints.
+            token = Settings.THINGIVERSE_API_TOKEN
         request.setRawHeader(b"Authorization", "Bearer {}".format(token).encode())
