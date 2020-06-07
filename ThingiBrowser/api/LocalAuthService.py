@@ -25,6 +25,7 @@ class LocalAuthService:
         """
         if self._token_callback:
             self._token_callback(token)
+        self._server.shutdown()
         self._server.server_close()
 
     def listen(self) -> None:

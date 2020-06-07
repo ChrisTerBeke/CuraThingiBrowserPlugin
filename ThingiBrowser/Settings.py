@@ -21,11 +21,11 @@ class Settings:
 
     # Thingiverse API options
     THINGIVERSE_CLIENT_ID = "0ea6d714d64fa4797e07"
-    THINGIVERSE_API_TOKEN = "d1057e7ec3da66ac1b81f8632606ca0a"
+    THINGIVERSE_API_TOKEN = "d1057e7ec3da66ac1b81f8632606ca0a"  # for public endpoints
 
     # MyMiniFactory API options
     MYMINIFACTORY_CLIENT_ID = "cura_browser"
-    MYMINIFACTORY_API_TOKEN = "2d137c51-edd6-4c55-a815-233757dfcc7d"
+    MYMINIFACTORY_API_TOKEN = "2d137c51-edd6-4c55-a815-233757dfcc7d"  # for public endpoints
 
     # Plugin settings preference keys
     PREFERENCE_KEY_BASE = "thingibrowser"

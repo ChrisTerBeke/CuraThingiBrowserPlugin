@@ -177,4 +177,7 @@ class MyMiniFactoryApiClient(AbstractApiClient):
 
     def _setAuth(self, request: QNetworkRequest) -> None:
         token = PreferencesHelper.getSettingValue(Settings.MYMINIFACTORY_API_TOKEN_KEY)
+        if not token or token == "":
+            # If the user was not signed in we use a default token for the public endpoints.
+            token = Settings.MYMINIFACTORY_API_TOKEN
         request.setRawHeader(b"Authorization", "Bearer {}".format(token).encode())
