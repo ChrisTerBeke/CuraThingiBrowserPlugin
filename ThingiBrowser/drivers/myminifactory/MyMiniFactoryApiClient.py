@@ -19,7 +19,7 @@ class MyMiniFactoryApiClient(AbstractApiClient):
     """ Client for interacting with the MyMiniFactory API. """
 
     def __init__(self) -> None:
-        self._username: Optional[str] = None
+        self._username = None  # type: Optional[str]
         access_token = PreferencesHelper.initSetting(Settings.MYMINIFACTORY_API_TOKEN_KEY)
         if access_token and access_token != "":
             # Get the username if we already have a token stored.
