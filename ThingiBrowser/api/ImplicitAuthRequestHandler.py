@@ -5,7 +5,7 @@ from http.server import BaseHTTPRequestHandler
 from typing import Dict, Any, Optional
 from urllib.parse import parse_qs, urlparse, ParseResult
 
-from UM.Signal import Signal
+from UM.Signal import Signal  # type: ignore
 
 
 class ImplicitAuthRequestHandler(BaseHTTPRequestHandler):

@@ -26,6 +26,7 @@ class TestThingiBrowserExtension:
     @surrogate("cura.CuraApplication.CuraApplication")
     @surrogate("UM.Extension.Extension")
     @surrogate("UM.Logger.Logger")
+    @surrogate("UM.Signal.Signal")
     def make_plugin(self, application):
         with patch("cura.CuraApplication.CuraApplication", application):
             with patch("UM.Extension.Extension", ExtensionMock):

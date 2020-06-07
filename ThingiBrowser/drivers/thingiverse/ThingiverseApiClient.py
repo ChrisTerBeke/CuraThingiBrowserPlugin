@@ -35,7 +35,7 @@ class ThingiverseApiClient(AbstractApiClient):
     def _onTokenReceived(self, token: Optional[str] = None) -> None:
         self._auth_service.onTokenReceived.disconnect(self._onTokenReceived)
         if not token:
-            pass  # TODO: handle error
+            return
         PreferencesHelper.setSetting(Settings.THINGIVERSE_API_TOKEN_KEY, token)
 
     def getThingsFromCollectionQuery(self, collection_id: str) -> str:
