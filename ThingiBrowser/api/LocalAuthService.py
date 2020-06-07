@@ -7,7 +7,7 @@ from typing import Optional
 from PyQt5.QtCore import QUrl
 from PyQt5.QtGui import QDesktopServices
 
-from UM.Signal import Signal
+from UM.Signal import Signal  # type: ignore
 
 from ..api.ImplicitAuthRequestHandler import ImplicitAuthRequestHandler
 
