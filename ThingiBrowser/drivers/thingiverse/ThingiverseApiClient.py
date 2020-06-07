@@ -1,11 +1,9 @@
 # Copyright (c) 2020.
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
 from typing import List, Callable, Any, Optional, Tuple
+from urllib.parse import urlencode
 
 from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
-from PyQt5.QtCore import QUrl
-from PyQt5.QtGui import QDesktopServices
-from urllib.parse import urlencode
 
 from ...Settings import Settings
 from ...PreferencesHelper import PreferencesHelper
@@ -20,6 +18,7 @@ class ThingiverseApiClient(AbstractApiClient):
 
     def __init__(self) -> None:
         PreferencesHelper.initSetting(Settings.THINGIVERSE_API_TOKEN_KEY)
+        self._auth_service = LocalAuthService()  # type: LocalAuthService
         super().__init__()
 
     def authenticate(self) -> None:
@@ -27,17 +26,16 @@ class ThingiverseApiClient(AbstractApiClient):
             "client_id": Settings.THINGIVERSE_CLIENT_ID,
             "response_type": "token"
         }))
-        auth_service = LocalAuthService(self._onTokenReceived)
-        auth_service.listen()
-        QDesktopServices.openUrl(QUrl(url))
+        self._auth_service.onTokenReceived.connect(self._onTokenReceived)
+        self._auth_service.start(url)
 
     def clearAuthentication(self) -> None:
         PreferencesHelper.setSetting(Settings.THINGIVERSE_API_TOKEN_KEY, "")
 
     def _onTokenReceived(self, token: Optional[str] = None) -> None:
+        self._auth_service.onTokenReceived.disconnect(self._onTokenReceived)
         if not token:
-            # TODO: handle error
-            return
+            pass  # TODO: handle error
         PreferencesHelper.setSetting(Settings.THINGIVERSE_API_TOKEN_KEY, token)
 
     def getThingsFromCollectionQuery(self, collection_id: str) -> str:
