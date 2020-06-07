@@ -3,8 +3,6 @@
 from typing import List, Callable, Any, Optional, Tuple
 from urllib.parse import urlencode
 
-from PyQt5.QtCore import QUrl
-from PyQt5.QtGui import QDesktopServices
 from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
 
 from ...Settings import Settings
@@ -19,6 +17,7 @@ class MyMiniFactoryApiClient(AbstractApiClient):
     """ Client for interacting with the MyMiniFactory API. """
 
     def __init__(self) -> None:
+        self._auth_service = LocalAuthService()  # type: LocalAuthService
         self._username = None  # type: Optional[str]
         access_token = PreferencesHelper.initSetting(Settings.MYMINIFACTORY_API_TOKEN_KEY)
         if access_token and access_token != "":
@@ -32,14 +31,14 @@ class MyMiniFactoryApiClient(AbstractApiClient):
             "redirect_uri": "http://localhost:55444/callback",
             "response_type": "token"
         }))
-        auth_service = LocalAuthService(self._onTokenReceived)
-        auth_service.listen()
-        QDesktopServices.openUrl(QUrl(url))
+        self._auth_service.onTokenReceived.connect(self._onTokenReceived)
+        self._auth_service.start(url)
 
     def clearAuthentication(self) -> None:
         PreferencesHelper.setSetting(Settings.MYMINIFACTORY_API_TOKEN_KEY, "")
 
     def _onTokenReceived(self, token: Optional[str] = None) -> None:
+        self._auth_service.onTokenReceived.disconnect(self._onTokenReceived)
         if not token:
             return
         PreferencesHelper.setSetting(Settings.MYMINIFACTORY_API_TOKEN_KEY, token)
