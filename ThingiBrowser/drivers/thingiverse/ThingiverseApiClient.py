@@ -39,7 +39,6 @@ class ThingiverseApiClient(AbstractApiClient):
             # TODO: handle error
             return
         PreferencesHelper.setSetting(Settings.THINGIVERSE_API_TOKEN_KEY, token)
-        self._is_authenticated = True
 
     def getThingsFromCollectionQuery(self, collection_id: str) -> str:
         return "collections/{}/things".format(collection_id)

@@ -20,12 +20,12 @@ class Settings:
     PER_PAGE = 20
 
     # Thingiverse API options
-    THINGIVERSE_CLIENT_ID = "0ea6d714d64fa4797e07"
-    THINGIVERSE_API_TOKEN = "d1057e7ec3da66ac1b81f8632606ca0a"  # for public endpoints
+    THINGIVERSE_CLIENT_ID = "bf4d7b7ee5228a368491"
+    THINGIVERSE_API_TOKEN = "96f45d208a4b1d99bff728038162b354"  # for public endpoints
 
     # MyMiniFactory API options
-    MYMINIFACTORY_CLIENT_ID = "cura_browser"
-    MYMINIFACTORY_API_TOKEN = "2d137c51-edd6-4c55-a815-233757dfcc7d"  # for public endpoints
+    MYMINIFACTORY_CLIENT_ID = "cura_thingibrowser"
+    MYMINIFACTORY_API_TOKEN = "2d137c51-edd6-4c55-a815-233757dfcc7d"  # for public endpoints, TODO: replace
 
     # Plugin settings preference keys
     PREFERENCE_KEY_BASE = "thingibrowser"

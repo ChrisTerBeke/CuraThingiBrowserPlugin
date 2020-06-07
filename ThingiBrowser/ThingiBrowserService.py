@@ -548,8 +548,8 @@ class ThingiBrowserService(QObject):
         mb = QMessageBox()
         mb.setIcon(QMessageBox.Information)
         mb.setWindowTitle("Authentication Required")
-        mb.setText("{} indicated that you need to sign in. Please click the \"Sign In\" button for the service you "
-                   "were using and try again.".format(self._drivers[self.activeDriver].label))
+        mb.setText("{0} indicated that you need to sign in. Please sign into your {0} account and try again.".format(
+            self._drivers[self.activeDriver].label))
         mb.exec()
 
     @staticmethod
