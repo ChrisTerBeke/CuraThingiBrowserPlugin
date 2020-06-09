@@ -36,12 +36,16 @@ class ImplicitAuthRequestHandler(BaseHTTPRequestHandler):
             # This is a security feature of OAuth2 which prevents following an implicit flow from a server application.
             self._htmlResponse("AuthenticationRedirect")
             return
+        state = self._getParam(query, "state")
+        if not state:
+            self._exceptionResponse("State could not be found in query")
+            return
         access_token = self._getParam(query, "access_token")
         if not access_token:
             self._exceptionResponse("Access token could not be found in query")
             return
         self._htmlResponse("AuthenticationReceived")
-        self.onTokenReceived.emit(access_token)
+        self.onTokenReceived.emit(state, access_token)
 
     def _htmlResponse(self, page_name: str) -> None:
         self.send_response(200)
