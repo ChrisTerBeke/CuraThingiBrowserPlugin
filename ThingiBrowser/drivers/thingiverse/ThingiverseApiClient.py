@@ -19,8 +19,6 @@ class ThingiverseApiClient(AbstractApiClient):
 
     def __init__(self) -> None:
         self._auth_state = None  # type: Optional[str]
-        self._auth_service = LocalAuthService()
-        self._auth_service.onTokenReceived.connect(self._onTokenReceived)
         PreferencesHelper.initSetting(Settings.THINGIVERSE_API_TOKEN_KEY)
         super().__init__()
 
@@ -31,7 +29,8 @@ class ThingiverseApiClient(AbstractApiClient):
             "response_type": "token",
             "state": self._auth_state
         }))
-        self._auth_service.start(url)
+        LocalAuthService.onTokenReceived.connect(self._onTokenReceived)
+        LocalAuthService.start(url)
 
     def clearAuthentication(self) -> None:
         PreferencesHelper.setSetting(Settings.THINGIVERSE_API_TOKEN_KEY, "")
@@ -39,6 +38,7 @@ class ThingiverseApiClient(AbstractApiClient):
     def _onTokenReceived(self, state: str, token: Optional[str] = None) -> None:
         if state != self._auth_state:
             return
+        LocalAuthService.onTokenReceived.disconnect(self._onTokenReceived)
         if not token:
             return
         PreferencesHelper.setSetting(Settings.THINGIVERSE_API_TOKEN_KEY, token)

@@ -13,6 +13,7 @@ class TestThingiverseApiClient:
 
     @pytest.fixture
     @surrogate("cura.CuraApplication.CuraApplication")
+    @surrogate("UM.Signal.Signal")
     def api_client(self, application):
         with patch("cura.CuraApplication.CuraApplication", application):
             from ....ThingiBrowser.drivers.thingiverse.ThingiverseApiClient import ThingiverseApiClient

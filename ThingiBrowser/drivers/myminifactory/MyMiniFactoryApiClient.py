@@ -21,8 +21,6 @@ class MyMiniFactoryApiClient(AbstractApiClient):
     def __init__(self) -> None:
         self._username = None  # type: Optional[str]
         self._auth_state = None  # type: Optional[str]
-        self._auth_service = LocalAuthService()
-        self._auth_service.onTokenReceived.connect(self._onTokenReceived)
         access_token = PreferencesHelper.initSetting(Settings.MYMINIFACTORY_API_TOKEN_KEY)
         if access_token and access_token != "":
             # Get the username if we already have a token stored.
@@ -37,7 +35,8 @@ class MyMiniFactoryApiClient(AbstractApiClient):
             "response_type": "token",
             "state": self._auth_state
         }))
-        self._auth_service.start(url)
+        LocalAuthService.onTokenReceived.connect(self._onTokenReceived)
+        LocalAuthService.start(url)
 
     def clearAuthentication(self) -> None:
         PreferencesHelper.setSetting(Settings.MYMINIFACTORY_API_TOKEN_KEY, "")
@@ -45,6 +44,7 @@ class MyMiniFactoryApiClient(AbstractApiClient):
     def _onTokenReceived(self, state: str, token: Optional[str] = None) -> None:
         if state != self._auth_state:
             return
+        LocalAuthService.onTokenReceived.disconnect(self._onTokenReceived)
         if not token:
             return
         PreferencesHelper.setSetting(Settings.MYMINIFACTORY_API_TOKEN_KEY, token)
