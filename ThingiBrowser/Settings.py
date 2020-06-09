@@ -25,7 +25,7 @@ class Settings:
 
     # MyMiniFactory API options
     MYMINIFACTORY_CLIENT_ID = "cura_thingibrowser"
-    MYMINIFACTORY_API_TOKEN = "2d137c51-edd6-4c55-a815-233757dfcc7d"  # for public endpoints, TODO: replace
+    MYMINIFACTORY_API_TOKEN = "c2a3f10b-19fc-53af-5a70-b837c23ff0c5"  # for public endpoints
 
     # Plugin settings preference keys
     PREFERENCE_KEY_BASE = "thingibrowser"

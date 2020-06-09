@@ -3,6 +3,7 @@
 from typing import List, Callable, Any, Optional, Tuple
 from urllib.parse import urlencode
 
+from PyQt5.QtCore import QUrl
 from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
 
 from ...Settings import Settings
@@ -178,5 +179,13 @@ class MyMiniFactoryApiClient(AbstractApiClient):
         token = PreferencesHelper.getSettingValue(Settings.MYMINIFACTORY_API_TOKEN_KEY)
         if not token or token == "":
             # If the user was not signed in we use a default token for the public endpoints.
-            token = Settings.MYMINIFACTORY_API_TOKEN
+            # We'll use the 'old way' of injecting the API key in the request
+            return self._injectApiToken(request)
         request.setRawHeader(b"Authorization", "Bearer {}".format(token).encode())
+
+    @staticmethod
+    def _injectApiToken(request: QNetworkRequest) -> None:
+        current_url = request.url().toString()
+        operator = "&" if current_url.find("?") > 0 else "?"
+        new_url = QUrl("{}{}key={}".format(current_url, operator, Settings.MYMINIFACTORY_API_TOKEN))
+        request.setUrl(new_url)
