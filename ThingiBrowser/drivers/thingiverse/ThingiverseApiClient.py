@@ -1,5 +1,6 @@
 # Copyright (c) 2020.
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
+import time
 from typing import List, Callable, Any, Optional, Tuple
 from urllib.parse import urlencode
 
@@ -17,23 +18,27 @@ class ThingiverseApiClient(AbstractApiClient):
     """ Client for interacting with the Thingiverse API. """
 
     def __init__(self) -> None:
+        self._auth_state = None  # type: Optional[str]
+        self._auth_service = LocalAuthService()
+        self._auth_service.onTokenReceived.connect(self._onTokenReceived)
         PreferencesHelper.initSetting(Settings.THINGIVERSE_API_TOKEN_KEY)
-        self._auth_service = LocalAuthService()  # type: LocalAuthService
         super().__init__()
 
     def authenticate(self) -> None:
+        self._auth_state = "thingiverse_{}".format(str(time.time()))
         url = "{}?{}".format("https://www.thingiverse.com/login/oauth/authorize", urlencode({
             "client_id": Settings.THINGIVERSE_CLIENT_ID,
-            "response_type": "token"
+            "response_type": "token",
+            "state": self._auth_state
         }))
-        self._auth_service.onTokenReceived.connect(self._onTokenReceived)
         self._auth_service.start(url)
 
     def clearAuthentication(self) -> None:
         PreferencesHelper.setSetting(Settings.THINGIVERSE_API_TOKEN_KEY, "")
 
-    def _onTokenReceived(self, token: Optional[str] = None) -> None:
-        self._auth_service.onTokenReceived.disconnect(self._onTokenReceived)
+    def _onTokenReceived(self, state: str, token: Optional[str] = None) -> None:
+        if state != self._auth_state:
+            return
         if not token:
             return
         PreferencesHelper.setSetting(Settings.THINGIVERSE_API_TOKEN_KEY, token)
