@@ -7,6 +7,7 @@ EnhancedComboBox
     textRole: "label"
     customValueRole: "key"
     currentIndex: serviceSelector.indexOfValue(ThingiService.activeDriver)
+    sizeToContents: true
     model: ThingiService.drivers
     onActivated: {
         ThingiService.setActiveDriver(customCurrentValue)
