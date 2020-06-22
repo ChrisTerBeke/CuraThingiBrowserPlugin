@@ -551,6 +551,8 @@ class ThingiBrowserService(QObject):
         mb.setText("{0} indicated that you need to sign in. Please sign into your {0} account and try again.".format(
             self._drivers[self.activeDriver].label))
         mb.exec()
+        # Remove any existing authentication data as it's clearly incorrect.
+        self.clearAuthenticationForDriver(self.activeDriver)
 
     @staticmethod
     def _showApiResponseError(error: Optional[ApiError] = None) -> None:
