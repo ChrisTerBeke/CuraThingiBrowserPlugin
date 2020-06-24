@@ -31,13 +31,12 @@ ComboBox
     }
 
     onModelChanged: {
-        var _maxWidth = 0
-        for(var idx in model){
+        var maxWidth = 0
+        for (var idx in model) {
             textMetrics.text = model[idx][textRole]
-            _maxWidth = Math.max(textMetrics.width, _maxWidth)
+            maxWidth = Math.max(textMetrics.width, maxWidth)
         }
-        modelWidth = _maxWidth + implicitIndicatorWidth*2 + leftPadding + rightPadding + contentItem.leftPadding + contentItem.rightPadding
-        console.log("Model Width set to: "+modelWidth)
+        modelWidth = maxWidth + (implicitIndicatorWidth * 2) + leftPadding + rightPadding + contentItem.leftPadding + contentItem.rightPadding
     }
 
     Binding {
