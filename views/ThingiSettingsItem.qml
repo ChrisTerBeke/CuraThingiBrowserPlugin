@@ -16,14 +16,33 @@ RowLayout
     property var value: ""
     property var options: []
     property var driver: ""
+    property var description: ""
 
     Label
     {
+        id: label
         text: thingiSettingsItem.label
         font: UM.Theme.getFont("default")
         color: UM.Theme.getColor("text")
         renderType: Text.NativeRendering
         Layout.preferredWidth: parent.width / 2 // causes both the label and input to be the same width
+
+        ToolTip {
+            id: labelToolTip
+            visible: labelHoverArea.containsMouse
+            width: thingiSettingsItem.width * 0.75
+            delay: 500
+            contentItem: Text {
+                text: thingiSettingsItem.description
+                wrapMode: Text.WordWrap
+            }
+        }
+
+        MouseArea {
+            id: labelHoverArea
+            anchors.fill: parent
+            hoverEnabled: true
+        }
     }
 
     TextField

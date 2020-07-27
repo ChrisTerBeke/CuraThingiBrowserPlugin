@@ -29,15 +29,15 @@ class TestThingiverseApiClient:
 
     def test_getThingsLikedByUserQuery(self, api_client):
         query = api_client.getThingsLikedByUserQuery()
-        assert query == "users/me/likes"
+        assert query == "users/404_this_user_does_not_exist/likes"
 
     def test_getThingsByUserQuery(self, api_client):
         query = api_client.getThingsByUserQuery()
-        assert query == "users/me/things"
+        assert query == "users/404_this_user_does_not_exist/things"
 
     def test_getThingsMadeByUserQuery(self, api_client):
         query = api_client.getThingsMadeByUserQuery()
-        assert query == "users/me/copies"
+        assert query == "users/404_this_user_does_not_exist/copies"
 
     def test_getPopularThingsQuery(self, api_client):
         query = api_client.getPopularThingsQuery()

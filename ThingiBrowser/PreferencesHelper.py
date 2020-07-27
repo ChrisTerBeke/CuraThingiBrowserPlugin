@@ -34,33 +34,46 @@ class PreferencesHelper:
         :return: The settings dict.
         """
         return [
-            {
-                "type": "cta_button",
-                "key": Settings.THINGIVERSE_API_TOKEN_KEY,
-                "value": cls.getSettingValue(Settings.THINGIVERSE_API_TOKEN_KEY),
-                "label": "Thingiverse Account",
-                "driver": "thingiverse"
-            },
+            # FIXME: Waiting for Thingiverse app approval
+            # {
+            #     "type": "cta_button",
+            #     "key": Settings.THINGIVERSE_API_TOKEN_KEY,
+            #     "value": cls.getSettingValue(Settings.THINGIVERSE_API_TOKEN_KEY),
+            #     "label": "Thingiverse Account",
+            #     "driver": "thingiverse"
+            # },
             {
                 "type": "cta_button",
                 "key": Settings.MYMINIFACTORY_API_TOKEN_KEY,
                 "value": cls.getSettingValue(Settings.MYMINIFACTORY_API_TOKEN_KEY),
                 "label": "MyMiniFactory Account",
-                "driver": "myminifactory"
+                "driver": "myminifactory",
+                "description": "Sign in with your MyMiniFactory account to see your own likes and makes in the plugin."
+            },
+            {
+                "type": "text",
+                "key": Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY,
+                "value": cls.getSettingValue(Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY),
+                "label": "Thingiverse username",
+                "description": "The username of the Thingiverse account to show likes and makes for. "
+                               "Thingiverse is no longer actively maintained so the improved sign in flow as used for "
+                               "MyMiniFactory cannot be implemented for Thingiverse."
             },
             {
                 "type": "combobox",
                 "key": Settings.DEFAULT_API_CLIENT_PREFERENCES_KEY,
                 "value": cls.getSettingValue(Settings.DEFAULT_API_CLIENT_PREFERENCES_KEY),
                 "label": "Default repository service",
-                "options": drivers
+                "options": drivers,
+                "description": "Which 3D file repository to use when the plugin starts."
             },
             {
                 "type": "combobox",
                 "key": Settings.DEFAULT_VIEW_PREFERENCES_KEY,
                 "value": cls.getSettingValue(Settings.DEFAULT_VIEW_PREFERENCES_KEY),
                 "label": "Default view",
-                "options": views
+                "options": views,
+                "description": "Which view to use when the plugin starts."
             }
         ]
 
