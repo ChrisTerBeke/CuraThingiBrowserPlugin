@@ -1,8 +1,6 @@
 # Copyright (c) 2020.
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
-import time
 from typing import List, Callable, Any, Optional, Tuple
-from urllib.parse import urlencode
 
 from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
 
@@ -19,18 +17,28 @@ class ThingiverseApiClient(AbstractApiClient):
 
     def __init__(self) -> None:
         self._auth_state = None  # type: Optional[str]
+        PreferencesHelper.initSetting(Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY)
         PreferencesHelper.initSetting(Settings.THINGIVERSE_API_TOKEN_KEY)
         super().__init__()
 
+    @property
+    def user_id(self):
+        user_name = PreferencesHelper.getSettingValue(Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY)
+        if not user_name or user_name == "":
+            return "404_this_user_does_not_exist"  # ugly, but tricks the Thingiverse API in giving a 404 response
+        return PreferencesHelper.getSettingValue(Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY)
+
     def authenticate(self) -> None:
-        self._auth_state = "thingiverse_{}".format(str(time.time()))
-        url = "{}?{}".format("https://www.thingiverse.com/login/oauth/authorize", urlencode({
-            "client_id": Settings.THINGIVERSE_CLIENT_ID,
-            "response_type": "token",
-            "state": self._auth_state
-        }))
-        LocalAuthService.onTokenReceived.connect(self._onTokenReceived)
-        LocalAuthService.start(url)
+        pass
+        # FIXME: Waiting for Thingiverse app approval
+        # self._auth_state = "thingiverse_{}".format(str(time.time()))
+        # url = "{}?{}".format("https://www.thingiverse.com/login/oauth/authorize", urlencode({
+        #     "client_id": Settings.THINGIVERSE_CLIENT_ID,
+        #     "response_type": "token",
+        #     "state": self._auth_state
+        # }))
+        # LocalAuthService.onTokenReceived.connect(self._onTokenReceived)
+        # LocalAuthService.start(url)
 
     def clearAuthentication(self) -> None:
         PreferencesHelper.setSetting(Settings.THINGIVERSE_API_TOKEN_KEY, "")
@@ -50,13 +58,13 @@ class ThingiverseApiClient(AbstractApiClient):
         return "search/{}".format(search_terms)
 
     def getThingsLikedByUserQuery(self) -> str:
-        return "users/me/likes"
+        return "users/{}/likes".format(self.user_id)
 
     def getThingsByUserQuery(self) -> str:
-        return "users/me/things"
+        return "users/{}/things".format(self.user_id)
 
     def getThingsMadeByUserQuery(self) -> str:
-        return "users/me/copies"
+        return "users/{}/copies".format(self.user_id)
 
     def getPopularThingsQuery(self) -> str:
         return "popular"
@@ -69,7 +77,7 @@ class ThingiverseApiClient(AbstractApiClient):
 
     def getCollections(self, on_finished: Callable[[List[Collection]], Any],
                        on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]] = None) -> None:
-        url = "{}/users/me/collections".format(self._root_url)
+        url = "{}/users/{}/collections".format(self._root_url, self.user_id)
         reply = self._manager.get(self._createEmptyRequest(url))
         self._addCallback(reply, on_finished, on_failed, parser=self._parseGetCollections)
 
@@ -156,8 +164,9 @@ class ThingiverseApiClient(AbstractApiClient):
         return "https://api.thingiverse.com"
 
     def _setAuth(self, request: QNetworkRequest) -> None:
-        token = PreferencesHelper.getSettingValue(Settings.THINGIVERSE_API_TOKEN_KEY)
-        if not token or token == "":
-            # If the user was not signed in we use a default token for the public endpoints.
-            token = Settings.THINGIVERSE_API_TOKEN
-        request.setRawHeader(b"Authorization", "Bearer {}".format(token).encode())
+        # FIXME: Waiting for Thingiverse app approval
+        # token = PreferencesHelper.getSettingValue(Settings.THINGIVERSE_API_TOKEN_KEY)
+        # if not token or token == "":
+        #     # If the user was not signed in we use a default token for the public endpoints.
+        #     token = Settings.THINGIVERSE_API_TOKEN
+        request.setRawHeader(b"Authorization", "Bearer {}".format(Settings.THINGIVERSE_API_TOKEN).encode())

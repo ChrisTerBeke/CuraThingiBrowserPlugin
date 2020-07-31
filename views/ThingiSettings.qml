@@ -44,6 +44,7 @@ Window
                 key: modelData.key
                 label: modelData.label
                 value: modelData.value
+                description: modelData.description
                 options: modelData.options
                 driver: modelData.driver
             }
