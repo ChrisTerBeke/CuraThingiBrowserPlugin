@@ -21,7 +21,7 @@ ColumnLayout
 
     Label
     {
-        text: "No results found. Please try another category or search term."
+        text: "No results. Please try another category or search term or configure your account in the settings window."
         visible: ThingiService.things.length == 0 && ThingiService.isQuerying == false
         font: UM.Theme.getFont("default")
         renderType: Text.NativeRendering

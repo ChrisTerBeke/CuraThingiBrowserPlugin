@@ -10,7 +10,7 @@ Label
     id: link
     property var url: ""
 
-    color: UM.Theme.getColor("monitor_text_link")
+    color: UM.Theme.getColor("text_link")
     font: UM.Theme.getFont("default")
     renderType: Text.NativeRendering
 
