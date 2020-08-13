@@ -26,7 +26,7 @@ class ThingiverseApiClient(AbstractApiClient):
         user_name = PreferencesHelper.getSettingValue(Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY)
         if not user_name or user_name == "":
             return "404_this_user_does_not_exist"  # ugly, but tricks the Thingiverse API in giving a 404 response
-        return PreferencesHelper.getSettingValue(Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY)
+        return user_name
 
     def authenticate(self) -> None:
         pass
@@ -84,6 +84,9 @@ class ThingiverseApiClient(AbstractApiClient):
     @staticmethod
     def _parseGetCollections(reply: QNetworkReply) -> Tuple[int, Optional[List[Collection]]]:
         status_code, response = ApiHelper.parseReplyAsJson(reply)
+        if status_code == 404:
+            # Thingiverse returns a 404 when there are no collection results instead of just an empty list
+            return 200, []
         if not response or not isinstance(response, list):
             return status_code, None
         return status_code, [Collection({
@@ -103,6 +106,9 @@ class ThingiverseApiClient(AbstractApiClient):
     @staticmethod
     def _parseGetThings(reply: QNetworkReply) -> Tuple[int, Optional[List[Thing]]]:
         status_code, response = ApiHelper.parseReplyAsJson(reply)
+        if status_code == 404:
+            # Thingiverse returns a 404 when there are no thing results instead of just an empty list
+            return 200, []
         if isinstance(response, dict) and "hits" in response:
             # Thingiverse decided to change their API response for /search and put the actual results in a 'hits' field
             response = response["hits"]

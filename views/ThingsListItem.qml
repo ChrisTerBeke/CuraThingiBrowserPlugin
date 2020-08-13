@@ -26,7 +26,7 @@ Item
             Layout.leftMargin: 20
             fillMode: Image.PreserveAspectCrop
             clip: true
-            source: thing.thumbnail
+            source: thing.thumbnail ? thing.thumbnail : ""
             sourceSize.height: 75
         }
 
