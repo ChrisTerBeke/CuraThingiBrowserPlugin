@@ -8,7 +8,7 @@ ComboBox
 
     property string customCurrentValue
     property string customValueRole: "value"
-    property int implicitIndicatorWidth: 20
+    property int customImplicitIndicatorWidth: 20
     property bool sizeToContents: false
     property int modelWidth
 
@@ -36,7 +36,7 @@ ComboBox
             textMetrics.text = model[idx][textRole]
             maxWidth = Math.max(textMetrics.width, maxWidth)
         }
-        modelWidth = maxWidth + (implicitIndicatorWidth * 2) + leftPadding + rightPadding + contentItem.leftPadding + contentItem.rightPadding
+        modelWidth = maxWidth + (customImplicitIndicatorWidth * 2) + leftPadding + rightPadding + contentItem.leftPadding + contentItem.rightPadding
     }
 
     Binding {
