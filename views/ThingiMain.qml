@@ -7,19 +7,16 @@ import QtQuick.Layouts 1.3
 import QtQuick.Window 2.2
 import UM 1.1 as UM
 
-ColumnLayout
-{
+ColumnLayout {
     anchors.fill: parent
 
     // the header
-    ThingiHeader
-    {
+    ThingiHeader {
         Layout.alignment: Qt.AlignTop
     }
 
     // the search page
-    ThingSearchPage
-    {
+    ThingSearchPage {
         width: parent.width
         visible: !ThingiService.hasActiveThing
         Layout.fillHeight: true
@@ -31,8 +28,7 @@ ColumnLayout
     }
 
     // the details page
-    ThingDetailsPage
-    {
+    ThingDetailsPage {
         width: parent.width
         thing: ThingiService.activeThing
         thingFiles: ThingiService.activeThingFiles

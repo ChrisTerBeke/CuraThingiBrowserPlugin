@@ -1,13 +1,11 @@
 import QtQuick 2.2
 import QtQuick.Controls 2.3
 
-EnhancedComboBox
-{
+EnhancedComboBox {
     id: viewSelector
     textRole: "label"
     customValueRole: "key"
     currentIndex: viewSelector.indexOfValue(ThingiService.activeView)
-    sizeToContents: true
     model: ThingiService.views
     onActivated: {
         ThingiService.setActiveView(customCurrentValue)

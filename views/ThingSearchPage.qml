@@ -5,10 +5,9 @@ import QtQuick.Controls 2.3
 import QtQuick.Layouts 1.3
 import UM 1.1 as UM
 
-ColumnLayout
-{
-    Button
-    {
+ColumnLayout {
+
+    EnhancedButton {
         text: "Back to collections"
         visible: ThingiService.isFromCollection === true
         Layout.leftMargin: 20
@@ -19,8 +18,7 @@ ColumnLayout
         }
     }
 
-    Label
-    {
+    Label {
         text: "No results. Please try another category or search term or configure your account in the settings window."
         visible: ThingiService.things.length == 0 && ThingiService.isQuerying == false
         font: UM.Theme.getFont("default")
@@ -31,8 +29,7 @@ ColumnLayout
         Layout.topMargin: 20
     }
 
-    ThingsList
-    {
+    ThingsList {
         id: thingsList
         model: ThingiService.things
         Layout.fillWidth: true
@@ -40,15 +37,13 @@ ColumnLayout
         Layout.topMargin: 20
     }
 
-    RowLayout
-    {
+    RowLayout {
         height: 40
         Layout.fillWidth: true
         Layout.alignment: Qt.AlignBottom
         Layout.margins: 20
 
-        Button
-        {
+        EnhancedButton {
             text: "Previous page"
             visible: ThingiService.currentPage > 1 && ThingiService.things.length > 0
             onClicked: {
@@ -58,8 +53,7 @@ ColumnLayout
         }
 
         // FIXME: hide when reaching last page of results (can be done now that we have 'total' in Thingiverse api)
-        Button
-        {
+        EnhancedButton {
             text: "Next page"
             visible: ThingiService.things.length > 0
             onClicked: {
@@ -68,8 +62,7 @@ ColumnLayout
             }
         }
 
-        Label
-        {
+        Label {
             text: "Page " + ThingiService.currentPage
             visible: ThingiService.things.length > 0
             font: UM.Theme.getFont("medium")
@@ -77,8 +70,7 @@ ColumnLayout
             renderType: Text.NativeRendering
         }
 
-        AnimatedImage
-        {
+        AnimatedImage {
             source: "images/loading.gif"
             visible: ThingiService.isQuerying
         }

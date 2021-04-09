@@ -4,24 +4,20 @@ import QtQuick 2.7
 import QtQuick.Controls 2.2
 import QtQuick.Layouts 1.3
 
-ScrollView
-{
+ScrollView {
     property alias model: thingsList.model
     width: parent.width
     clip: true
 
-    ListView
-    {
+    ListView {
         id: thingsList
         width: parent.width
         spacing: 20
-        delegate: Item
-        {
+        delegate: Item {
             width: parent.width
             height: childrenRect.height
 
-            ThingsListItem
-            {
+            ThingsListItem {
                 width: parent.width
                 thing: modelData
             }
