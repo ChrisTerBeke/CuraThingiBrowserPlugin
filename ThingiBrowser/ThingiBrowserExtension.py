@@ -1,7 +1,7 @@
 # Copyright (c) 2020.
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
 import os
-from typing import Optional
+from typing import cast, Optional
 
 from PyQt5.QtCore import QObject
 from PyQt5.QtQuick import QQuickWindow  # type: ignore
@@ -42,7 +42,7 @@ class ThingiBrowserExtension(Extension):
         Show the main popup window.
         """
         if not self._main_dialog:
-            self._main_dialog = self._createComponent("Thingiverse.qml")
+            self._main_dialog = cast(QQuickWindow, self._createComponent("Thingiverse.qml"))
         if self._main_dialog and isinstance(self._main_dialog, QQuickWindow):
             self._main_dialog.closing.connect(self._onClosingMainWindow)
             self._main_dialog.show()
@@ -62,7 +62,7 @@ class ThingiBrowserExtension(Extension):
         Show the settings popup window.
         """
         if not self._settings_dialog:
-            self._settings_dialog = self._createComponent("ThingiSettings.qml")
+            self._settings_dialog = cast(QQuickWindow, self._createComponent("ThingiSettings.qml"))
         if self._settings_dialog and isinstance(self._settings_dialog, QQuickWindow):
             self._settings_dialog.show()
 

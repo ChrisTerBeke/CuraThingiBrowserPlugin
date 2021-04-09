@@ -3,6 +3,7 @@
 *.qmlc
 .mypy_cache/*
 .cache/*
+venv
 
 # Folder view configuration files
 .DS_Store
