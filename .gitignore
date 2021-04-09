@@ -1,8 +1,10 @@
 # Compiled Python files
 *.pyc
 *.qmlc
-.mypy_cache/*
-.cache/*
+.mypy_cache
+.pytest_cache
+.cache
+__pycache__
 venv
 
 # Folder view configuration files
@@ -19,7 +21,7 @@ Thumbs.db
 
 # IDE project files
 .idea
-.vscode/*
+.vscode
 
 # Test files
 .coverage
