@@ -1,0 +1,9 @@
+name: Build
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - Name: Run CMake
+        uses: lukka/run-cmake@v3

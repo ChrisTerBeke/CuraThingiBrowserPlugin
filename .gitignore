@@ -25,3 +25,6 @@ Thumbs.db
 
 # Test files
 .coverage
+
+# Build artifacts
+build
