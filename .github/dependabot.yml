@@ -1,5 +1,6 @@
-version: 2.0
+version: 2
 updates:
-  - package_manager: python
-    directory: ./
-    update_schedule: live
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
