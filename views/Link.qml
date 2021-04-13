@@ -5,8 +5,7 @@ import QtQuick.Controls 2.2
 import QtQuick.Layouts 1.3
 import UM 1.1 as UM
 
-Label
-{
+Label {
     id: link
     property var url: ""
 
@@ -14,8 +13,7 @@ Label
     font: UM.Theme.getFont("default")
     renderType: Text.NativeRendering
 
-    MouseArea
-    {
+    MouseArea {
         anchors.fill: parent
         hoverEnabled: true
 		cursorShape: Qt.PointingHandCursor

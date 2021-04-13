@@ -5,8 +5,7 @@ import QtQuick.Controls 2.0
 import QtQuick.Layouts 1.3
 import UM 1.1 as UM
 
-RowLayout
-{
+RowLayout {
     id: thingiSettingsItem
     width: parent.width
 
@@ -18,8 +17,7 @@ RowLayout
     property var driver: ""
     property var description: ""
 
-    Label
-    {
+    Label {
         id: label
         text: thingiSettingsItem.label
         font: UM.Theme.getFont("default")
@@ -32,9 +30,11 @@ RowLayout
             visible: labelHoverArea.containsMouse
             width: thingiSettingsItem.width * 0.75
             delay: 500
-            contentItem: Text {
+            contentItem: Label {
                 text: thingiSettingsItem.description
                 wrapMode: Text.WordWrap
+                font: UM.Theme.getFont("default")
+                renderType: Text.NativeRendering
             }
         }
 
@@ -45,20 +45,17 @@ RowLayout
         }
     }
 
-    TextField
-    {
+    EnhancedTextField {
         id: inputField
         text: thingiSettingsItem.value
         visible: thingiSettingsItem.type == "text"
         Layout.fillWidth: true
-        selectByMouse: true
         onEditingFinished: {
             ThingiService.saveSetting(thingiSettingsItem.key, thingiSettingsItem.value)
         }
     }
 
-    EnhancedComboBox
-    {
+    EnhancedComboBox {
         id: inputMenu
         visible: thingiSettingsItem.type == "combobox"
         Layout.fillWidth: true
@@ -71,8 +68,7 @@ RowLayout
         }
     }
 
-    Button
-    {
+    EnhancedButton {
         id: callToActionButtonAuthenticate
         visible: thingiSettingsItem.type == "cta_button" && thingiSettingsItem.value == ""
         Layout.fillWidth: true
@@ -82,8 +78,7 @@ RowLayout
         }
     }
 
-    Button
-    {
+    EnhancedButton {
         id: callToActionButtonRevoke
         visible: thingiSettingsItem.type == "cta_button" && thingiSettingsItem.value !== ""
         Layout.fillWidth: true
@@ -93,32 +88,28 @@ RowLayout
         }
     }
 
-    Binding
-    {
+    Binding {
         target: thingiSettingsItem
         property: "value"
         when: thingiSettingsItem.type == "text"
         value: inputField.text
     }
 
-    Binding
-    {
+    Binding {
         target: thingiSettingsItem
         property: "value"
         when: thingiSettingsItem.type == "combobox"
         value: inputMenu.currentIndex < 0 ? "" : inputMenu.model[inputMenu.currentIndex][inputMenu.customValueRole]
     }
 
-    Binding
-    {
+    Binding {
         target: callToActionButtonRevoke
         property: "visible"
         when: thingiSettingsItem.type == "cta_button"
         value: thingiSettingsItem.value !== ""
     }
 
-    Binding
-    {
+    Binding {
         target: callToActionButtonAuthenticate
         property: "visible"
         when: thingiSettingsItem.type == "cta_button"

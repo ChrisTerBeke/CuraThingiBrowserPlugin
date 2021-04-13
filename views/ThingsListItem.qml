@@ -6,21 +6,18 @@ import QtQuick.Layouts 1.3
 import QtQuick.Dialogs 1.1
 import UM 1.1 as UM
 
-Item
-{
+Item {
     width: parent.width
     height: dataRow.height
     property var thing: null
 
-    RowLayout
-    {
+    RowLayout {
         id: dataRow
         spacing: 10
         width: parent.width
 
         // thumbnail (forced to 75x75)
-        Image
-        {
+        Image {
             Layout.preferredWidth: 75
             Layout.preferredHeight: 75
             Layout.leftMargin: 20
@@ -30,14 +27,12 @@ Item
             sourceSize.height: 75
         }
 
-        ColumnLayout
-        {
+        ColumnLayout {
             Layout.fillWidth: true
             Layout.maximumWidth: parent.width * 0.7
 
             // thing title
-            Label
-            {
+            Label {
                 text: thing.name
                 color: UM.Theme.getColor("text")
                 font: UM.Theme.getFont("large")
@@ -47,8 +42,7 @@ Item
             }
 
             // link to web page
-            Link
-            {
+            Link {
                 text: thing.url
                 url: thing.url
                 visible: thing.url
@@ -58,8 +52,7 @@ Item
         }
 
         // details button
-        Button
-        {
+        EnhancedButton {
             text: "Details"
             Layout.rightMargin: 20
             onClicked: {

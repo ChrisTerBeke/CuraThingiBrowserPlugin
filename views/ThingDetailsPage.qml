@@ -5,8 +5,7 @@ import QtQuick.Controls 2.2
 import QtQuick.Layouts 1.3
 import UM 1.1 as UM
 
-ColumnLayout
-{
+ColumnLayout {
     id: detailsPage
 
     // the active thing
@@ -16,8 +15,7 @@ ColumnLayout
     property var thingFiles
 
     // button to navigate back to the search results page
-    Button
-    {
+    EnhancedButton {
         text: "Back to results"
         Layout.leftMargin: 20
         Layout.topMargin: 10
@@ -29,8 +27,7 @@ ColumnLayout
     }
 
     // name
-    Label
-    {
+    Label {
         id: thingTitle
         text: thing && thing.name ? thing.name : ""
         font: UM.Theme.getFont("large")
@@ -44,8 +41,7 @@ ColumnLayout
     }
 
     // link to web page
-    Link
-    {
+    Link {
         text: thing && thing.url ? thing.url : ""
         url: thing && thing.url ? thing.url : ""
         elide: Text.ElideRight
@@ -54,8 +50,7 @@ ColumnLayout
     }
 
     // description
-    Label
-    {
+    Label {
         id: thingDescription
         text: thing && thing.description ? thing.description : ""
         font: UM.Theme.getFont("medium")
@@ -71,8 +66,7 @@ ColumnLayout
         elide: Text.ElideRight
     }
 
-    ThingFilesList
-    {
+    ThingFilesList {
         id: thingFilesList
         model: thingFiles
         visible: thingFiles.length > 0
@@ -83,8 +77,7 @@ ColumnLayout
         Layout.bottomMargin: 20
     }
 
-    Label
-    {
+    Label {
         id: thingFilesListEmpty
         text: "There are no files in this Thing that can be imported in Cura."
         visible: !thingFilesList.visible

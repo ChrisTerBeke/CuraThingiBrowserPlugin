@@ -5,21 +5,18 @@ import QtQuick.Controls 2.2
 import QtQuick.Layouts 1.3
 import UM 1.1 as UM
 
-Item
-{
+Item {
     width: parent.width
     height: dataRow.height
     property var thingFile: null
 
-    RowLayout
-    {
+    RowLayout {
         id: dataRow
         spacing: 10
         width: parent.width
 
         // thumbnail (forced to 75x75)
-        Image
-        {
+        Image {
             Layout.preferredWidth: 75
             Layout.preferredHeight: 75
             fillMode: Image.PreserveAspectCrop
@@ -29,8 +26,7 @@ Item
         }
 
          // file name
-        Label
-        {
+        Label {
             text: thingFile.name
             color: UM.Theme.getColor("text")
             font: UM.Theme.getFont("large")
@@ -40,8 +36,7 @@ Item
         }
 
         // download button
-        Button
-        {
+        EnhancedButton {
             text: "Add to build plate"
             visible: !ThingiService.isDownloading
             onClicked: {
@@ -51,8 +46,7 @@ Item
         }
 
         // loading spinner
-        AnimatedImage
-        {
+        AnimatedImage {
             visible: ThingiService.isDownloading
             source: "images/loading.gif"
         }

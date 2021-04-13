@@ -8,8 +8,7 @@ import QtQuick.Window 2.2
 import UM 1.1 as UM
 
 // the popup window
-Window
-{
+Window {
     id: thingiverse
 
     // window configuration
@@ -21,8 +20,7 @@ Window
     title: "ThingiBrowser"
 
     // area to provide un-focus option for search field
-    MouseArea
-    {
+    MouseArea {
         anchors.fill: parent
         focus: true
         onClicked: {
@@ -30,8 +28,7 @@ Window
         }
     }
 
-    ThingiMain
-    {
+    ThingiMain {
     	width: parent.width
         height: parent.height
     }
