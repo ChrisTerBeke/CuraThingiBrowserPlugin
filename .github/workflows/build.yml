@@ -17,4 +17,5 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           path: ThingiBrowser.zip
+          name: ThingiBrowser.zip
           retention-days: 5
