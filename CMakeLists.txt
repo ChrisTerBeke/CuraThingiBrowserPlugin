@@ -3,13 +3,14 @@ project(ThingiBrowser)
 
 # All the Python files we want to ship in our built plugin
 set(python_files
+    __init__.py
     ThingiBrowser/__init__.py
     ThingiBrowser/PreferencesHelper.py
     ThingiBrowser/Settings.py
     ThingiBrowser/ThingiBrowserExtension.py
     ThingiBrowser/ThingiBrowserService.py
     ThingiBrowser/api/__init__.py
-    ThingiBrowser/api/AbstractClient.py
+    ThingiBrowser/api/AbstractApiClient.py
     ThingiBrowser/api/Analytics.py
     ThingiBrowser/api/ApiHelper.py
     ThingiBrowser/api/ImplicitAuthRequestHandler.py
@@ -19,7 +20,7 @@ set(python_files
     ThingiBrowser/drivers/myminifactory/MyMiniFactoryApiClient.py
     ThingiBrowser/drivers/thingiverse/__init__.py
     ThingiBrowser/drivers/thingiverse/ThingiverseApiClient.py
-    ThingiBrowser/models/__init.py
+    ThingiBrowser/models/__init__.py
     ThingiBrowser/models/DriverOption.py
     ThingiBrowser/models/ViewOption.py
 )
@@ -57,17 +58,17 @@ set(asset_files
 
 # Combine all files
 set(all_files "")
-foreach(f IN LISTS python_files)
-	list(APPEND all_files ${CMAKE_CURRENT_SOURCE_DIR}/${f})
-endforeach()
-foreach(f IN LISTS qml_files)
-	list(APPEND all_files ${CMAKE_CURRENT_SOURCE_DIR}/${f})
-endforeach()
-foreach(f IN LISTS asset_files)
-	list(APPEND all_files ${CMAKE_CURRENT_SOURCE_DIR}/${f})
-endforeach()
+list(APPEND all_files ${python_files})
+list(APPEND all_files ${qml_files})
+list(APPEND all_files ${asset_files})
 
 # Generate the ZIP file that we can upload in the Ultimaker contributor portal
-add_custom_target(create_zip COMMAND
-    ${CMAKE_COMMAND} -E tar "cfv" "thingibrowser.zip" --format=zip -- ${all_files}
-)
+foreach(file ${all_files})
+    get_filename_component(dir ${file} DIRECTORY)
+    install(FILES ${file} DESTINATION ${CMAKE_PROJECT_NAME}/${dir})
+endforeach()
+set(CPACK_GENERATOR "ZIP")
+set(CPACK_PACKAGE_FILE_NAME ${CMAKE_PROJECT_NAME})
+set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
+set(CPACK_VERBATIM_VARIABLES YES)
+include(CPack)
