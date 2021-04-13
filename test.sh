@@ -1,4 +1,4 @@
 source venv/bin/activate
-pip3 install -r requirements-testing.txt
+pip3 install -r requirements.txt
 pytest
 mypy ThingiBrowser
