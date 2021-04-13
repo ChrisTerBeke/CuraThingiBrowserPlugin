@@ -13,3 +13,8 @@ jobs:
         run: cmake .
       - name: Package
         run: make package
+      - name: Store artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          path: ThingiBrowser.zip
+          retention-days: 5
