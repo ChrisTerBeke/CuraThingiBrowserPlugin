@@ -5,5 +5,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - Name: Run CMake
+      - name: Run CMake
         uses: lukka/run-cmake@v3
