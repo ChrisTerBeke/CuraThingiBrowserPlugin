@@ -3,6 +3,6 @@ PyQt5==5.15.4
 PyQt5-stubs==5.15.2.0
 pytest==6.2.4
 coverage==5.5
-pytest-cov==2.11.1
+pytest-cov==2.12.0
 surrogate==0.1
 requests==2.25.1
