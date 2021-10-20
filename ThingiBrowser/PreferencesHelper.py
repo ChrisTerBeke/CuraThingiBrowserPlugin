@@ -35,13 +35,13 @@ class PreferencesHelper:
         """
         return [
             # FIXME: Waiting for Thingiverse app approval
-            # {
-            #     "type": "cta_button",
-            #     "key": Settings.THINGIVERSE_API_TOKEN_KEY,
-            #     "value": cls.getSettingValue(Settings.THINGIVERSE_API_TOKEN_KEY),
-            #     "label": "Thingiverse Account",
-            #     "driver": "thingiverse"
-            # },
+            {
+                 "type": "cta_button",
+                 "key": Settings.THINGIVERSE_API_TOKEN_KEY,
+                 "value": cls.getSettingValue(Settings.THINGIVERSE_API_TOKEN_KEY),
+                 "label": "Thingiverse Account",
+                 "driver": "thingiverse"
+            },
             {
                 "type": "cta_button",
                 "key": Settings.MYMINIFACTORY_API_TOKEN_KEY,
