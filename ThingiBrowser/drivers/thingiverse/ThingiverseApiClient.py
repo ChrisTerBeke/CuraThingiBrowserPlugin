@@ -4,15 +4,17 @@ from typing import List, Callable, Any, Optional, Tuple
 
 #crazymikefra : Missing libraries added
 import time
-import urllib
+from urllib.parse import urlencode
 
+from PyQt5.QtCore import QUrl
 from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
+from PyQt5.QtWidgets import QMessageBox
 
 from ...Settings import Settings
 from ...PreferencesHelper import PreferencesHelper
 from ...api.AbstractApiClient import AbstractApiClient
 from ...api.ApiHelper import ApiHelper
-from ...api.JsonObject import ApiError, Thing, ThingFile, Collection
+from ...api.JsonObject import ApiError, Thing, ThingFile, Collection, UserData
 from ...api.LocalAuthService import LocalAuthService
 
 
@@ -22,7 +24,10 @@ class ThingiverseApiClient(AbstractApiClient):
     def __init__(self) -> None:
         self._auth_state = None  # type: Optional[str]
         PreferencesHelper.initSetting(Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY)
-        PreferencesHelper.initSetting(Settings.THINGIVERSE_API_TOKEN_KEY)
+        access_token = PreferencesHelper.initSetting(Settings.THINGIVERSE_API_TOKEN_KEY)
+        if access_token and access_token != "":
+            # Get the username if we already have a token stored.
+            self._getUserData()
         super().__init__()
 
     @property
@@ -36,8 +41,9 @@ class ThingiverseApiClient(AbstractApiClient):
         #pass
         # FIXME: Waiting for Thingiverse app approval
         self._auth_state = "thingiverse_{}".format(str(time.time()))
-        url = "{}?{}".format("https://www.thingiverse.com/login/oauth/authorize", urllib.parse.urlencode({
+        url = "{}?{}".format("https://www.thingiverse.com/login/oauth/authorize", urlencode({
             "client_id": Settings.THINGIVERSE_CLIENT_ID,
+            "redirect_uri": "http://localhost:55444/callback",
             "response_type": "token",
             "state": self._auth_state
         }))
@@ -54,6 +60,24 @@ class ThingiverseApiClient(AbstractApiClient):
         if not token:
             return
         PreferencesHelper.setSetting(Settings.THINGIVERSE_API_TOKEN_KEY, token)
+        self._getUserData()
+
+    def _getUserData(self) -> None:
+        url = "{}/users/me".format(self._root_url)
+        reply = self._manager.get(self._createEmptyRequest(url))
+        self._addCallback(reply, self._onGetUserData, parser=self._parseGetUserData)
+        # TODO: handle error response
+    
+    @staticmethod
+    def _parseGetUserData(reply: QNetworkReply) -> Tuple[int, Optional[UserData]]:
+        status_code, data = ApiHelper.parseReplyAsJson(reply)
+        if not data or not isinstance(data, dict):
+            return status_code, None
+        return status_code, UserData({"username": data.get("name", "")})
+
+    def _onGetUserData(self, user: UserData) -> None:
+        self._username = user.username
+        PreferencesHelper.setSetting(Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY, user.username)
 
     def getThingsFromCollectionQuery(self, collection_id: str) -> str:
         return "collections/{}/things".format(collection_id)
@@ -178,5 +202,12 @@ class ThingiverseApiClient(AbstractApiClient):
         token = PreferencesHelper.getSettingValue(Settings.THINGIVERSE_API_TOKEN_KEY)
         if not token or token == "":
         #     # If the user was not signed in we use a default token for the public endpoints.
-            token = Settings.THINGIVERSE_API_TOKEN
-        request.setRawHeader(b"Authorization", "Bearer {}".format(Settings.THINGIVERSE_API_TOKEN).encode())
+            return self._injectApiToken(request)
+        request.setRawHeader(b"Authorization", "Bearer {}".format(token).encode())
+
+    @staticmethod
+    def _injectApiToken(request: QNetworkRequest) -> None:
+        current_url = request.url().toString()
+        operator = "&" if current_url.find("?") > 0 else "?"
+        new_url = QUrl("{}{}key={}".format(current_url, operator, Settings.THINGIVERSE_API_TOKEN))
+        request.setUrl(new_url)
