@@ -23,7 +23,7 @@ class Settings:
     THINGIVERSE_USER_NAME_PREFERENCES_KEY = "user_name"
     # FIXME: Waiting for Thingiverse app approval
     THINGIVERSE_CLIENT_ID = ""
-    THINGIVERSE_API_TOKEN = "96f45d208a4b1d99bff728038162b354"  # for public endpoints
+    THINGIVERSE_API_TOKEN = "e287976762b7d5766e8d20163456ba72"  # for public endpoints
 
     # MyMiniFactory API options
     MYMINIFACTORY_CLIENT_ID = "cura_thingibrowser"
