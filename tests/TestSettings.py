@@ -1,6 +1,6 @@
 # Copyright (c) 2020.
 # ThingiBrowser plugin is released under the terms of the LGPLv3 or higher.
-from ThingiBrowser.Settings import Settings
+from ..ThingiBrowser.Settings import Settings
 
 
 class TestSettings:

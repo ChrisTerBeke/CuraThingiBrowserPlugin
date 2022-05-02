@@ -5,7 +5,7 @@ from unittest.mock import patch
 import pytest
 from surrogate import surrogate
 
-from ThingiBrowser.api.JsonObject import UserData
+from ....ThingiBrowser.api.JsonObject import UserData
 
 API_CALL_TIMEOUT = 10000
 

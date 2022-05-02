@@ -1,6 +1,6 @@
 # Copyright (c) 2020.
 # ThingiBrowser plugin is released under the terms of the LGPLv3 or higher.
-from ThingiBrowser.api.JsonObject import JsonObject, Thing, ApiError, Collection, ThingFile
+from ...ThingiBrowser.api.JsonObject import JsonObject, Thing, ApiError, Collection, ThingFile
 
 
 class TestJsonObject:
