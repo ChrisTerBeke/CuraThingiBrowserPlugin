@@ -6,3 +6,4 @@ pytest-cov==3.0.0
 surrogate==0.1
 requests==2.27.1
 types-requests==2.27.5
+opencv-python-headless
