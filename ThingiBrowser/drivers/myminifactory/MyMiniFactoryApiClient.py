@@ -4,8 +4,8 @@ import time
 from typing import List, Callable, Any, Optional, Tuple
 from urllib.parse import urlencode
 
-from PyQt5.QtCore import QUrl
-from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
+from PyQt6.QtCore import QUrl
+from PyQt6.QtNetwork import QNetworkRequest, QNetworkReply
 
 from ...Settings import Settings
 from ...PreferencesHelper import PreferencesHelper
@@ -19,8 +19,8 @@ class MyMiniFactoryApiClient(AbstractApiClient):
     """ Client for interacting with the MyMiniFactory API. """
 
     def __init__(self) -> None:
-        self._username = None  # type: Optional[str]
-        self._auth_state = None  # type: Optional[str]
+        self._username: Optional[str] = None
+        self._auth_state: Optional[str] = None
         access_token = PreferencesHelper.initSetting(Settings.MYMINIFACTORY_API_TOKEN_KEY)
         if access_token and access_token != "":
             # Get the username if we already have a token stored.

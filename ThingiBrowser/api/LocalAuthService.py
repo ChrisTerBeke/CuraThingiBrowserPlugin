@@ -4,8 +4,8 @@ import threading
 from http.server import HTTPServer
 from typing import Optional
 
-from PyQt5.QtCore import QUrl
-from PyQt5.QtGui import QDesktopServices
+from PyQt6.QtCore import QUrl
+from PyQt6.QtGui import QDesktopServices
 
 from UM.Signal import Signal  # type: ignore
 
@@ -15,8 +15,8 @@ class LocalAuthService:
     Service that organizes multiple parallel authentication flows with web services.
     """
 
-    _server = None  # type: Optional[HTTPServer]
-    _thread = None  # type: Optional[threading.Thread]
+    _server: Optional[HTTPServer] = None
+    _thread: Optional[threading.Thread] = None
 
     # Signal emitted with as first argument the received token.
     # We use a signal instead of a callback function in order to pass the token back to the Qt thread safely.

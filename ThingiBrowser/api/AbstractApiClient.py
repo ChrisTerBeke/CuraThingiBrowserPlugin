@@ -3,8 +3,8 @@
 from typing import List, Callable, Any, Tuple, Optional
 from abc import ABC, abstractmethod
 
-from PyQt5.QtCore import QUrl
-from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
+from PyQt6.QtCore import QUrl
+from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
 
 from UM.Logger import Logger  # type: ignore
 
@@ -19,7 +19,7 @@ class AbstractApiClient(ABC):
     _manager = QNetworkAccessManager()
 
     # Prevent auto-removing running callbacks by the Python garbage collector.
-    _anti_gc_callbacks = []  # type: List[Callable[[], None]]
+    _anti_gc_callbacks: List[Callable[[], None]] = []
 
     @abstractmethod
     def authenticate(self) -> None:
@@ -178,8 +178,8 @@ class AbstractApiClient(ABC):
         :return: The QNetworkRequest.
         """
         request = QNetworkRequest(QUrl(url))
-        request.setHeader(QNetworkRequest.ContentTypeHeader, content_type)
-        request.setAttribute(QNetworkRequest.RedirectPolicyAttribute, True)  # file downloads reply with a 302 first
+        request.setHeader(QNetworkRequest.KnownHeaders.ContentTypeHeader, content_type)
+        request.setAttribute(QNetworkRequest.Attribute.RedirectPolicyAttribute, True)  # file downloads reply with a 302 first
         self._setAuth(request)
         return request
 

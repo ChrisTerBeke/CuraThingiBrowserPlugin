@@ -5,8 +5,8 @@ import pathlib
 import tempfile
 from typing import List, Optional, TYPE_CHECKING, Dict, Any, cast
 
-from PyQt5.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot, QUrl  # type: ignore
-from PyQt5.QtWidgets import QMessageBox
+from PyQt6.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot, QUrl  # type: ignore
+from PyQt6.QtWidgets import QMessageBox
 
 from cura.CuraApplication import CuraApplication  # type: ignore
 
@@ -57,34 +57,33 @@ class ThingiBrowserService(QObject):
 
     def __init__(self, extension: "ThingiBrowserExtension", parent=None):
         super().__init__(parent)
-        self._extension = extension  # type: ThingiBrowserExtension
+        self._extension: "ThingiBrowserExtension" = extension
 
         # List of supported file types.
-        self._supported_file_types = []  # type: List[str]
+        self._supported_file_types: List[str] = []
 
         # Hold the things found in query results.
-        self._things = []  # type: List[Thing]
-        self._query = ""  # type: str
-        self._query_page = 1  # type: int
-        self._is_querying = False  # type: bool
-        self._is_from_collection = False  # type: bool
+        self._things: List[Thing] = []
+        self._query: str = ""
+        self._query_page: int = 1
+        self._is_querying: bool = False
+        self._is_from_collection: bool = False
 
         # Hold the thing and thing files that we currently see the details of.
-        self._thing_details = None  # type: Optional[Thing]
-        self._thing_files = []  # type: List[ThingFile]
-        self._is_downloading = False  # type: bool
+        self._thing_details: Optional[Thing] = None
+        self._thing_files: List[ThingFile] = []
+        self._is_downloading: bool = False
 
         # Drivers for the services we can interact with.
-        self._drivers = {
+        self._drivers: Dict[str, DriverOption] = {
             "thingiverse": DriverOption(label="Thingiverse", driver=ThingiverseApiClient()),
             "myminifactory": DriverOption(label="MyMiniFactory", driver=MyMiniFactoryApiClient()),
-        }  # type: Dict[str, DriverOption]
-        self._active_driver_name = PreferencesHelper.initSetting(Settings.DEFAULT_API_CLIENT_PREFERENCES_KEY,
-                                                                 "thingiverse")  # type: str
+        }
+        self._active_driver_name: str = PreferencesHelper.initSetting(Settings.DEFAULT_API_CLIENT_PREFERENCES_KEY, "thingiverse")
         self.activeDriverChanged.connect(self._onDriverChanged)
 
         # Views
-        self._views = {
+        self._views: Dict[str, ViewOption] = {
             "popular": ViewOption(label="Popular", query=self.getPopular),
             "featured": ViewOption(label="Featured", query=self.getFeatured),
             "newest": ViewOption(label="Newest", query=self.getNewest),
@@ -92,9 +91,8 @@ class ThingiBrowserService(QObject):
             "userCollections": ViewOption(label="My Collections", query=self.getCollections),
             "userThings": ViewOption(label="My Things", query=self.getMyThings),
             "userMakes": ViewOption(label="My Makes", query=self.getMakes),
-        }  # type: Dict[str, ViewOption]
-        self._active_view_name = PreferencesHelper.initSetting(Settings.DEFAULT_VIEW_PREFERENCES_KEY,
-                                                               "popular")  # type: str
+        }
+        self._active_view_name: str = PreferencesHelper.initSetting(Settings.DEFAULT_VIEW_PREFERENCES_KEY, "popular")
         self.activeViewChanged.connect(self._onViewChanged)
 
         # Settings

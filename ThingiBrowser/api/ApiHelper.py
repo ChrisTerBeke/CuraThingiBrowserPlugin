@@ -3,7 +3,7 @@
 import json
 from json import JSONDecodeError
 
-from PyQt5.QtNetwork import QNetworkReply, QNetworkRequest
+from PyQt6.QtNetwork import QNetworkReply, QNetworkRequest
 from typing import Tuple, Union, List, Dict, Any, Optional
 
 from UM.Logger import Logger  # type: ignore
@@ -20,7 +20,7 @@ class ApiHelper:
         :param reply: The reply from the server.
         :return: A tuple with a status code and the response body as JsonObject.
         """
-        status_code = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
+        status_code = reply.attribute(QNetworkRequest.Attribute.HttpStatusCodeAttribute)
         try:
             response = reply.readAll().data().decode()
             return status_code, json.loads(response)
@@ -35,5 +35,5 @@ class ApiHelper:
         :param reply: The reply from the server.
         :return: A tuple with a status code and the response body as bytes.
         """
-        status_code = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
+        status_code = reply.attribute(QNetworkRequest.Attribute.HttpStatusCodeAttribute)
         return status_code, reply.readAll().data()

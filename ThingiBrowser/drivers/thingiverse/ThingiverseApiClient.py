@@ -2,7 +2,7 @@
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
 from typing import List, Callable, Any, Optional, Tuple
 
-from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
+from PyQt6.QtNetwork import QNetworkRequest, QNetworkReply
 
 from ...Settings import Settings
 from ...PreferencesHelper import PreferencesHelper
@@ -16,7 +16,7 @@ class ThingiverseApiClient(AbstractApiClient):
     """ Client for interacting with the Thingiverse API. """
 
     def __init__(self) -> None:
-        self._auth_state = None  # type: Optional[str]
+        self._auth_state: Optional[str] = None
         PreferencesHelper.initSetting(Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY)
         PreferencesHelper.initSetting(Settings.THINGIVERSE_API_TOKEN_KEY)
         super().__init__()
