@@ -3,7 +3,7 @@
 from typing import List, Callable, Any, Tuple, Optional
 from abc import ABC, abstractmethod
 
-from PyQt6.QtCore import QUrl
+from PyQt6.QtCore import QByteArray, QUrl
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
 
 from UM.Logger import Logger  # type: ignore
@@ -211,3 +211,7 @@ class AbstractApiClient(ABC):
 
         self._anti_gc_callbacks.append(parse)
         reply.finished.connect(parse)  # type: ignore
+
+    def _strToByteArray(self, data: str) -> QByteArray:
+        bytes = str.encode(data)
+        return QByteArray(len(bytes), bytes)

@@ -544,7 +544,7 @@ class ThingiBrowserService(QObject):
         """
         self._extension.showSettingsWindow()
         mb = QMessageBox()
-        mb.setIcon(QMessageBox.Information)
+        mb.setIcon(QMessageBox.Icon.Information)
         mb.setWindowTitle("Authentication Required")
         mb.setText("{0} indicated that you need to sign in. Please sign into your {0} account and try again.".format(
             self._drivers[self.activeDriver].label))
@@ -559,7 +559,7 @@ class ThingiBrowserService(QObject):
         :param error: The API error.
         """
         mb = QMessageBox()
-        mb.setIcon(QMessageBox.Critical)
+        mb.setIcon(QMessageBox.Icon.Critical)
         mb.setWindowTitle("Oh no!")
         error_message = error.error or str(error) if error else "Unknown"
         mb.setText("The API returned an error: {}.".format(error_message))

@@ -5,7 +5,7 @@ from unittest.mock import patch
 import pytest
 from surrogate import surrogate
 
-from ...ThingiBrowser.models.DriverOption import DriverOption
+from ThingiBrowser.models.DriverOption import DriverOption
 
 
 class TestDriverOption:

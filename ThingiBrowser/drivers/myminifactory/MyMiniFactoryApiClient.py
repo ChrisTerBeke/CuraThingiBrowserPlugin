@@ -186,7 +186,7 @@ class MyMiniFactoryApiClient(AbstractApiClient):
             # If the user was not signed in we use a default token for the public endpoints.
             # We'll use the 'old way' of injecting the API key in the request
             return self._injectApiToken(request)
-        request.setRawHeader(b"Authorization", "Bearer {}".format(token).encode())
+        request.setRawHeader(self._strToByteArray("Authorization"), self._strToByteArray("Bearer {}".format(token)))
 
     @staticmethod
     def _injectApiToken(request: QNetworkRequest) -> None:

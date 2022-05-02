@@ -44,7 +44,7 @@ class ThingiBrowserExtension(Extension):
         if not self._main_dialog:
             self._main_dialog = cast(QQuickWindow, self._createComponent("Thingiverse.qml"))
         if self._main_dialog and isinstance(self._main_dialog, QQuickWindow):
-            self._main_dialog.closing.connect(self._onClosingMainWindow)
+            self._main_dialog.closing.connect(self._onClosingMainWindow)  # type: ignore
             self._main_dialog.show()
             self._service.updateSupportedFileTypes()
             self._service.runDefaultQuery()

@@ -175,4 +175,4 @@ class ThingiverseApiClient(AbstractApiClient):
         # if not token or token == "":
         #     # If the user was not signed in we use a default token for the public endpoints.
         #     token = Settings.THINGIVERSE_API_TOKEN
-        request.setRawHeader(b"Authorization", "Bearer {}".format(Settings.THINGIVERSE_API_TOKEN).encode())
+        request.setRawHeader(self._strToByteArray("Authorization"), self._strToByteArray("Bearer {}".format(Settings.THINGIVERSE_API_TOKEN)))
