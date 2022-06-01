@@ -5,7 +5,7 @@ from urllib.parse import urlencode
 from typing import Dict, Any
 
 import requests
-from PyQt5.QtCore import pyqtSlot, QObject
+from PyQt6.QtCore import pyqtSlot, QObject
 
 from UM.Logger import Logger  # type: ignore
 from cura.CuraApplication import CuraApplication  # type: ignore

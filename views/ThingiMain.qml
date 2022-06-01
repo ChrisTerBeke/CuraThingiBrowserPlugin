@@ -1,10 +1,10 @@
 // Copyright (c) 2020.
 // Thingiverse plugin is released under the terms of the LGPLv3 or higher.
-import QtQuick 2.2
-import QtQuick.Controls 2.0
-import QtQuick.Dialogs 1.1
-import QtQuick.Layouts 1.3
-import QtQuick.Window 2.2
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Dialogs
+import QtQuick.Layouts
+import QtQuick.Window
 import UM 1.1 as UM
 
 ColumnLayout {
@@ -30,9 +30,9 @@ ColumnLayout {
     // the details page
     ThingDetailsPage {
         width: parent.width
-        thing: ThingiService.activeThing
-        thingFiles: ThingiService.activeThingFiles
-        visible: ThingiService.hasActiveThing && ThingiService.activeThing
+        thing: ThingiService.hasActiveThing ? ThingiService.activeThing : null
+        thingFiles: ThingiService.hasActiveThing ? ThingiService.activeThingFiles : []
+        visible: ThingiService.hasActiveThing
         Layout.fillHeight: true
         onVisibleChanged: {
             if (visible) {

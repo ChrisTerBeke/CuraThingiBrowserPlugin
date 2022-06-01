@@ -1,9 +1,13 @@
 # Copyright (c) 2020.
 # ThingiBrowser plugin is released under the terms of the LGPLv3 or higher.
+import sys
 import os
 from unittest.mock import MagicMock
 
 import pytest
+
+# We need this to ensure that `ThingiBrowser` is an importable module.
+sys.path.append(".")
 
 
 def mock_preferences_get_value(key: str) -> str:

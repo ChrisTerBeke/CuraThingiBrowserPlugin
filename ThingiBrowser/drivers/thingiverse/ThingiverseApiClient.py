@@ -2,7 +2,7 @@
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
 from typing import List, Callable, Any, Optional, Tuple
 
-from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
+from PyQt6.QtNetwork import QNetworkRequest, QNetworkReply
 
 from ...Settings import Settings
 from ...PreferencesHelper import PreferencesHelper
@@ -16,7 +16,7 @@ class ThingiverseApiClient(AbstractApiClient):
     """ Client for interacting with the Thingiverse API. """
 
     def __init__(self) -> None:
-        self._auth_state = None  # type: Optional[str]
+        self._auth_state: Optional[str] = None
         PreferencesHelper.initSetting(Settings.THINGIVERSE_USER_NAME_PREFERENCES_KEY)
         PreferencesHelper.initSetting(Settings.THINGIVERSE_API_TOKEN_KEY)
         super().__init__()
@@ -175,4 +175,4 @@ class ThingiverseApiClient(AbstractApiClient):
         # if not token or token == "":
         #     # If the user was not signed in we use a default token for the public endpoints.
         #     token = Settings.THINGIVERSE_API_TOKEN
-        request.setRawHeader(b"Authorization", "Bearer {}".format(Settings.THINGIVERSE_API_TOKEN).encode())
+        request.setRawHeader(self._strToByteArray("Authorization"), self._strToByteArray("Bearer {}".format(Settings.THINGIVERSE_API_TOKEN)))

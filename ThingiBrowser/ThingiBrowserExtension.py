@@ -3,8 +3,8 @@
 import os
 from typing import cast, Optional
 
-from PyQt5.QtCore import QObject
-from PyQt5.QtQuick import QQuickWindow  # type: ignore
+from PyQt6.QtCore import QObject
+from PyQt6.QtQuick import QQuickWindow  # type: ignore
 
 from UM.Extension import Extension  # type: ignore
 from cura.CuraApplication import CuraApplication  # type: ignore
@@ -23,14 +23,14 @@ class ThingiBrowserExtension(Extension):
         super().__init__()
 
         # The API client that we do all calls to Thingiverse with.
-        self._service = ThingiBrowserService(self)  # type: ThingiBrowserService
+        self._service: ThingiBrowserService = ThingiBrowserService(self)
 
         # The API client that will talk to Google Analytics.
-        self._analytics = Analytics()  # type: Analytics
+        self._analytics: Analytics = Analytics()
 
         # The UI objects.
-        self._main_dialog = None  # type: Optional[QQuickWindow]
-        self._settings_dialog = None  # type: Optional[QQuickWindow]
+        self._main_dialog: Optional[QQuickWindow] = None
+        self._settings_dialog: Optional[QQuickWindow] = None
 
         # Configure the 'extension' menu.
         self.setMenuName(Settings.DISPLAY_NAME)
@@ -44,7 +44,7 @@ class ThingiBrowserExtension(Extension):
         if not self._main_dialog:
             self._main_dialog = cast(QQuickWindow, self._createComponent("Thingiverse.qml"))
         if self._main_dialog and isinstance(self._main_dialog, QQuickWindow):
-            self._main_dialog.closing.connect(self._onClosingMainWindow)
+            self._main_dialog.closing.connect(self._onClosingMainWindow)  # type: ignore
             self._main_dialog.show()
             self._service.updateSupportedFileTypes()
             self._service.runDefaultQuery()
