@@ -6,6 +6,8 @@ Search and import 3D files from popular online repositories directly in Cura.
 
 *This plugin is not affiliated with Thingiverse or MyMiniFactory.*
 
+<br clear="both"/>
+
 ## Installation
 
 Read the detailed [installation guide](./docs/installation.md).
