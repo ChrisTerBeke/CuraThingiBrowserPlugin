@@ -1,5 +1,7 @@
 # ThingiBrowser
 
+<img align="left" width="100" height="100" style="margin-right: 20px;" src="./thingibrowser.png">
+
 Search and import 3D files from popular online repositories directly in Cura.
 
 *This plugin is not affiliated with Thingiverse or MyMiniFactory.*
