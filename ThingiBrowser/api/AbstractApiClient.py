@@ -213,5 +213,12 @@ class AbstractApiClient(ABC):
         reply.finished.connect(parse)  # type: ignore
 
     def _strToByteArray(self, data: str) -> QByteArray:
+        """
+        Creates a QByteArray object from string data.
+        :param data: The string to convert.
+        :return: The QByteArray.
+        """
         bytes = str.encode(data)
-        return QByteArray(len(bytes), bytes)
+        result = QByteArray()
+        result.append(bytes)
+        return result
