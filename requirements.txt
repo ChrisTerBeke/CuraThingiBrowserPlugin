@@ -4,6 +4,6 @@ pytest==7.1.2
 coverage==6.4.1
 pytest-cov==3.0.0
 surrogate==0.1
-requests==2.27.1
+requests==2.28.0
 types-requests==2.27.30
 opencv-python-headless==4.6.0.66
