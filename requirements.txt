@@ -1,4 +1,4 @@
-mypy==0.961
+mypy==0.971
 PyQt6==6.3.1
 pytest==7.1.2
 coverage==6.4.2
