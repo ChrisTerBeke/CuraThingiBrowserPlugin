@@ -162,12 +162,13 @@ class ThingiverseApiClient(AbstractApiClient):
             "url": item.get("public_url") or item.get("url"),
         }) for item in response]
 
-    def downloadThingFile(self, file_id: int, file_name: str, on_finished: Callable[[bytes], Any]) -> None:
+    def downloadThingFile(self, file_id: int, file_name: str, on_finished: Callable[[bytes], Any],
+                          on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]] = None) -> None:
         url = "{}/files/{}/download".format(self._root_url, file_id)
         request = self._createEmptyRequest(url)
-        Logger.debug("request: {}".format(request))
+        Logger.debug("request: {}".format(request.url()))
         reply = self._manager.get(request)
-        self._addCallback(reply, on_finished, parser=ApiHelper.parseReplyAsBytes)
+        self._addCallback(reply, on_finished, on_failed, parser=ApiHelper.parseReplyAsBytes)
 
     @property
     def _root_url(self):

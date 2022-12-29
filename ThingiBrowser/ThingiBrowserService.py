@@ -390,7 +390,8 @@ class ThingiBrowserService(QObject):
         self._is_downloading = True
         self.downloadingStateChanged.emit()
         self._getActiveDriver().downloadThingFile(file_id, file_name,
-                                                  on_finished=lambda data: self._onDownloadFinished(data, file_name))
+                                                  on_finished=lambda data: self._onDownloadFinished(data, file_name),
+                                                  on_failed=self._onRequestFailed)
 
     @pyqtProperty(int, notify=thingsChanged)
     def currentPage(self) -> int:
@@ -533,6 +534,8 @@ class ThingiBrowserService(QObject):
         """
         self._is_querying = False
         self.queryingStateChanged.emit()
+        self._is_downloading = False
+        self.downloadingStateChanged.emit()
         if status_code in [401, 502]:  # Thingiverse uses 502 for certain authentication errors
             self._showAuthenticationError()
         else:
