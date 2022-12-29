@@ -160,7 +160,6 @@ class ThingiverseApiClient(AbstractApiClient):
             "id": item.get("id"),
             "thumbnail": item.get("thumbnail"),
             "name": item.get("name"),
-            "url": item.get("public_url") or item.get("url"),
             "download_url": item.get("direct_url") or item.get("download_url"),
         }) for item in response]
 

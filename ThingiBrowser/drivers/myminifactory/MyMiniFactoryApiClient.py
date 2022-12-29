@@ -7,6 +7,8 @@ from urllib.parse import urlencode
 from PyQt6.QtCore import QUrl
 from PyQt6.QtNetwork import QNetworkRequest, QNetworkReply
 
+from UM.Logger import Logger  # type: ignore
+
 from ...Settings import Settings
 from ...PreferencesHelper import PreferencesHelper
 from ...api.ApiHelper import ApiHelper
@@ -130,26 +132,6 @@ class MyMiniFactoryApiClient(AbstractApiClient):
             "description": item.get("description")
         }) for item in items]
 
-    def getThingFiles(self, thing_id: int, on_finished: Callable[[List[ThingFile]], Any],
-                      on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]] = None) -> None:
-        url = "{}/objects/{}".format(self._root_url, thing_id)
-        reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, on_finished, on_failed, parser=self._parseGetThingFiles)
-
-    @staticmethod
-    def _parseGetThingFiles(reply: QNetworkReply) -> Tuple[int, Optional[List[ThingFile]]]:
-        status_code, response = ApiHelper.parseReplyAsJson(reply)
-        if not response or not isinstance(response, dict):
-            return status_code, None
-        file_id = response.get("id")
-        items = response.get("files", {}).get("items")
-        return status_code, [ThingFile({
-            "id": file_id,
-            "thumbnail": item.get("thumbnail_url"),
-            "name": item.get("filename"),
-            "url": None,
-        }) for item in items]
-
     def getThings(self, query: str, page: int, on_finished: Callable[[List[Thing]], Any],
                   on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]] = None) -> None:
         operator = "&" if query.find("?") > 0 else "?"
@@ -169,11 +151,31 @@ class MyMiniFactoryApiClient(AbstractApiClient):
             "name": item.get("name"),
             "url": item.get("url"),
             "description": item.get("description"),
-            "download_url": "https://www.myminifactory.com/download/{}?downloadfile={}".format(item.get("id"), item.get("name"))
+        }) for item in items]
+
+    def getThingFiles(self, thing_id: int, on_finished: Callable[[List[ThingFile]], Any],
+                      on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]] = None) -> None:
+        url = "{}/objects/{}".format(self._root_url, thing_id)
+        reply = self._manager.get(self._createEmptyRequest(url))
+        self._addCallback(reply, on_finished, on_failed, parser=self._parseGetThingFiles)
+
+    @staticmethod
+    def _parseGetThingFiles(reply: QNetworkReply) -> Tuple[int, Optional[List[ThingFile]]]:
+        status_code, response = ApiHelper.parseReplyAsJson(reply)
+        if not response or not isinstance(response, dict):
+            return status_code, None
+        file_id = response.get("id")
+        items = response.get("files", {}).get("items")
+        return status_code, [ThingFile({
+            "id": file_id,
+            "thumbnail": item.get("thumbnail_url"),
+            "name": item.get("filename"),
+            "download_url": "https://www.myminifactory.com/download/{}?downloadfile={}".format(item.get("id"), item.get("filename"))
         }) for item in items]
 
     def downloadThingFile(self, download_url: str, on_finished: Callable[[bytes], Any],
                           on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]] = None) -> None:
+        Logger.debug("download URL: {}".format(download_url))
         reply = self._manager.get(self._createEmptyRequest(download_url))
         self._addCallback(reply, on_finished, on_failed, parser=ApiHelper.parseReplyAsBytes)
 
