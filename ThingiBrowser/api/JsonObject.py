@@ -56,7 +56,7 @@ class ThingFile(JsonObject):
         self.id = None
         self.thumbnail = None
         self.name = None
-        self.url = None
+        self.download_url = None
         super().__init__(_dict)
 
 

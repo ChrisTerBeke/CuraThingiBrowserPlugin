@@ -133,16 +133,6 @@ class AbstractApiClient(ABC):
         raise NotImplementedError("getThingFiles must be implemented")
 
     @abstractmethod
-    def downloadThingFile(self, file_id: int, file_name: str, on_finished: Callable[[bytes], Any]) -> None:
-        """
-        Download a thing file by its ID.
-        :param file_id: The file ID to download.
-        :param file_name: The file's name including extension.
-        :param on_finished: Callback method to receive the async result on as bytes.
-        """
-        raise NotImplementedError("downloadThingFile must be implemented")
-
-    @abstractmethod
     def getThings(self, query: str, page: int, on_finished: Callable[[List[Thing]], Any],
                   on_failed: Optional[Callable[[Optional[ApiError],Optional[int]], Any]] = None) -> None:
         """
@@ -154,6 +144,17 @@ class AbstractApiClient(ABC):
         """
         raise NotImplementedError("get must be implemented")
 
+    def downloadThingFile(self, download_url: str, on_finished: Callable[[bytes], Any],
+                          on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]] = None) -> None:
+        """
+        Download a thing file by its ID.
+        :param file_id: The file ID to download.
+        :param file_name: The file's name including extension.
+        :param on_finished: Callback method to receive the async result on as bytes.
+        """
+        reply = self._manager.get(self._createEmptyRequest(download_url))
+        self._addCallback(reply, on_finished, on_failed, parser=ApiHelper.parseReplyAsBytes)
+
     @property
     @abstractmethod
     def _root_url(self) -> str:
@@ -164,7 +165,7 @@ class AbstractApiClient(ABC):
         raise NotImplementedError("_root_url must be implemented")
 
     @abstractmethod
-    def _setAuth(self, request: QNetworkRequest):
+    def _setAuth(self, request: QNetworkRequest) -> QNetworkRequest:
         """
         Get the API authentication method for this provider.
         """
@@ -179,9 +180,8 @@ class AbstractApiClient(ABC):
         """
         request = QNetworkRequest(QUrl(url))
         request.setHeader(QNetworkRequest.KnownHeaders.ContentTypeHeader, content_type)
-        request.setAttribute(QNetworkRequest.Attribute.RedirectPolicyAttribute, True)  # file downloads reply with a 302 first
-        self._setAuth(request)
-        return request
+        request.setAttribute(QNetworkRequest.Attribute.RedirectPolicyAttribute, QNetworkRequest.RedirectPolicy.ManualRedirectPolicy)
+        return self._setAuth(request)
 
     def _addCallback(self, reply: QNetworkReply,
                      on_finished: Callable[[Any], Any],
@@ -205,6 +205,9 @@ class AbstractApiClient(ABC):
                     if isinstance(response, dict):
                         error_response = ApiError(response)
                     on_failed(error_response, status_code)
+            elif status_code in [301, 302]:
+                redirect = self._manager.get(QNetworkRequest(QUrl(reply.header(QNetworkRequest.KnownHeaders.LocationHeader))))
+                self._addCallback(redirect, on_finished, on_failed, parser)
             else:
                 on_finished(response)
             reply.deleteLater()

@@ -379,18 +379,19 @@ class ThingiBrowserService(QObject):
         self._thing_details = None
         self.activeThingChanged.emit()
 
-    @pyqtSlot(int, str, name="downloadThingFile")
-    def downloadThingFile(self, file_id: int, file_name: str) -> None:
+    @pyqtSlot(str, str, name="downloadThingFile")
+    def downloadThingFile(self, download_url: str, file_name: str) -> None:
         """
         Download and load a thing file by it's ID.
         The downloaded object will be placed on the build plate.
-        :param file_id: The ID of the file.
-        :param file_name: The name of the file.
+        :param download_url: The direct download URL of the file.
+        :param file_name: The name of the file to display after loading it on the build plate.
         """
         self._is_downloading = True
         self.downloadingStateChanged.emit()
-        self._getActiveDriver().downloadThingFile(file_id, file_name,
-                                                  on_finished=lambda data: self._onDownloadFinished(data, file_name))
+        self._getActiveDriver().downloadThingFile(download_url,
+                                                  on_finished=lambda data: self._onDownloadFinished(data, file_name),
+                                                  on_failed=self._onRequestFailed)
 
     @pyqtProperty(int, notify=thingsChanged)
     def currentPage(self) -> int:
@@ -533,6 +534,8 @@ class ThingiBrowserService(QObject):
         """
         self._is_querying = False
         self.queryingStateChanged.emit()
+        self._is_downloading = False
+        self.downloadingStateChanged.emit()
         if status_code in [401, 502]:  # Thingiverse uses 502 for certain authentication errors
             self._showAuthenticationError()
         else:
