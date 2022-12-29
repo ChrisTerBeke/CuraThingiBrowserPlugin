@@ -4,8 +4,6 @@ from typing import List, Callable, Any, Optional, Tuple
 
 from PyQt6.QtNetwork import QNetworkRequest, QNetworkReply
 
-from UM.Logger import Logger  # type: ignore
-
 from ...Settings import Settings
 from ...PreferencesHelper import PreferencesHelper
 from ...api.AbstractApiClient import AbstractApiClient

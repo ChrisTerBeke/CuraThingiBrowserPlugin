@@ -7,8 +7,6 @@ from urllib.parse import urlencode
 from PyQt6.QtCore import QUrl
 from PyQt6.QtNetwork import QNetworkRequest, QNetworkReply
 
-from UM.Logger import Logger  # type: ignore
-
 from ...Settings import Settings
 from ...PreferencesHelper import PreferencesHelper
 from ...api.ApiHelper import ApiHelper
@@ -170,12 +168,11 @@ class MyMiniFactoryApiClient(AbstractApiClient):
             "id": file_id,
             "thumbnail": item.get("thumbnail_url"),
             "name": item.get("filename"),
-            "download_url": "https://www.myminifactory.com/download/{}?downloadfile={}".format(item.get("id"), item.get("filename"))
+            "download_url": "https://www.myminifactory.com/download/{}?downloadfile={}".format(file_id, item.get("filename")),
         }) for item in items]
 
     def downloadThingFile(self, download_url: str, on_finished: Callable[[bytes], Any],
                           on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]] = None) -> None:
-        Logger.debug("download URL: {}".format(download_url))
         reply = self._manager.get(self._createEmptyRequest(download_url))
         self._addCallback(reply, on_finished, on_failed, parser=ApiHelper.parseReplyAsBytes)
 
