@@ -171,11 +171,6 @@ class MyMiniFactoryApiClient(AbstractApiClient):
             "download_url": "https://www.myminifactory.com/download/{}?downloadfile={}".format(file_id, item.get("filename")),
         }) for item in items]
 
-    def downloadThingFile(self, download_url: str, on_finished: Callable[[bytes], Any],
-                          on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]] = None) -> None:
-        reply = self._manager.get(self._createEmptyRequest(download_url))
-        self._addCallback(reply, on_finished, on_failed, parser=ApiHelper.parseReplyAsBytes)
-
     @property
     def _root_url(self):
         return "https://www.myminifactory.com/api/v2"

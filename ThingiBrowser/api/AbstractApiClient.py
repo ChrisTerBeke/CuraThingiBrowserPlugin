@@ -133,17 +133,6 @@ class AbstractApiClient(ABC):
         raise NotImplementedError("getThingFiles must be implemented")
 
     @abstractmethod
-    def downloadThingFile(self, download_url: str, on_finished: Callable[[bytes], Any],
-                          on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]] = None) -> None:
-        """
-        Download a thing file by its ID.
-        :param file_id: The file ID to download.
-        :param file_name: The file's name including extension.
-        :param on_finished: Callback method to receive the async result on as bytes.
-        """
-        raise NotImplementedError("downloadThingFile must be implemented")
-
-    @abstractmethod
     def getThings(self, query: str, page: int, on_finished: Callable[[List[Thing]], Any],
                   on_failed: Optional[Callable[[Optional[ApiError],Optional[int]], Any]] = None) -> None:
         """
@@ -154,6 +143,17 @@ class AbstractApiClient(ABC):
         :param on_failed: Callback method to receive failed request on.
         """
         raise NotImplementedError("get must be implemented")
+
+    def downloadThingFile(self, download_url: str, on_finished: Callable[[bytes], Any],
+                          on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]] = None) -> None:
+        """
+        Download a thing file by its ID.
+        :param file_id: The file ID to download.
+        :param file_name: The file's name including extension.
+        :param on_finished: Callback method to receive the async result on as bytes.
+        """
+        reply = self._manager.get(self._createEmptyRequest(download_url))
+        self._addCallback(reply, on_finished, on_failed, parser=ApiHelper.parseReplyAsBytes)
 
     @property
     @abstractmethod

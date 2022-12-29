@@ -161,11 +161,6 @@ class ThingiverseApiClient(AbstractApiClient):
             "download_url": item.get("direct_url") or item.get("download_url"),
         }) for item in response]
 
-    def downloadThingFile(self, download_url: str, on_finished: Callable[[bytes], Any],
-                          on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]] = None) -> None:
-        reply = self._manager.get(self._createEmptyRequest(download_url))
-        self._addCallback(reply, on_finished, on_failed, parser=ApiHelper.parseReplyAsBytes)
-
     @property
     def _root_url(self):
         return "https://api.thingiverse.com"
