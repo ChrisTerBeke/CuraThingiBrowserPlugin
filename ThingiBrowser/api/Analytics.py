@@ -44,4 +44,4 @@ class Analytics(QObject):
         try:
             requests.post(url, headers=headers)
         except Exception as err:
-            Logger.log("w", "Could not call Analytics API: %s", err)
+            Logger.warning("Could not call Analytics API: {}".format(err))

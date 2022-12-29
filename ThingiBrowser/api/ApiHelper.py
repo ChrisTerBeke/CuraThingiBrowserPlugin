@@ -25,7 +25,7 @@ class ApiHelper:
             response = reply.readAll().data().decode()
             return status_code, json.loads(response)
         except (UnicodeDecodeError, JSONDecodeError, ValueError) as err:
-            Logger.log("e", "Could not parse the API response: %s", err)
+            Logger.error("Could not parse the API response: {}".format(err))
             return status_code, None
 
     @classmethod

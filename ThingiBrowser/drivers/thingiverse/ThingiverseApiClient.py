@@ -4,6 +4,8 @@ from typing import List, Callable, Any, Optional, Tuple
 
 from PyQt6.QtNetwork import QNetworkRequest, QNetworkReply
 
+from UM.Logger import Logger  # type: ignore
+
 from ...Settings import Settings
 from ...PreferencesHelper import PreferencesHelper
 from ...api.AbstractApiClient import AbstractApiClient
@@ -162,7 +164,9 @@ class ThingiverseApiClient(AbstractApiClient):
 
     def downloadThingFile(self, file_id: int, file_name: str, on_finished: Callable[[bytes], Any]) -> None:
         url = "{}/files/{}/download".format(self._root_url, file_id)
-        reply = self._manager.get(self._createEmptyRequest(url))
+        request = self._createEmptyRequest(url)
+        Logger.debug("request: {}".format(request))
+        reply = self._manager.get(request)
         self._addCallback(reply, on_finished, parser=ApiHelper.parseReplyAsBytes)
 
     @property
