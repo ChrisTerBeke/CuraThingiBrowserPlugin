@@ -40,7 +40,7 @@ Item {
             text: "Add to build plate"
             visible: !ThingiService.isDownloading
             onClicked: {
-                ThingiService.downloadThingFile(thingFile.id, thingFile.name)
+                ThingiService.downloadThingFile(thingFile.download_url, thingFile.name)
                 Analytics.trackEvent("add_to_build_plate", "button_clicked")
             }
         }

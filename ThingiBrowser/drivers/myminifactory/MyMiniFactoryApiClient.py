@@ -168,13 +168,13 @@ class MyMiniFactoryApiClient(AbstractApiClient):
             "thumbnail": item.get("images", [])[0].get("thumbnail", {}).get("url") if item.get("images") else None,
             "name": item.get("name"),
             "url": item.get("url"),
-            "description": item.get("description")
+            "description": item.get("description"),
+            "download_url": "https://www.myminifactory.com/download/{}?downloadfile={}".format(item.get("id"), item.get("name"))
         }) for item in items]
 
-    def downloadThingFile(self, file_id: int, file_name: str, on_finished: Callable[[bytes], Any],
+    def downloadThingFile(self, download_url: str, on_finished: Callable[[bytes], Any],
                           on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]] = None) -> None:
-        url = "https://www.myminifactory.com/download/{}?downloadfile={}".format(file_id, file_name)
-        reply = self._manager.get(self._createEmptyRequest(url))
+        reply = self._manager.get(self._createEmptyRequest(download_url))
         self._addCallback(reply, on_finished, on_failed, parser=ApiHelper.parseReplyAsBytes)
 
     @property

@@ -133,7 +133,7 @@ class AbstractApiClient(ABC):
         raise NotImplementedError("getThingFiles must be implemented")
 
     @abstractmethod
-    def downloadThingFile(self, file_id: int, file_name: str, on_finished: Callable[[bytes], Any],
+    def downloadThingFile(self, download_url: str, on_finished: Callable[[bytes], Any],
                           on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]] = None) -> None:
         """
         Download a thing file by its ID.
