@@ -155,18 +155,19 @@ class ThingiverseApiClient(AbstractApiClient):
         status_code, response = ApiHelper.parseReplyAsJson(reply)
         if not response or not isinstance(response, list):
             return status_code, None
+        Logger.debug("_parseGetThingFiles: {}".format(response))
         return status_code, [ThingFile({
             "id": item.get("id"),
             "thumbnail": item.get("thumbnail"),
             "name": item.get("name"),
-            "url": item.get("public_url") or item.get("url"),
+            "url": item.get("download_url") or item.get("public_url") or item.get("direct_url") or item.get("url"),
         }) for item in response]
 
     def downloadThingFile(self, file_id: int, file_name: str, on_finished: Callable[[bytes], Any],
                           on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]] = None) -> None:
         url = "{}/files/{}/download".format(self._root_url, file_id)
         request = self._createEmptyRequest(url)
-        Logger.debug("request: {}".format(request.url()))
+        Logger.debug("downloadThingFile: {}".format(request.url()))
         reply = self._manager.get(request)
         self._addCallback(reply, on_finished, on_failed, parser=ApiHelper.parseReplyAsBytes)
 
