@@ -7,14 +7,9 @@ import UM 1.1 as UM
 
 ColumnLayout {
     id: detailsPage
-
-    // the active thing
     property var thing
-
-    // the files for the active thing
     property var thingFiles
 
-    // button to navigate back to the search results page
     EnhancedButton {
         text: "Back to results"
         Layout.leftMargin: 20
@@ -26,7 +21,6 @@ ColumnLayout {
         }
     }
 
-    // name
     Label {
         id: thingTitle
         text: thing && thing.name ? thing.name : ""
@@ -40,7 +34,6 @@ ColumnLayout {
         Layout.rightMargin: 20
     }
 
-    // link to web page
     Link {
         text: thing && thing.url ? thing.url : ""
         url: thing && thing.url ? thing.url : ""
@@ -49,7 +42,6 @@ ColumnLayout {
         Layout.bottomMargin: 20
     }
 
-    // description
     Label {
         id: thingDescription
         text: thing && thing.description ? thing.description : ""

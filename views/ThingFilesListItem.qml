@@ -15,7 +15,6 @@ Item {
         spacing: 10
         width: parent.width
 
-        // thumbnail (forced to 75x75)
         Image {
             Layout.preferredWidth: 75
             Layout.preferredHeight: 75
@@ -25,7 +24,6 @@ Item {
             sourceSize.height: 75
         }
 
-         // file name
         Label {
             text: thingFile.name
             color: UM.Theme.getColor("text")
@@ -35,17 +33,26 @@ Item {
             Layout.fillWidth: true
         }
 
-        // download button
         EnhancedButton {
             text: "Add to build plate"
-            visible: !ThingiService.isDownloading
+            enabled: !ThingiService.isDownloading && thingFile.download_url
+            // FIXME: automatically update after signing in
+
             onClicked: {
                 ThingiService.downloadThingFile(thingFile.download_url, thingFile.name)
                 Analytics.trackEvent("add_to_build_plate", "button_clicked")
             }
         }
 
-        // loading spinner
+        Label {
+            text: "Please sign in to download files"
+            visible: !thingFile.download_url
+            color: UM.Theme.getColor("text")
+            font: UM.Theme.getFont("large")
+            elide: Text.ElideRight
+            renderType: Text.NativeRendering
+        }
+
         AnimatedImage {
             visible: ThingiService.isDownloading
             source: "images/loading.gif"

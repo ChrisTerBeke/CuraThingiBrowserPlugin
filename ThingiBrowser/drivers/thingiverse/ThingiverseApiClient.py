@@ -153,22 +153,23 @@ class ThingiverseApiClient(AbstractApiClient):
         status_code, response = ApiHelper.parseReplyAsJson(reply)
         if not response or not isinstance(response, list):
             return status_code, None
-        # FIXME: use download_url to track downloads when authenticated (allows for 'download history' feature)
+        # FIXME: use `item.get(download_url)` to track downloads when authenticated (allows for 'download history' feature)
         return status_code, [ThingFile({
             "id": item.get("id"),
-            "thumbnail": item.get("thumbnail"),
             "name": item.get("name"),
-            "download_url": item.get("direct_url") or item.get("download_url"),
+            "thumbnail": item.get("thumbnail"),
+            "download_url": item.get("direct_url"),
         }) for item in response]
 
     @property
     def _root_url(self):
         return "https://api.thingiverse.com"
 
-    def _setAuth(self, request: QNetworkRequest) -> None:
+    def _setAuth(self, request: QNetworkRequest) -> QNetworkRequest:
         # FIXME: Waiting for Thingiverse app approval
         # token = PreferencesHelper.getSettingValue(Settings.THINGIVERSE_API_TOKEN_KEY)
         # if not token or token == "":
         #     # If the user was not signed in we use a default token for the public endpoints.
         #     token = Settings.THINGIVERSE_API_TOKEN
         request.setRawHeader(self._strToByteArray("Authorization"), self._strToByteArray("Bearer {}".format(Settings.THINGIVERSE_API_TOKEN)))
+        return request

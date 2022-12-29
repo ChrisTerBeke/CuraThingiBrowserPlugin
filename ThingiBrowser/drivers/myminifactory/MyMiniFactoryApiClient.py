@@ -23,7 +23,6 @@ class MyMiniFactoryApiClient(AbstractApiClient):
         self._auth_state: Optional[str] = None
         access_token = PreferencesHelper.initSetting(Settings.MYMINIFACTORY_API_TOKEN_KEY)
         if access_token and access_token != "":
-            # Get the username if we already have a token stored.
             self._getUserData()
         super().__init__()
 
@@ -53,8 +52,8 @@ class MyMiniFactoryApiClient(AbstractApiClient):
     def _getUserData(self) -> None:
         url = "{}/user".format(self._root_url)
         reply = self._manager.get(self._createEmptyRequest(url))
-        self._addCallback(reply, self._onGetUserData, parser=self._parseGetUserData)
-        # TODO: handle error response
+        self._addCallback(reply, on_finished=self._onGetUserData, parser=self._parseGetUserData)
+        # FIXME: handle error response
 
     @staticmethod
     def _parseGetUserData(reply: QNetworkReply) -> Tuple[int, Optional[UserData]]:
@@ -162,30 +161,25 @@ class MyMiniFactoryApiClient(AbstractApiClient):
         status_code, response = ApiHelper.parseReplyAsJson(reply)
         if not response or not isinstance(response, dict):
             return status_code, None
-        file_id = response.get("id")
         items = response.get("files", {}).get("items")
         return status_code, [ThingFile({
-            "id": file_id,
-            "thumbnail": item.get("thumbnail_url"),
+            "id": item.get("id"),
             "name": item.get("filename"),
-            "download_url": "https://www.myminifactory.com/download/{}?downloadfile={}".format(file_id, item.get("filename")),
+            "thumbnail": item.get("thumbnail_url"),
+            "download_url": item.get("download_url"),
         }) for item in items]
 
     @property
     def _root_url(self):
         return "https://www.myminifactory.com/api/v2"
 
-    def _setAuth(self, request: QNetworkRequest) -> None:
+    def _setAuth(self, request: QNetworkRequest) -> QNetworkRequest:
         token = PreferencesHelper.getSettingValue(Settings.MYMINIFACTORY_API_TOKEN_KEY)
         if not token or token == "":
-            # If the user was not signed in we use a default token for the public endpoints.
-            # We'll use the 'old way' of injecting the API key in the request
-            return self._injectApiToken(request)
-        request.setRawHeader(self._strToByteArray("Authorization"), self._strToByteArray("Bearer {}".format(token)))
-
-    @staticmethod
-    def _injectApiToken(request: QNetworkRequest) -> None:
-        current_url = request.url().toString()
-        operator = "&" if current_url.find("?") > 0 else "?"
-        new_url = QUrl("{}{}key={}".format(current_url, operator, Settings.MYMINIFACTORY_API_TOKEN))
-        request.setUrl(new_url)
+            current_url = request.url().toString()
+            operator = "&" if current_url.find("?") > 0 else "?"
+            new_url = QUrl("{}{}key={}".format(current_url, operator, Settings.MYMINIFACTORY_API_TOKEN))
+            request.setUrl(new_url)
+        else:
+            request.setRawHeader(self._strToByteArray("Authorization"), self._strToByteArray("Bearer {}".format(token)))
+        return request

@@ -165,7 +165,7 @@ class AbstractApiClient(ABC):
         raise NotImplementedError("_root_url must be implemented")
 
     @abstractmethod
-    def _setAuth(self, request: QNetworkRequest):
+    def _setAuth(self, request: QNetworkRequest) -> QNetworkRequest:
         """
         Get the API authentication method for this provider.
         """
@@ -180,9 +180,8 @@ class AbstractApiClient(ABC):
         """
         request = QNetworkRequest(QUrl(url))
         request.setHeader(QNetworkRequest.KnownHeaders.ContentTypeHeader, content_type)
-        request.setAttribute(QNetworkRequest.Attribute.RedirectPolicyAttribute, True)  # file downloads reply with a 302 first
-        self._setAuth(request)
-        return request
+        request.setAttribute(QNetworkRequest.Attribute.RedirectPolicyAttribute, QNetworkRequest.RedirectPolicy.ManualRedirectPolicy)
+        return self._setAuth(request)
 
     def _addCallback(self, reply: QNetworkReply,
                      on_finished: Callable[[Any], Any],
@@ -206,6 +205,9 @@ class AbstractApiClient(ABC):
                     if isinstance(response, dict):
                         error_response = ApiError(response)
                     on_failed(error_response, status_code)
+            elif status_code in [301, 302]:
+                redirect = self._manager.get(QNetworkRequest(QUrl(reply.header(QNetworkRequest.KnownHeaders.LocationHeader))))
+                self._addCallback(redirect, on_finished, on_failed, parser)
             else:
                 on_finished(response)
             reply.deleteLater()
