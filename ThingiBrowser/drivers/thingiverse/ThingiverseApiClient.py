@@ -155,6 +155,7 @@ class ThingiverseApiClient(AbstractApiClient):
         status_code, response = ApiHelper.parseReplyAsJson(reply)
         if not response or not isinstance(response, list):
             return status_code, None
+        # FIXME: use download_url to track downloads when authenticated (allows for 'download history' feature)
         return status_code, [ThingFile({
             "id": item.get("id"),
             "thumbnail": item.get("thumbnail"),
