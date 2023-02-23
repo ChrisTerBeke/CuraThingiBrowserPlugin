@@ -29,13 +29,3 @@ A public real-time report can be found at [datastudio.google.com](https://datast
 ## Development
 
 Read the detailed [development guide](./docs/development.md).
-
-## Contributors
-
-<a href="https://github.com/ChrisTerBeke">
-    <img src="https://avatars2.githubusercontent.com/u/1134120?s=460&v=4" title="ChrisTerBeke" width="80" height="80">
-</a>
-
-<a href="https://github.com/BohunkG4mer">
-    <img src="https://avatars0.githubusercontent.com/u/16234384?s=400&v=4" title="BohunkG4mer" width="80" height="80">
-</a>
