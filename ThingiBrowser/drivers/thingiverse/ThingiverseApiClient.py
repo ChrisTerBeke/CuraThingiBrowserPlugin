@@ -55,7 +55,8 @@ class ThingiverseApiClient(AbstractApiClient):
         return "collections/{}/things".format(collection_id)
 
     def getThingsBySearchQuery(self, search_terms: str) -> str:
-        return "search/{}".format(search_terms)
+        formatted_terms = search_terms.replace("https://www.thingiverse.com/thing:", "")
+        return "search/{}".format(formatted_terms)
 
     def getThingsLikedByUserQuery(self) -> str:
         return "users/{}/likes".format(self.user_id)
@@ -84,8 +85,8 @@ class ThingiverseApiClient(AbstractApiClient):
     @staticmethod
     def _parseGetCollections(reply: QNetworkReply) -> Tuple[int, Optional[List[Collection]]]:
         status_code, response = ApiHelper.parseReplyAsJson(reply)
-        if status_code == 404:
-            # Thingiverse returns a 404 when there are no collection results instead of just an empty list
+        if status_code in [400, 404]:
+            # Thingiverse returns a 400 or 404 when there are no results instead of just an empty list
             return 200, []
         if not response or not isinstance(response, list):
             return status_code, None
@@ -106,8 +107,8 @@ class ThingiverseApiClient(AbstractApiClient):
     @staticmethod
     def _parseGetThings(reply: QNetworkReply) -> Tuple[int, Optional[List[Thing]]]:
         status_code, response = ApiHelper.parseReplyAsJson(reply)
-        if status_code == 404:
-            # Thingiverse returns a 404 when there are no thing results instead of just an empty list
+        if status_code in [400, 404]:
+            # Thingiverse returns a 400 or 404 when there are no results instead of just an empty list
             return 200, []
         if isinstance(response, dict) and "hits" in response:
             # Thingiverse decided to change their API response for /search and put the actual results in a 'hits' field
