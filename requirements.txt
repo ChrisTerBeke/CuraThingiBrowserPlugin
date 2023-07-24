@@ -1,9 +1,9 @@
 mypy==1.4.1
-PyQt6==6.5.1
+PyQt6==6.5.2
 pytest==7.4.0
 coverage==7.2.7
 pytest-cov==4.1.0
 surrogate==0.1
 requests==2.31.0
-types-requests==2.31.0.1
+types-requests==2.31.0.2
 opencv-python-headless==4.8.0.74
