@@ -51,7 +51,7 @@ class MyMiniFactoryApiClient(AbstractApiClient):
 
     def _getUserData(self) -> None:
         url = "{}/user".format(self._root_url)
-        reply = self._manager.get(self._createEmptyRequest(url))
+        reply = self._manager.get(self._createEmptyRequest(url)) or self._createEmptyReply()
         self._addCallback(reply, on_finished=self._onGetUserData, parser=self._parseGetUserData)
         # FIXME: handle error response
 
@@ -92,7 +92,7 @@ class MyMiniFactoryApiClient(AbstractApiClient):
     def getThing(self, thing_id: int, on_finished: Callable[[Thing], Any],
                  on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]] = None) -> None:
         url = "{}/objects/{}".format(self._root_url, thing_id)
-        reply = self._manager.get(self._createEmptyRequest(url))
+        reply = self._manager.get(self._createEmptyRequest(url)) or self._createEmptyReply()
         self._addCallback(reply, on_finished, on_failed, parser=self._parseGetThing)
 
     @staticmethod
@@ -111,7 +111,7 @@ class MyMiniFactoryApiClient(AbstractApiClient):
     def getCollections(self, on_finished: Callable[[List[Collection]], Any],
                        on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]]) -> None:
         url = "{}/users/{}/collections".format(self._root_url, self._username)
-        reply = self._manager.get(self._createEmptyRequest(url))
+        reply = self._manager.get(self._createEmptyRequest(url)) or self._createEmptyReply()
         self._addCallback(reply, on_finished, on_failed, parser=self._parseGetCollections)
 
     @staticmethod
@@ -133,7 +133,7 @@ class MyMiniFactoryApiClient(AbstractApiClient):
                   on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]] = None) -> None:
         operator = "&" if query.find("?") > 0 else "?"
         url = "{}/{}{}per_page={}&page={}".format(self._root_url, query, operator, Settings.PER_PAGE, page)
-        reply = self._manager.get(self._createEmptyRequest(url))
+        reply = self._manager.get(self._createEmptyRequest(url)) or self._createEmptyReply()
         self._addCallback(reply, on_finished, on_failed, parser=self._parseGetThings)
 
     @staticmethod
@@ -153,7 +153,7 @@ class MyMiniFactoryApiClient(AbstractApiClient):
     def getThingFiles(self, thing_id: int, on_finished: Callable[[List[ThingFile]], Any],
                       on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]] = None) -> None:
         url = "{}/objects/{}".format(self._root_url, thing_id)
-        reply = self._manager.get(self._createEmptyRequest(url))
+        reply = self._manager.get(self._createEmptyRequest(url)) or self._createEmptyReply()
         self._addCallback(reply, on_finished, on_failed, parser=self._parseGetThingFiles)
 
     @staticmethod

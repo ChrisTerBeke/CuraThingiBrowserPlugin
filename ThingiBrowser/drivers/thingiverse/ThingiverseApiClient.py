@@ -86,7 +86,7 @@ class ThingiverseApiClient(AbstractApiClient):
     def getCollections(self, on_finished: Callable[[List[Collection]], Any],
                        on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]] = None) -> None:
         url = "{}/users/{}/collections".format(self._root_url, self.user_id)
-        reply = self._manager.get(self._createEmptyRequest(url))
+        reply = self._manager.get(self._createEmptyRequest(url)) or self._createEmptyReply()
         self._addCallback(reply, on_finished, on_failed, parser=self._parseGetCollections)
 
     @staticmethod
@@ -108,7 +108,7 @@ class ThingiverseApiClient(AbstractApiClient):
     def getThings(self, query: str, page: int, on_finished: Callable[[List[Thing]], Any],
                   on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]] = None) -> None:
         url = "{}/{}?per_page={}&page={}".format(self._root_url, query, Settings.PER_PAGE, page)
-        reply = self._manager.get(self._createEmptyRequest(url))
+        reply = self._manager.get(self._createEmptyRequest(url)) or self._createEmptyReply()
         self._addCallback(reply, on_finished, on_failed, parser=self._parseGetThings)
 
     @staticmethod
@@ -134,7 +134,7 @@ class ThingiverseApiClient(AbstractApiClient):
     def getThing(self, thing_id: int, on_finished: Callable[[Thing], Any],
                  on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]] = None) -> None:
         url = "{}/things/{}".format(self._root_url, thing_id)
-        reply = self._manager.get(self._createEmptyRequest(url))
+        reply = self._manager.get(self._createEmptyRequest(url)) or self._createEmptyReply()
         self._addCallback(reply, on_finished, on_failed, parser=self._parseGetThing)
 
     @staticmethod
@@ -153,7 +153,7 @@ class ThingiverseApiClient(AbstractApiClient):
     def getThingFiles(self, thing_id: int, on_finished: Callable[[List[ThingFile]], Any],
                       on_failed: Optional[Callable[[Optional[ApiError], Optional[int]], Any]] = None) -> None:
         url = "{}/things/{}/files".format(self._root_url, thing_id)
-        reply = self._manager.get(self._createEmptyRequest(url))
+        reply = self._manager.get(self._createEmptyRequest(url)) or self._createEmptyReply()
         self._addCallback(reply, on_finished, on_failed, parser=self._parseGetThingFiles)
 
     @staticmethod

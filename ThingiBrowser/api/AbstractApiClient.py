@@ -152,7 +152,7 @@ class AbstractApiClient(ABC):
         :param file_name: The file's name including extension.
         :param on_finished: Callback method to receive the async result on as bytes.
         """
-        reply = self._manager.get(self._createEmptyRequest(download_url))
+        reply = self._manager.get(self._createEmptyRequest(download_url)) or self._createEmptyReply()
         self._addCallback(reply, on_finished, on_failed, parser=ApiHelper.parseReplyAsBytes)
 
     @property
@@ -182,6 +182,16 @@ class AbstractApiClient(ABC):
         request.setHeader(QNetworkRequest.KnownHeaders.ContentTypeHeader, content_type)
         request.setAttribute(QNetworkRequest.Attribute.RedirectPolicyAttribute, QNetworkRequest.RedirectPolicy.ManualRedirectPolicy)
         return self._setAuth(request)
+    
+    def _createEmptyReply(self) -> QNetworkReply:
+        """
+        Create a new network reply that can be used for handling callbacks in case no reply came back.
+        :return: The QNetworkReply.
+        """
+        reply = QNetworkReply()
+        reply.setFinished(True)
+        reply.setError(QNetworkReply.NetworkError.UnknownNetworkError, "noreply")
+        return reply
 
     def _addCallback(self, reply: QNetworkReply,
                      on_finished: Callable[[Any], Any],
@@ -206,7 +216,8 @@ class AbstractApiClient(ABC):
                         error_response = ApiError(response)
                     on_failed(error_response, status_code)
             elif status_code in [301, 302]:
-                redirect = self._manager.get(QNetworkRequest(QUrl(reply.header(QNetworkRequest.KnownHeaders.LocationHeader))))
+                request = QNetworkRequest(QUrl(reply.header(QNetworkRequest.KnownHeaders.LocationHeader)))
+                redirect = self._manager.get(request) or self._createEmptyReply()
                 self._addCallback(redirect, on_finished, on_failed, parser)
             else:
                 on_finished(response)
