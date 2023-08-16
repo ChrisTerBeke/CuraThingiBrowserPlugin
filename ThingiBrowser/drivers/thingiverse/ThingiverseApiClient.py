@@ -1,5 +1,6 @@
 # Copyright (c) 2020.
 # Thingiverse plugin is released under the terms of the LGPLv3 or higher.
+import re
 from typing import List, Callable, Any, Optional, Tuple
 
 from PyQt6.QtNetwork import QNetworkRequest, QNetworkReply
@@ -10,6 +11,9 @@ from ...api.AbstractApiClient import AbstractApiClient
 from ...api.ApiHelper import ApiHelper
 from ...api.JsonObject import ApiError, Thing, ThingFile, Collection
 from ...api.LocalAuthService import LocalAuthService
+
+
+THINGIVERSE_URL_MATCH_REGEX = "(?<=thing:)[0-9]*(?=#|\/|$)"
 
 
 class ThingiverseApiClient(AbstractApiClient):
@@ -55,8 +59,11 @@ class ThingiverseApiClient(AbstractApiClient):
         return "collections/{}/things".format(collection_id)
 
     def getThingsBySearchQuery(self, search_terms: str) -> str:
-        formatted_terms = search_terms.replace("https://www.thingiverse.com/thing:", "")
-        return "search/{}".format(formatted_terms)
+        if search_terms.startswith("https://www.thingiverse.com"):
+            matches = re.search(THINGIVERSE_URL_MATCH_REGEX, search_terms)
+            if matches:
+                search_terms = matches.group()
+        return "search/{}".format(search_terms)
 
     def getThingsLikedByUserQuery(self) -> str:
         return "users/{}/likes".format(self.user_id)
