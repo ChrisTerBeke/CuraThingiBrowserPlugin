@@ -1,5 +1,5 @@
 mypy==1.5.1
-PyQt6==6.5.2
+PyQt6==6.5.3
 pytest==7.4.2
 coverage==7.3.1
 pytest-cov==4.1.0
