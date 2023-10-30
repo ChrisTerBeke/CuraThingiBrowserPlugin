@@ -1,6 +1,6 @@
 mypy==1.6.1
-PyQt6==6.5.3
-pytest==7.4.2
+PyQt6==6.6.0
+pytest==7.4.3
 coverage==7.3.2
 pytest-cov==4.1.0
 surrogate==0.1
